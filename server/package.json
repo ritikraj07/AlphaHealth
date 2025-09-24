@@ -1,0 +1,25 @@
+{
+  "name": "alpha-health",
+  "version": "1.0.0",
+  "description": "server of managing employee of AlphaHealth",
+  "main": "index.js",
+  "scripts": {
+    "dev": "nodemon index.js",
+    "start": "node index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ritikraj07/AlphaHealth.git/server"
+  },
+  "keywords": [
+    "alphahealth",
+    "server"
+  ],
+  "author": "Ritik Raj",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^17.2.2",
+    "express": "^5.1.0",
+    "mongoose": "^8.18.2"
+  }
+}
