@@ -8,7 +8,18 @@ const attendanceSchema = new mongoose.Schema({
     endTime: { type: Date },
     plan: [{ type: mongoose.Schema.Types.ObjectId, ref: "DoctorChemist" }], // morning plan
     remarks: { type: String },
-    status: { type: String, enum: ["present", "absent", "leave"], default: "present" }
+    status: { type: String, enum: ["present", "absent", "leave"], default: "present" },
+    startLocation: {
+            type: { type: String, enum: ['Point'], default: 'Point' },
+            coordinates: { type: [Number], required: true }, // [longitude, latitude]
+            required: true
+    },
+    endLocation: {
+            type: { type: String, enum: ['Point'], default: 'Point' },
+            coordinates: { type: [Number], required: true }, // [longitude, latitude]
+            required: true
+    }
+
 });
 
 module.exports = mongoose.model("Attendance", attendanceSchema);
