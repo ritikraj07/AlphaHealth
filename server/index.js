@@ -1,3 +1,5 @@
+// @ts-nocheck
+// @ts-ignore
 require("dotenv").config();
 
 const app = require("./app")
