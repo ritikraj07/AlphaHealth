@@ -4,15 +4,7 @@ const router = Router();
 
 /********************************* POST RREQUESTS ****************************************/
 
-router.post('/create', (req, res) => {
-    res.send("Create Doctor Chemist")
-})
-
 /********************************* GET RREQUESTS ****************************************/
-
-router.get('/all', (req, res) => {
-    res.send("Get All Doctor Chemist")
-})
 
 /********************************* PATCH RREQUESTS ****************************************/
 /********************************* DELETE RREQUESTS ****************************************/
