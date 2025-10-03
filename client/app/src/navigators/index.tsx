@@ -20,7 +20,7 @@ const BottomTabs = () => {
     <Navbar />
      <Tab.Navigator
       screenOptions={{
-        tabBarActiveTintColor: "#d78fceff", // Blue active color
+        tabBarActiveTintColor: "#e91e62", // Blue active color
         tabBarInactiveTintColor: "#8E8E93", // Gray inactive color
         headerShown: false,
         tabBarStyle: {

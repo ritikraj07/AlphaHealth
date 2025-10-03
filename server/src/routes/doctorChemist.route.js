@@ -1,18 +1,16 @@
 const {Router} = require('express');
+const { validateCreateDoctorChemist } = require('../validators/doctorChemist.validator');
+const { createDoctorChemist, getAllDoctorChemist } = require('../controllers/doctorChemist.controller');
 const router = Router();
 
 
 /********************************* POST RREQUESTS ****************************************/
 
-router.post('/create', (req, res) => {
-    res.send("Create Doctor Chemist")
-})
+router.post('/create',validateCreateDoctorChemist, createDoctorChemist)
 
 /********************************* GET RREQUESTS ****************************************/
 
-router.get('/all', (req, res) => {
-    res.send("Get All Doctor Chemist")
-})
+router.get('/all', getAllDoctorChemist)
 
 /********************************* PATCH RREQUESTS ****************************************/
 /********************************* DELETE RREQUESTS ****************************************/

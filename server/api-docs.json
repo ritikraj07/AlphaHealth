@@ -1,95 +1,787 @@
 {
   "swagger": "2.0",
   "info": {
-    "title": "Alphahealth",
-    "description": "Alphahealth API Documentation",
-    "version": "1.0.0"
+    "title": "AlphaHealth API",
+    "description": "Comprehensive API for AlphaHealth Management System - Handling users, leaves, attendance, and doctor/chemist data",
+    "version": "1.0.0",
+    "contact": {
+      "name": "API Support",
+      "email": "support@alphahealth.com"
+    },
+    "license": {
+      "name": "MIT",
+      "url": "https://opensource.org/licenses/MIT"
+    }
   },
   "host": "localhost:3000",
-  "basePath": "/",
-  "schemes": [
-    "http"
+  "basePath": "/api",
+  "schemes": ["http", "https"],
+  "consumes": ["application/json"],
+  "produces": ["application/json"],
+  "tags": [
+    {
+      "name": "Authentication",
+      "description": "User authentication endpoints"
+    },
+    {
+      "name": "Admin",
+      "description": "Administrator management endpoints"
+    },
+    {
+      "name": "Users",
+      "description": "User management endpoints"
+    },
+    {
+      "name": "Leaves",
+      "description": "Leave management endpoints"
+    },
+    {
+      "name": "Attendance",
+      "description": "Attendance tracking endpoints"
+    },
+    {
+      "name": "DoctorChemists",
+      "description": "Doctor and Chemist management endpoints"
+    }
   ],
   "paths": {
+    "/admin/create": {
+      "post": {
+        "tags": ["Admin"],
+        "summary": "Create a new admin",
+        "description": "Creates a new administrator account with elevated privileges",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/CreateAdmin"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Admin created successfully",
+            "schema": {
+              "$ref": "#/definitions/SuccessResponse"
+            }
+          },
+          "400": {
+            "description": "Bad Request - Validation error",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          },
+          "409": {
+            "description": "Conflict - Admin already exists",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          }
+        }
+      }
+    },
     "/users/create-user": {
       "post": {
-        "description": "",
+        "tags": ["Users"],
+        "summary": "Create a new user",
+        "description": "Creates a new user account (employee, manager, or admin)",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/CreateUser"
+            }
+          }
+        ],
         "responses": {
-          "default": {
-            "description": ""
+          "201": {
+            "description": "User created successfully",
+            "schema": {
+              "$ref": "#/definitions/SuccessResponse"
+            }
+          },
+          "400": {
+            "description": "Bad Request - Validation error",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          },
+          "409": {
+            "description": "Conflict - User already exists",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
           }
         }
       }
     },
     "/users/all-users": {
       "get": {
-        "description": "",
+        "tags": ["Users"],
+        "summary": "Get all users",
+        "description": "Retrieves a list of all users with pagination",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "type": "integer",
+            "minimum": 1,
+            "default": 1,
+            "description": "Page number"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100,
+            "default": 10,
+            "description": "Number of items per page"
+          },
+          {
+            "name": "role",
+            "in": "query",
+            "type": "string",
+            "enum": ["employee", "manager", "admin"],
+            "description": "Filter by role"
+          }
+        ],
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "Users retrieved successfully",
+            "schema": {
+              "$ref": "#/definitions/UserListResponse"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/users/delete-user/{id}": {
+      "delete": {
+        "tags": ["Users"],
+        "summary": "Delete a user",
+        "description": "Deletes a user by ID",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "User ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User deleted successfully",
+            "schema": {
+              "$ref": "#/definitions/SuccessResponse"
+            }
+          },
+          "404": {
+            "description": "User not found",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
           }
         }
       }
     },
     "/leaves/apply": {
       "post": {
-        "description": "",
+        "tags": ["Leaves"],
+        "summary": "Apply for leave",
+        "description": "Submit a new leave application",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/ApplyLeave"
+            }
+          }
+        ],
         "responses": {
-          "200": {
-            "description": "OK"
+          "201": {
+            "description": "Leave application submitted successfully",
+            "schema": {
+              "$ref": "#/definitions/SuccessResponse"
+            }
+          },
+          "400": {
+            "description": "Bad Request - Validation error or insufficient leave balance",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
           }
         }
       }
     },
     "/leaves/all": {
       "get": {
-        "description": "",
+        "tags": ["Leaves"],
+        "summary": "Get all leaves",
+        "description": "Retrieve all leave applications with filtering options",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "type": "integer",
+            "minimum": 1,
+            "default": 1
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100,
+            "default": 10
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "type": "string",
+            "enum": ["pending", "approved", "rejected"],
+            "description": "Filter by status"
+          },
+          {
+            "name": "userId",
+            "in": "query",
+            "type": "string",
+            "description": "Filter by user ID"
+          }
+        ],
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "Leaves retrieved successfully",
+            "schema": {
+              "$ref": "#/definitions/LeaveListResponse"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
           }
         }
       }
     },
     "/auth/login": {
       "post": {
-        "description": "",
+        "tags": ["Authentication"],
+        "summary": "User login",
+        "description": "Authenticate user and return access token",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/Login"
+            }
+          }
+        ],
         "responses": {
-          "default": {
-            "description": ""
+          "200": {
+            "description": "Login successful",
+            "schema": {
+              "$ref": "#/definitions/LoginResponse"
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Invalid credentials",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          },
+          "400": {
+            "description": "Bad Request - Validation error",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
           }
         }
       }
     },
-    "/doctorChemists/create": {
+    "/doctor-chemists/create": {
       "post": {
-        "description": "",
+        "tags": ["DoctorChemists"],
+        "summary": "Create doctor/chemist",
+        "description": "Add a new doctor or chemist to the system",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/CreateDoctorChemist"
+            }
+          }
+        ],
         "responses": {
-          "200": {
-            "description": "OK"
+          "201": {
+            "description": "Doctor/Chemist created successfully",
+            "schema": {
+              "$ref": "#/definitions/SuccessResponse"
+            }
+          },
+          "400": {
+            "description": "Bad Request - Validation error",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          },
+          "409": {
+            "description": "Conflict - Doctor/Chemist already exists",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
           }
         }
       }
     },
-    "/doctorChemists/all": {
+    "/doctor-chemists/all": {
       "get": {
-        "description": "",
+        "tags": ["DoctorChemists"],
+        "summary": "Get all doctors/chemists",
+        "description": "Retrieve all doctors and chemists with pagination",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "type": "integer",
+            "minimum": 1,
+            "default": 1
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100,
+            "default": 10
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "type": "string",
+            "enum": ["doctor", "chemist"],
+            "description": "Filter by type"
+          }
+        ],
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "Doctors/Chemists retrieved successfully",
+            "schema": {
+              "$ref": "#/definitions/DoctorChemistListResponse"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
           }
         }
       }
     },
     "/attendances/mark": {
       "post": {
-        "description": "",
+        "tags": ["Attendance"],
+        "summary": "Mark attendance",
+        "description": "Record employee attendance (check-in/check-out)",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/MarkAttendance"
+            }
+          }
+        ],
         "responses": {
-          "200": {
-            "description": "OK"
+          "201": {
+            "description": "Attendance marked successfully",
+            "schema": {
+              "$ref": "#/definitions/SuccessResponse"
+            }
+          },
+          "400": {
+            "description": "Bad Request - Validation error or duplicate attendance",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
           }
         }
       }
+    }
+  },
+  "definitions": {
+    "SuccessResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "example": true
+        },
+        "message": {
+          "type": "string",
+          "example": "Operation completed successfully"
+        },
+        "data": {
+          "type": "object",
+          "description": "Response data"
+        }
+      }
+    },
+    "ErrorResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "example": false
+        },
+        "message": {
+          "type": "string",
+          "example": "Error description"
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          },
+          "description": "Detailed error information"
+        }
+      }
+    },
+    "CreateAdmin": {
+      "type": "object",
+      "required": ["name", "email", "password"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 50,
+          "example": "John Doe"
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "example": "admin@alphahealth.com"
+        },
+        "password": {
+          "type": "string",
+          "minLength": 6,
+          "example": "SecurePassword123"
+        },
+        "role": {
+          "type": "string",
+          "enum": ["admin", "superadmin"],
+          "default": "admin",
+          "example": "admin"
+        },
+        "leavesTaken": {
+          "type": "object",
+          "properties": {
+            "sick": {
+              "type": "integer",
+              "minimum": 0,
+              "example": 0
+            },
+            "casual": {
+              "type": "integer",
+              "minimum": 0,
+              "example": 0
+            },
+            "earned": {
+              "type": "integer",
+              "minimum": 0,
+              "example": 0
+            },
+            "public": {
+              "type": "integer",
+              "minimum": 0,
+              "example": 0
+            }
+          }
+        }
+      }
+    },
+    "CreateUser": {
+      "type": "object",
+      "required": ["name", "email", "password", "hq"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 50,
+          "example": "Jane Smith"
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "example": "jane.smith@alphahealth.com"
+        },
+        "password": {
+          "type": "string",
+          "minLength": 6,
+          "example": "UserPassword123"
+        },
+        "role": {
+          "type": "string",
+          "enum": ["employee", "manager", "admin"],
+          "default": "employee",
+          "example": "employee"
+        },
+        "hq": {
+          "type": "string",
+          "description": "Headquarter ID",
+          "example": "507f1f77bcf86cd799439011"
+        },
+        "manager": {
+          "type": "string",
+          "description": "Manager user ID",
+          "example": "507f1f77bcf86cd799439012"
+        }
+      }
+    },
+    "Login": {
+      "type": "object",
+      "required": ["email", "password"],
+      "properties": {
+        "email": {
+          "type": "string",
+          "format": "email",
+          "example": "user@alphahealth.com"
+        },
+        "password": {
+          "type": "string",
+          "example": "userpassword"
+        }
+      }
+    },
+    "LoginResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "example": true
+        },
+        "message": {
+          "type": "string",
+          "example": "Login successful"
+        },
+        "data": {
+          "type": "object",
+          "properties": {
+            "user": {
+              "type": "object"
+            },
+            "token": {
+              "type": "string",
+              "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+            },
+            "refreshToken": {
+              "type": "string",
+              "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+            }
+          }
+        }
+      }
+    },
+    "UserListResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "example": true
+        },
+        "data": {
+          "type": "object",
+          "properties": {
+            "users": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/User"
+              }
+            },
+            "pagination": {
+              "$ref": "#/definitions/Pagination"
+            }
+          }
+        }
+      }
+    },
+    "Pagination": {
+      "type": "object",
+      "properties": {
+        "page": {
+          "type": "integer",
+          "example": 1
+        },
+        "limit": {
+          "type": "integer",
+          "example": 10
+        },
+        "total": {
+          "type": "integer",
+          "example": 100
+        },
+        "pages": {
+          "type": "integer",
+          "example": 10
+        }
+      }
+    },
+    "ApplyLeave": {
+      "type": "object",
+      "required": ["userId", "leaveType", "startDate", "endDate", "reason"],
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "User ID applying for leave"
+        },
+        "leaveType": {
+          "type": "string",
+          "enum": ["sick", "casual", "earned", "public"],
+          "example": "casual"
+        },
+        "startDate": {
+          "type": "string",
+          "format": "date",
+          "example": "2024-01-15"
+        },
+        "endDate": {
+          "type": "string",
+          "format": "date",
+          "example": "2024-01-17"
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 10,
+          "example": "Family vacation"
+        },
+        "document": {
+          "type": "string",
+          "description": "URL to supporting document",
+          "example": "https://example.com/docs/medical_certificate.pdf"
+        }
+      }
+    },
+    "MarkAttendance": {
+      "type": "object",
+      "required": ["userId", "type"],
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "User ID"
+        },
+        "type": {
+          "type": "string",
+          "enum": ["check-in", "check-out"],
+          "example": "check-in"
+        },
+        "location": {
+          "type": "object",
+          "properties": {
+            "latitude": {
+              "type": "number",
+              "example": 40.7128
+            },
+            "longitude": {
+              "type": "number",
+              "example": -74.0060
+            }
+          }
+        },
+        "notes": {
+          "type": "string",
+          "example": "Working from client location"
+        }
+      }
+    },
+    "CreateDoctorChemist": {
+      "type": "object",
+      "required": ["name", "type", "contact"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "example": "Dr. Rajesh Kumar"
+        },
+        "type": {
+          "type": "string",
+          "enum": ["doctor", "chemist"],
+          "example": "doctor"
+        },
+        "contact": {
+          "type": "string",
+          "example": "+91-9876543210"
+        },
+        "specialization": {
+          "type": "string",
+          "example": "Cardiologist"
+        },
+        "address": {
+          "type": "string",
+          "example": "123 Medical Street, Health City"
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "example": "dr.rajesh@hospital.com"
+        }
+      }
+    }
+  },
+  "securityDefinitions": {
+    "BearerAuth": {
+      "type": "apiKey",
+      "name": "Authorization",
+      "in": "header",
+      "description": "JWT Bearer token. Example: 'Bearer {token}'"
     }
   }
 }

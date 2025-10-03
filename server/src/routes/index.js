@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 
 // Import all route files
+const adminRoutes = require('./admin.route');
 const userRoutes = require('./user.route');
 const pobRoutes = require('./pob.route');
 const leaveRoutes = require('./leave.route');
@@ -11,6 +12,7 @@ const doctorChemistRoutes = require('./doctorChemist.route');
 const attendanceRoutes = require('./attendance.route');
 
 // Mount them
+router.use('/admin', adminRoutes);
 router.use('/users', userRoutes);
 router.use('/pobs', pobRoutes);
 router.use('/leaves', leaveRoutes);

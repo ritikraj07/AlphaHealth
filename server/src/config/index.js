@@ -1,5 +1,8 @@
-let config = {
-    DATABASE: process.env.DATABASE,
+require('dotenv').config();
+
+const appConfig = {
+    DATA_BASE_URI: process.env.DATA_BASE_URI,
     PORT: process.env.PORT
-}
-export default config;
+};
+
+module.exports = appConfig; 
