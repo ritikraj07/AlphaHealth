@@ -1,96 +1,103 @@
 import { StyleSheet, Text, TouchableOpacity, View, ScrollView } from 'react-native'
 
 import { Ionicons, Feather, EvilIcons } from "@expo/vector-icons";
+import LeaveModal from './Modals/LeaveModal';
+import { useState } from 'react';
 
 export default function LeaveManagement() {
+   const [isLeaveModalVisible, setIsLeaveModalVisible] = useState<boolean>(false);
 
 
   return (
-    <ScrollView style={[styles.container]}
-     showsVerticalScrollIndicator={false}
-     >
-      {/* Header Section */}
-      <View style={styles.header}>
-        <View style={styles.headerContent} >
+    <View style={{ flex: 1, backgroundColor: "#ffffff" }} >
+      <LeaveModal
+          visible={isLeaveModalVisible}
+          onClose={() => setIsLeaveModalVisible(false)}
+        />
+      <ScrollView
+        style={[styles.container]}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Header Section */}
+        <View style={styles.header}>
+          <View style={styles.headerContent}>
             <Text style={styles.title}>Leave Management</Text>
-        <Text style={styles.subtitle}>Manage your leave applications and view balance</Text>
-        </View>
-        
-        
-        {/* Apply Leave Button */}
-        <TouchableOpacity style={styles.applyButton}>
-          <Text style={styles.applyButtonText}>Apply Leave</Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* Leave Balance Cards */}
-    
-
-
-
-      <View style={styles.gridContainer}>
-        {/* Sick Leave */}
-        <View style={styles.leaveCard}>
-          <View style={styles.header}>
-            <Text style={styles.leaveName}>Sick Leave</Text>
-            <EvilIcons name="heart" size={24} color="red" />
+            <Text style={styles.subtitle}>
+              Manage your leave applications and view balance
+            </Text>
           </View>
-          <Text style={styles.leaveCount}>5</Text>
-          <Text style={styles.leaveDescription}>out of 5 remaining</Text>
-        </View>
+         
 
-        {/* Casual Leave */}
-        <View style={styles.leaveCard}>
-          <View style={styles.header}>
-            <Text style={styles.leaveName}>Casual Leave</Text>
-            <Feather name="coffee" size={24} color="blue" />
+          {/* Apply Leave Button */}
+          <TouchableOpacity
+            onPress={() => setIsLeaveModalVisible(true)}
+            style={styles.applyButton}
+          >
+            <Text style={styles.applyButtonText}>Apply Leave</Text>
+          </TouchableOpacity>
+        </View>
+        {/* Leave Balance Cards */}
+        <View style={styles.gridContainer}>
+          {/* Sick Leave */}
+          <View style={styles.leaveCard}>
+            <View style={styles.header}>
+              <Text style={styles.leaveName}>Sick Leave</Text>
+              <EvilIcons name="heart" size={24} color="red" />
+            </View>
+            <Text style={styles.leaveCount}>5</Text>
+            <Text style={styles.leaveDescription}>out of 5 remaining</Text>
           </View>
-          <Text style={styles.leaveCount}>5</Text>
-          <Text style={styles.leaveDescription}>out of 5 remaining</Text>
-        </View>
 
-        {/* Earned Leave */}
-        <View style={styles.leaveCard}>
-          <View style={styles.header}>
-            <Text style={styles.leaveName}>Earned Leave</Text>
-            <Feather name="gift" size={24} color="green" />
+          {/* Casual Leave */}
+          <View style={styles.leaveCard}>
+            <View style={styles.header}>
+              <Text style={styles.leaveName}>Casual Leave</Text>
+              <Feather name="coffee" size={24} color="blue" />
+            </View>
+            <Text style={styles.leaveCount}>5</Text>
+            <Text style={styles.leaveDescription}>out of 5 remaining</Text>
           </View>
-          <Text style={styles.leaveCount}>10</Text>
-          <Text style={styles.leaveDescription}>out of 10 remaining</Text>
-        </View>
 
-        {/* Public Holidays */}
-        <View style={styles.leaveCard}>
-          <View style={styles.header}>
-            <Text style={styles.leaveName}>Public Holidays</Text>
-            <Feather name="calendar" size={24} color="orange" />
+          {/* Earned Leave */}
+          <View style={styles.leaveCard}>
+            <View style={styles.header}>
+              <Text style={styles.leaveName}>Earned Leave</Text>
+              <Feather name="gift" size={24} color="green" />
+            </View>
+            <Text style={styles.leaveCount}>10</Text>
+            <Text style={styles.leaveDescription}>out of 10 remaining</Text>
           </View>
-          <Text style={styles.leaveCount}>10</Text>
-          <Text style={styles.leaveDescription}>fixed allocation</Text>
+
+          {/* Public Holidays */}
+          <View style={styles.leaveCard}>
+            <View style={styles.header}>
+              <Text style={styles.leaveName}>Public Holidays</Text>
+              <Feather name="calendar" size={24} color="orange" />
+            </View>
+            <Text style={styles.leaveCount}>10</Text>
+            <Text style={styles.leaveDescription}>fixed allocation</Text>
+          </View>
         </View>
-      </View>
+        {/* ---------- */}
+        {/* Leave History Section */}
+        <View style={styles.historySection}>
+          <Text style={styles.sectionTitle}>Leave History</Text>
+          <Text style={styles.historySubtitle}>
+            Your recent leave applications and their status
+          </Text>
 
-
-      {/* ---------- */}
-
-      {/* Leave History Section */}
-      <View style={styles.historySection}>
-        <Text style={styles.sectionTitle}>Leave History</Text>
-        <Text style={styles.historySubtitle}>Your recent leave applications and their status</Text>
-        
-        {/* Empty State */}
-        <View style={styles.emptyState}>
-          <Ionicons 
-              name="calendar-outline" 
-              size={50} 
-              color={"grey"} 
-            />
-          <Text style={styles.emptyStateText}>No leave applications yet</Text>
-          <Text style={styles.emptyStateText}>Click "Apply Leave" to submit your first application</Text>
+          {/* Empty State */}
+          <View style={styles.emptyState}>
+            <Ionicons name="calendar-outline" size={50} color={"grey"} />
+            <Text style={styles.emptyStateText}>No leave applications yet</Text>
+            <Text style={styles.emptyStateText}>
+              Click "Apply Leave" to submit your first application
+            </Text>
+          </View>
         </View>
-      </View>
-    </ScrollView>
-  )
+      </ScrollView>
+    </View>
+  );
 }
 
 const styles = StyleSheet.create({

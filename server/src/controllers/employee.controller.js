@@ -1,6 +1,6 @@
 const {hashPassword} = require("../utils/auth")
 
-const User = require("../models/user.model")
+const User = require("../models/employee.model")
 
 const createUser = async (req, res) => {
     try{

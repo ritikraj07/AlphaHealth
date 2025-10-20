@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 const Attendance = require("../models/attendance.model");
-const User = require("../models/user.model");
+const User = require("../models/employee.model");
 
 const MarkAttendance = async (req, res) => {
     // Start a new session to track transactions (remember money transactions type of transactions)

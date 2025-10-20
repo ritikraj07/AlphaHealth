@@ -3,7 +3,7 @@ const router = express.Router();
 
 // Import all route files
 const adminRoutes = require('./admin.route');
-const userRoutes = require('./user.route');
+const userRoutes = require('./employee.route');
 const pobRoutes = require('./pob.route');
 const leaveRoutes = require('./leave.route');
 const headquarterRoutes = require('./headquarter.route');

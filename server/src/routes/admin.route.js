@@ -6,7 +6,7 @@ const router = Router();
 
 
 /********************************* POST RREQUESTS ****************************************/
-router.post("/create",validateCreateAdmin, createAdmin);
+router.post("/create", validateCreateAdmin, createAdmin);
 
 
 
