@@ -1,12 +1,14 @@
 const {Router} = require("express");
-const { createAdmin } = require("../controllers/admin.controller");
-const { validateCreateAdmin } = require("../middlewares");
+const { loginAdmin } = require("../controllers/admin.controller");
+
+
 
 const router = Router();
 
 
 /********************************* POST RREQUESTS ****************************************/
-router.post("/create", validateCreateAdmin, createAdmin);
+router.post("/login", loginAdmin);
+
 
 
 

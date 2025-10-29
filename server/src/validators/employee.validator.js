@@ -1,7 +1,7 @@
 // middlewares/validation.js
 const { body, validationResult } = require('express-validator');
 
-const validateCreateUser = [
+const validateCreateEmployee = [
     body('name')
         .trim()
         .isLength({ min: 2, max: 50 })
@@ -39,4 +39,4 @@ const validateCreateUser = [
     }
 ];
 
-module.exports = { validateCreateUser };
+module.exports = { validateCreateEmployee };

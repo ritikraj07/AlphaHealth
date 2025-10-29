@@ -1,6 +1,6 @@
 const { validateCreateAdmin } = require("../validators/admin.validator");
-const { validateCreateUser } = require("../validators/user.validator");
+const { validateCreateEmployee } = require("../validators/employee.validator");
 
 module.exports = {
-    validateCreateUser, validateCreateAdmin
+    validateCreateEmployee, validateCreateAdmin
 };

@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Setup - Employee Management System</title>
+    <link rel="stylesheet" href="/static/setup/setup.css">
+    <script src="/static/setup/setup.js"></script>
+</head>
+
+<body>
+    <div class="setup-container">
+        <div class="setup-card">
+            <div class="setup-header">
+                <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23007bff'%3E%3Cpath d='M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5'/%3E%3C/svg%3E"
+                    alt="Logo" class="logo">
+                <h1>Admin Setup</h1>
+                <p>Create your initial administrator account</p>
+            </div>
+
+            <form id="setupForm" class="setup-form">
+                <div class="form-group">
+                    <label for="name">Full Name</label>
+                    <input type="text" id="name" name="name" required minlength="2" maxlength="50">
+                    <span class="error-message" id="nameError"></span>
+                </div>
+
+                <div class="form-group">
+                    <label for="email">Email Address</label>
+                    <input type="email" id="email" name="email" required>
+                    <span class="error-message" id="emailError"></span>
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" required minlength="6">
+                    <div class="password-strength">
+                        <div class="strength-bar"></div>
+                    </div>
+                    <span class="error-message" id="passwordError"></span>
+                </div>
+
+                <div class="form-group">
+                    <label for="confirmPassword">Confirm Password</label>
+                    <input type="password" id="confirmPassword" name="confirmPassword" required>
+                    <span class="error-message" id="confirmPasswordError"></span>
+                </div>
+
+                <button type="submit" class="submit-btn" id="submitBtn">
+                    <span class="btn-text">Create Admin Account</span>
+                    <div class="btn-loader" style="display: none;">
+                        <div class="spinner"></div>
+                        <span>Creating...</span>
+                    </div>
+                </button>
+            </form>
+
+            <div id="message" class="message-container"></div>
+
+            <div class="setup-info">
+                <h3>⚠️ Important Security Notes:</h3>
+                <ul>
+                    <li>This setup can only be performed once</li>
+                    <li>Keep your credentials secure</li>
+                    <li>You'll be able to create additional admins later</li>
+                    <li>This page will be disabled after setup</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+
+</body>
+
+</html>
