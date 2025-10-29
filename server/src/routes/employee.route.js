@@ -1,22 +1,21 @@
 const {Router} = require('express');
-const { createUser } = require('../controllers/employee.controller');
-const { validateCreateUser } = require('../middlewares');
+const { createEmployee, getEmployee } = require('../controllers/employee.controller');
+const { validateCreateEmployee } = require('../middlewares');
+const { verifyToken } = require('../validators/auth.validator');
 const router = Router();
 
 
 /********************************* POST RREQUESTS ****************************************/
 
-router.post('/create-user',validateCreateUser, createUser);
+router.post('/create',validateCreateEmployee, verifyToken, createEmployee);
 
 /********************************* GET RREQUESTS ****************************************/
 
-router.get('/all-users', async (req, res) => {   
-    res.send("Get All Users")
-})
+router.get('/all', getEmployee)
 
 /********************************* PATCH RREQUESTS ****************************************/
 /********************************* DELETE RREQUESTS ****************************************/
-router.delete('/delete-user', async (req, res) => {
+router.delete('/delete', async (req, res) => {
     res.send("Delete User")
 })
 /********************************* PUT RREQUESTS ****************************************/
