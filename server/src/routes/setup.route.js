@@ -5,6 +5,7 @@ const fs = require('fs');
 const Admin = require('../models/admin.model');
 const { setupGuard } = require('../middlewares/setupGuard');
 const { generateSecureToken, validateSetupToken } = require('../utils/setupSecurity');
+
 const { hashPassword } = require('../utils/auth');
 const { createSuperAdmin } = require('../controllers/admin.controller');
 const emailVerifier = require('../utils/emailVerifier');
@@ -23,7 +24,6 @@ const developmentOnly = (req, res, next) => {
 
 // Generate setup token (one-time use)
 router.get('/generate-token', (req, res) => {
-    const { generateSecureToken } = require('../utils/setupSecurity');
     const token = generateSecureToken();
     console.log('🔐 SETUP TOKEN GENERATED:');
     console.log('📝 Token:', token);

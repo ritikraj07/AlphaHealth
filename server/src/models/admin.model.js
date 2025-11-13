@@ -27,9 +27,9 @@ const adminSchem = new Schema({
            default: "admin",
            validate: {
                validator: function (value) {
-                   return value === "admin" || value === "superadmin";
+                   return value === "admin";
                },
-               message: "Role must be 'admin' or 'superadmin'"
+               message: "Role must be 'admin'"
            }
        },
        leavesTaken: {

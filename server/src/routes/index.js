@@ -14,12 +14,14 @@ const setupRoutes = require('./setup.route');
 
 // Mount them
 // /api
+// router.use("/", (req, res) => {
+//     res.send("Hello There...")
+// })
 router.use('/admin', adminRoutes);
 router.use('/employee', employeeRoutes);
 router.use('/pobs', pobRoutes);
 router.use('/leaves', leaveRoutes);
 router.use('/headquarters', headquarterRoutes);
-
 router.use('/doctorChemists', doctorChemistRoutes);
 router.use('/attendances', attendanceRoutes);
 router.use('/setup', setupRoutes);
