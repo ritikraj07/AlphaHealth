@@ -6,7 +6,7 @@
     "version": "1.0.0"
   },
   "host": "localhost:3000",
-  "basePath": "/",
+  "basePath": "/api",
   "schemes": [
     "http"
   ],
@@ -44,7 +44,7 @@
         }
       }
     },
-    "/employee/create": {
+    "/employee/": {
       "post": {
         "description": "",
         "parameters": [
@@ -95,9 +95,7 @@
             "description": "Internal Server Error"
           }
         }
-      }
-    },
-    "/employee/all": {
+      },
       "get": {
         "description": "",
         "responses": {
@@ -108,9 +106,7 @@
             "description": "Internal Server Error"
           }
         }
-      }
-    },
-    "/employee/delete": {
+      },
       "delete": {
         "description": "",
         "responses": {
@@ -140,12 +136,42 @@
         }
       }
     },
-    "/auth/login": {
+    "/headquarters/k": {
       "post": {
         "description": "",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "example": "any"
+                },
+                "region": {
+                  "example": "any"
+                },
+                "createdBy": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
         "responses": {
-          "default": {
-            "description": ""
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/headquarters/": {
+      "get": {
+        "description": "",
+        "responses": {
+          "200": {
+            "description": "OK"
           }
         }
       }

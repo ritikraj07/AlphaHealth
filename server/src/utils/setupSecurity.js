@@ -3,6 +3,7 @@ const crypto = require('crypto');
 
 // Generate secure one-time token
 function generateSecureToken() {
+  console.log('🔐 Generating setup token...');
   return crypto.randomBytes(32).toString('hex');
 }
 
@@ -37,7 +38,7 @@ async function isSetupAllowed() {
 
   // Delete all existing admins
   // !! Don't forget to remove this in production
-    await Admin.deleteMany({ role: { $in: ['admin', 'superadmin'] } });
+    // await Admin.deleteMany({ role: { $in: ['admin', 'superadmin'] } });
   const adminCount = await Admin.countDocuments({ 
     role: { $in: ['admin', 'superadmin'] } 
   });
