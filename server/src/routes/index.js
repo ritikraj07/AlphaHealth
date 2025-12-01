@@ -12,11 +12,7 @@ const doctorChemistRoutes = require('./doctorChemist.route');
 const attendanceRoutes = require('./attendance.route');
 const setupRoutes = require('./setup.route');
 
-// Mount them
-// /api
-// router.use("/", (req, res) => {
-//     res.send("Hello There...")
-// })
+
 router.use('/admin', adminRoutes);
 router.use('/employee', employeeRoutes);
 router.use('/pobs', pobRoutes);

@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 const appConfig = require("../config/index");
-console.log(appConfig , "=============")
+
 
 // Database configuration
 const DATABASE_URI = appConfig.DATA_BASE_URI;

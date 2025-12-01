@@ -6,6 +6,6 @@ const appConfig = {
     JWT_Secret_Key: process.env.JWT_Secret_Key
 };
 
-console.log("appConfig from config file", appConfig)
+// console.log("appConfig from config file", appConfig)
 
 module.exports = appConfig; 

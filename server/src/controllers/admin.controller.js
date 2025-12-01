@@ -19,7 +19,7 @@ const createSuperAdmin = async (req, res) => {
         requestId,
         email,
         reason: emailCheck.reason,
-        endpoint: '/api/admin/setup'
+        endpoint: req.originalUrl,
       });
       
 

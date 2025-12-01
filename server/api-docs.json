@@ -2,7 +2,7 @@
   "swagger": "2.0",
   "info": {
     "title": "Alphahealth",
-    "description": "Alphahealth API Documentation",
+    "description": "Alphahealth - Pharmaceutical Field Force Management System API Documentation",
     "version": "1.0.0"
   },
   "host": "localhost:3000",
@@ -13,19 +13,29 @@
   "paths": {
     "/admin/login": {
       "post": {
-        "description": "",
+        "summary": "Admin Authentication",
+        "description": "Authenticate administrator users and obtain JWT access token for API authorization",
         "parameters": [
           {
             "name": "body",
             "in": "body",
+            "required": true,
+            "description": "Admin credentials for authentication",
             "schema": {
               "type": "object",
+              "required": ["email", "password"],
               "properties": {
                 "email": {
-                  "example": "any"
+                  "type": "string",
+                  "format": "email",
+                  "description": "Registered admin email address",
+                  "example": "admin@alphahealth.com"
                 },
                 "password": {
-                  "example": "any"
+                  "type": "string",
+                  "format": "password",
+                  "description": "Admin account password",
+                  "example": "SecurePass123!"
                 }
               }
             }
@@ -33,52 +43,108 @@
         ],
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "Authentication successful - Returns JWT token and admin details",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "token": {
+                  "type": "string",
+                  "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                },
+                "admin": {
+                  "type": "object",
+                  "properties": {
+                    "id": {"type": "string", "example": "64a1b2c3d4e5f67890123456"},
+                    "name": {"type": "string", "example": "John Doe"},
+                    "email": {"type": "string", "example": "admin@alphahealth.com"}
+                  }
+                }
+              }
+            }
           },
           "401": {
-            "description": "Unauthorized"
+            "description": "Unauthorized - Invalid email or password",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {"type": "string", "example": "Invalid credentials"},
+                "message": {"type": "string", "example": "The provided email or password is incorrect"}
+              }
+            }
           },
           "500": {
-            "description": "Internal Server Error"
+            "description": "Internal Server Error - Authentication system failure",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {"type": "string", "example": "AuthenticationError"},
+                "message": {"type": "string", "example": "Failed to process authentication request"}
+              }
+            }
           }
         }
       }
     },
     "/employee/": {
       "post": {
-        "description": "",
+        "summary": "Create Employee",
+        "description": "Create a new employee record. Requires admin authentication.",
         "parameters": [
           {
             "name": "authorization",
             "in": "header",
-            "type": "string"
+            "type": "string",
+            "required": true,
+            "description": "Bearer token: 'Bearer {JWT_TOKEN}'",
+            "example": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
           },
           {
             "name": "body",
             "in": "body",
+            "required": true,
+            "description": "Employee creation payload",
             "schema": {
               "type": "object",
+              "required": ["name", "email", "password", "role", "hq"],
               "properties": {
                 "name": {
-                  "example": "any"
+                  "type": "string",
+                  "description": "Full name of the employee",
+                  "example": "Rajesh Kumar"
                 },
                 "email": {
-                  "example": "any"
+                  "type": "string",
+                  "format": "email",
+                  "description": "Unique email address for login",
+                  "example": "rajesh.kumar@alphahealth.com"
                 },
                 "password": {
-                  "example": "any"
+                  "type": "string",
+                  "format": "password",
+                  "minLength": 8,
+                  "description": "Initial password (will be hashed)",
+                  "example": "Employee@123"
                 },
                 "role": {
-                  "example": "any"
+                  "type": "string",
+                  "enum": ["medical_representative", "area_manager", "regional_manager", "admin"],
+                  "description": "Employee role in hierarchy",
+                  "example": "medical_representative"
                 },
                 "hq": {
-                  "example": "any"
+                  "type": "string",
+                  "description": "Headquarters ID assigned to employee",
+                  "example": "64a1b2c3d4e5f67890123457"
                 },
                 "manager": {
-                  "example": "any"
+                  "type": "string",
+                  "description": "Optional - Manager's employee ID",
+                  "example": "64a1b2c3d4e5f67890123458"
                 },
                 "managerModel": {
-                  "example": "any"
+                  "type": "string",
+                  "description": "Optional - Manager relationship model type",
+                  "example": "direct_reporting"
                 }
               }
             }
@@ -86,87 +152,187 @@
         ],
         "responses": {
           "201": {
-            "description": "Created"
+            "description": "Employee Created - Returns employee object without password",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "id": {"type": "string", "example": "64a1b2c3d4e5f67890123459"},
+                "name": {"type": "string", "example": "Rajesh Kumar"},
+                "email": {"type": "string", "example": "rajesh.kumar@alphahealth.com"},
+                "role": {"type": "string", "example": "medical_representative"},
+                "hq": {"type": "string", "example": "64a1b2c3d4e5f67890123457"}
+              }
+            }
           },
           "400": {
-            "description": "Bad Request"
+            "description": "Bad Request - Invalid or missing required fields",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {"type": "string", "example": "ValidationError"},
+                "message": {"type": "string", "example": "Missing required fields: email, password"}
+              }
+            }
           },
           "401": {
-            "description": "Unauthorized"
+            "description": "Unauthorized - Invalid or missing authentication token",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {"type": "string", "example": "AuthError"},
+                "message": {"type": "string", "example": "No authorization token provided"}
+              }
+            }
           },
           "409": {
-            "description": "Conflict"
+            "description": "Conflict - Employee with email already exists",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {"type": "string", "example": "DuplicateError"},
+                "message": {"type": "string", "example": "Employee with email already exists"}
+              }
+            }
           },
           "500": {
-            "description": "Internal Server Error"
+            "description": "Internal Server Error - Database or server error",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {"type": "string", "example": "ServerError"},
+                "message": {"type": "string", "example": "Failed to create employee record"}
+              }
+            }
           }
         }
       },
       "get": {
-        "description": "",
+        "summary": "List Employees",
+        "description": "Get paginated list of employees with optional filters. Supports search by various criteria.",
         "parameters": [
           {
             "name": "page",
             "in": "query",
-            "type": "string"
+            "type": "integer",
+            "default": 1,
+            "minimum": 1,
+            "description": "Page number for pagination",
+            "example": 1
           },
           {
             "name": "limit",
             "in": "query",
-            "type": "string"
+            "type": "integer",
+            "default": 10,
+            "minimum": 1,
+            "maximum": 100,
+            "description": "Number of records per page",
+            "example": 10
           },
           {
             "name": "name",
             "in": "query",
-            "type": "string"
+            "type": "string",
+            "description": "Filter by employee name (case-insensitive partial match)",
+            "example": "raj"
           },
           {
             "name": "email",
             "in": "query",
-            "type": "string"
+            "type": "string",
+            "description": "Filter by exact email address",
+            "example": "rajesh.kumar@alphahealth.com"
           },
           {
             "name": "role",
             "in": "query",
-            "type": "string"
+            "type": "string",
+            "description": "Filter by employee role",
+            "example": "medical_representative"
           },
           {
             "name": "hq",
             "in": "query",
-            "type": "string"
+            "type": "string",
+            "description": "Filter by headquarters ID",
+            "example": "64a1b2c3d4e5f67890123457"
           },
           {
             "name": "manager",
             "in": "query",
-            "type": "string"
+            "type": "string",
+            "description": "Filter by manager's employee ID",
+            "example": "64a1b2c3d4e5f67890123458"
           }
         ],
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "Success - Returns paginated employee list",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "total": {"type": "integer", "example": 125},
+                "page": {"type": "integer", "example": 1},
+                "limit": {"type": "integer", "example": 10},
+                "pages": {"type": "integer", "example": 13},
+                "employees": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {"type": "string", "example": "64a1b2c3d4e5f67890123459"},
+                      "name": {"type": "string", "example": "Rajesh Kumar"},
+                      "email": {"type": "string", "example": "rajesh.kumar@alphahealth.com"},
+                      "role": {"type": "string", "example": "medical_representative"},
+                      "hq": {"type": "string", "example": "Mumbai HQ"}
+                    }
+                  }
+                }
+              }
+            }
           },
           "500": {
-            "description": "Internal Server Error"
+            "description": "Internal Server Error - Failed to fetch employees",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {"type": "string", "example": "DatabaseError"},
+                "message": {"type": "string", "example": "Failed to query employee database"}
+              }
+            }
           }
         }
       },
       "patch": {
-        "description": "",
+        "summary": "Update Own Profile",
+        "description": "Update authenticated employee's own profile (self-service). Can update email and password.",
         "parameters": [
           {
             "name": "body",
             "in": "body",
+            "required": true,
+            "description": "Profile update payload",
             "schema": {
               "type": "object",
               "properties": {
                 "password": {
-                  "example": "any"
+                  "type": "string",
+                  "format": "password",
+                  "description": "Current password for verification (required if changing email/password)",
+                  "example": "CurrentPass123!"
                 },
                 "email": {
-                  "example": "any"
+                  "type": "string",
+                  "format": "email",
+                  "description": "New email address to update",
+                  "example": "new.email@alphahealth.com"
                 },
                 "newPassword": {
-                  "example": "any"
+                  "type": "string",
+                  "format": "password",
+                  "minLength": 8,
+                  "description": "New password (requires current password)",
+                  "example": "NewSecurePass456!"
                 }
               }
             }
@@ -174,123 +340,310 @@
         ],
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "Profile Updated - Returns updated employee data",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {"type": "string", "example": "Profile updated successfully"},
+                "employee": {
+                  "type": "object",
+                  "properties": {
+                    "id": {"type": "string", "example": "64a1b2c3d4e5f67890123459"},
+                    "email": {"type": "string", "example": "new.email@alphahealth.com"}
+                  }
+                }
+              }
+            }
           },
           "400": {
-            "description": "Bad Request"
+            "description": "Bad Request - Invalid data or missing current password",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {"type": "string", "example": "ValidationError"},
+                "message": {"type": "string", "example": "Current password is required to change email"}
+              }
+            }
           },
           "404": {
-            "description": "Not Found"
+            "description": "Not Found - Employee record not found",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {"type": "string", "example": "NotFoundError"},
+                "message": {"type": "string", "example": "Employee not found"}
+              }
+            }
           },
           "500": {
-            "description": "Internal Server Error"
+            "description": "Internal Server Error - Update failed",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {"type": "string", "example": "UpdateError"},
+                "message": {"type": "string", "example": "Failed to update profile"}
+              }
+            }
           }
         }
       },
       "delete": {
-        "description": "",
+        "summary": "Delete Own Account",
+        "description": "Delete authenticated employee's own account (self-deletion).",
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "Account Deleted - Success response",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {"type": "string", "example": "Account deleted successfully"},
+                "deletedId": {"type": "string", "example": "64a1b2c3d4e5f67890123459"}
+              }
+            }
           },
           "400": {
-            "description": "Bad Request"
+            "description": "Bad Request - Cannot delete account (e.g., has subordinates)",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {"type": "string", "example": "BusinessRuleError"},
+                "message": {"type": "string", "example": "Cannot delete account with active team members"}
+              }
+            }
           },
           "404": {
-            "description": "Not Found"
+            "description": "Not Found - Employee not found",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {"type": "string", "example": "NotFoundError"},
+                "message": {"type": "string", "example": "Employee account not found"}
+              }
+            }
           },
           "500": {
-            "description": "Internal Server Error"
+            "description": "Internal Server Error - Deletion failed",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {"type": "string", "example": "DeletionError"},
+                "message": {"type": "string", "example": "Failed to delete account"}
+              }
+            }
           }
         }
       }
     },
     "/employee/managerteam/{managerId}": {
       "get": {
-        "description": "",
+        "summary": "Get Manager Team",
+        "description": "Retrieve all team members reporting to a specific manager.",
         "parameters": [
           {
             "name": "managerId",
             "in": "path",
             "required": true,
-            "type": "string"
+            "type": "string",
+            "description": "Unique MongoDB ObjectId of the manager",
+            "example": "64a1b2c3d4e5f67890123458"
           }
         ],
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "Success - Returns manager's team members",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "manager": {
+                  "type": "object",
+                  "properties": {
+                    "id": {"type": "string", "example": "64a1b2c3d4e5f67890123458"},
+                    "name": {"type": "string", "example": "Amit Sharma"},
+                    "role": {"type": "string", "example": "area_manager"}
+                  }
+                },
+                "team": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {"type": "string", "example": "64a1b2c3d4e5f67890123459"},
+                      "name": {"type": "string", "example": "Rajesh Kumar"},
+                      "email": {"type": "string", "example": "rajesh.kumar@alphahealth.com"},
+                      "role": {"type": "string", "example": "medical_representative"}
+                    }
+                  }
+                },
+                "count": {"type": "integer", "example": 5}
+              }
+            }
           },
           "500": {
-            "description": "Internal Server Error"
+            "description": "Internal Server Error - Failed to fetch team data",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {"type": "string", "example": "DatabaseError"},
+                "message": {"type": "string", "example": "Failed to retrieve team information"}
+              }
+            }
           }
         }
       }
     },
     "/employee/{id}": {
       "get": {
-        "description": "",
+        "summary": "Get Employee by ID",
+        "description": "Retrieve detailed information for a specific employee by their ID.",
         "parameters": [
           {
             "name": "id",
             "in": "path",
             "required": true,
-            "type": "string"
+            "type": "string",
+            "description": "Unique MongoDB ObjectId of the employee",
+            "example": "64a1b2c3d4e5f67890123459"
           }
         ],
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "Success - Returns complete employee details",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "id": {"type": "string", "example": "64a1b2c3d4e5f67890123459"},
+                "name": {"type": "string", "example": "Rajesh Kumar"},
+                "email": {"type": "string", "example": "rajesh.kumar@alphahealth.com"},
+                "role": {"type": "string", "example": "medical_representative"},
+                "hq": {
+                  "type": "object",
+                  "properties": {
+                    "id": {"type": "string", "example": "64a1b2c3d4e5f67890123457"},
+                    "name": {"type": "string", "example": "Mumbai HQ"}
+                  }
+                },
+                "manager": {
+                  "type": "object",
+                  "properties": {
+                    "id": {"type": "string", "example": "64a1b2c3d4e5f67890123458"},
+                    "name": {"type": "string", "example": "Amit Sharma"}
+                  }
+                },
+                "createdAt": {"type": "string", "format": "date-time", "example": "2024-01-15T10:30:00Z"},
+                "updatedAt": {"type": "string", "format": "date-time", "example": "2024-01-20T14:45:00Z"}
+              }
+            }
           },
           "400": {
-            "description": "Bad Request"
+            "description": "Bad Request - Invalid employee ID format",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {"type": "string", "example": "ValidationError"},
+                "message": {"type": "string", "example": "Invalid employee ID format"}
+              }
+            }
           },
           "404": {
-            "description": "Not Found"
+            "description": "Not Found - Employee not found with given ID",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {"type": "string", "example": "NotFoundError"},
+                "message": {"type": "string", "example": "Employee with ID 64a1b2c3d4e5f67890123459 not found"}
+              }
+            }
           },
           "500": {
-            "description": "Internal Server Error"
+            "description": "Internal Server Error - Failed to fetch employee",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {"type": "string", "example": "DatabaseError"},
+                "message": {"type": "string", "example": "Failed to retrieve employee details"}
+              }
+            }
           }
         }
       }
     },
     "/leaves/apply": {
       "post": {
-        "description": "",
+        "summary": "Apply for Leave",
+        "description": "Submit a new leave application request.",
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "Success - Leave application submitted",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {"type": "string", "example": "Leave application submitted successfully"},
+                "leaveId": {"type": "string", "example": "64a1b2c3d4e5f67890123460"},
+                "status": {"type": "string", "example": "pending"}
+              }
+            }
           }
         }
       }
     },
     "/leaves/all": {
       "get": {
-        "description": "",
+        "summary": "Get All Leaves",
+        "description": "Retrieve all leave records. Visibility depends on user role (admin sees all, managers see team leaves).",
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "Success - Returns list of leave records",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "leaves": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {"type": "string", "example": "64a1b2c3d4e5f67890123460"},
+                      "employeeName": {"type": "string", "example": "Rajesh Kumar"},
+                      "startDate": {"type": "string", "format": "date", "example": "2024-02-01"},
+                      "endDate": {"type": "string", "format": "date", "example": "2024-02-05"},
+                      "type": {"type": "string", "example": "casual_leave"},
+                      "status": {"type": "string", "example": "approved"}
+                    }
+                  }
+                }
+              }
+            }
           }
         }
       }
     },
     "/headquarters/": {
       "post": {
-        "description": "",
+        "summary": "Create Headquarters",
+        "description": "Create a new headquarters/office location record. Requires admin privileges.",
         "parameters": [
           {
             "name": "body",
             "in": "body",
+            "required": true,
+            "description": "Headquarters creation data",
             "schema": {
               "type": "object",
+              "required": ["name", "region"],
               "properties": {
                 "name": {
-                  "example": "any"
+                  "type": "string",
+                  "description": "Name of the headquarters/office",
+                  "example": "Mumbai Headquarters"
                 },
                 "region": {
-                  "example": "any"
+                  "type": "string",
+                  "description": "Geographical region or territory",
+                  "example": "West Region"
                 },
                 "createdBy": {
-                  "example": "any"
+                  "type": "string",
+                  "description": "ID of the admin creating this headquarters",
+                  "example": "64a1b2c3d4e5f67890123456"
                 }
               }
             }
@@ -298,75 +651,177 @@
         ],
         "responses": {
           "201": {
-            "description": "Created"
+            "description": "Created - Returns created headquarters object",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "id": {"type": "string", "example": "64a1b2c3d4e5f67890123457"},
+                "name": {"type": "string", "example": "Mumbai Headquarters"},
+                "region": {"type": "string", "example": "West Region"},
+                "createdBy": {"type": "string", "example": "64a1b2c3d4e5f67890123456"},
+                "createdAt": {"type": "string", "format": "date-time", "example": "2024-01-15T10:30:00Z"}
+              }
+            }
           },
           "400": {
-            "description": "Bad Request"
+            "description": "Bad Request - Invalid headquarters data",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {"type": "string", "example": "ValidationError"},
+                "message": {"type": "string", "example": "Name and region are required fields"}
+              }
+            }
           },
           "500": {
-            "description": "Internal Server Error"
+            "description": "Internal Server Error - Creation failed",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {"type": "string", "example": "DatabaseError"},
+                "message": {"type": "string", "example": "Failed to create headquarters record"}
+              }
+            }
           }
         }
       },
       "get": {
-        "description": "",
+        "summary": "List Headquarters",
+        "description": "Retrieve all headquarters/office locations.",
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "Success - Returns list of headquarters",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "headquarters": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {"type": "string", "example": "64a1b2c3d4e5f67890123457"},
+                      "name": {"type": "string", "example": "Mumbai Headquarters"},
+                      "region": {"type": "string", "example": "West Region"},
+                      "employeeCount": {"type": "integer", "example": 25}
+                    }
+                  }
+                }
+              }
+            }
           },
           "500": {
-            "description": "Internal Server Error"
+            "description": "Internal Server Error - Failed to fetch headquarters",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {"type": "string", "example": "DatabaseError"},
+                "message": {"type": "string", "example": "Failed to retrieve headquarters list"}
+              }
+            }
           }
         }
       }
     },
     "/doctorChemists/create": {
       "post": {
-        "description": "",
+        "summary": "Create Doctor/Chemist",
+        "description": "Create a new doctor or chemist record for field force engagement tracking.",
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "Success - Doctor/chemist created",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {"type": "string", "example": "Doctor record created successfully"},
+                "doctorId": {"type": "string", "example": "64a1b2c3d4e5f67890123461"}
+              }
+            }
           },
           "400": {
-            "description": "Bad Request"
+            "description": "Bad Request - Invalid doctor/chemist data",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {"type": "string", "example": "ValidationError"},
+                "message": {"type": "string", "example": "Missing required doctor information"}
+              }
+            }
           }
         }
       }
     },
     "/doctorChemists/all": {
       "get": {
-        "description": "",
+        "summary": "Get All Doctors/Chemists",
+        "description": "Retrieve all doctor and chemist records for field visits and engagement tracking.",
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "Success - Returns list of doctors/chemists",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "doctors": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {"type": "string", "example": "64a1b2c3d4e5f67890123461"},
+                      "name": {"type": "string", "example": "Dr. Anil Verma"},
+                      "specialization": {"type": "string", "example": "Cardiology"},
+                      "clinicAddress": {"type": "string", "example": "Mumbai Central"},
+                      "contactNumber": {"type": "string", "example": "+919876543210"}
+                    }
+                  }
+                }
+              }
+            }
           }
         }
       }
     },
     "/attendances/mark": {
       "post": {
-        "description": "",
+        "summary": "Mark Attendance",
+        "description": "Mark check-in/check-out attendance for employees with location tracking.",
         "parameters": [
           {
             "name": "body",
             "in": "body",
+            "required": true,
+            "description": "Attendance marking data",
             "schema": {
               "type": "object",
+              "required": ["userId", "type"],
               "properties": {
                 "userId": {
-                  "example": "any"
+                  "type": "string",
+                  "description": "Employee ID for attendance marking",
+                  "example": "64a1b2c3d4e5f67890123459"
                 },
                 "type": {
-                  "example": "any"
+                  "type": "string",
+                  "enum": ["check_in", "check_out"],
+                  "description": "Attendance type",
+                  "example": "check_in"
                 },
                 "plan": {
-                  "example": "any"
+                  "type": "string",
+                  "description": "Work plan or daily schedule ID",
+                  "example": "plan_20240120"
                 },
                 "remarks": {
-                  "example": "any"
+                  "type": "string",
+                  "description": "Optional remarks about attendance",
+                  "example": "Visiting Dr. Sharma clinic"
                 },
                 "location": {
-                  "example": "any"
+                  "type": "object",
+                  "description": "GPS coordinates or location data",
+                  "properties": {
+                    "latitude": {"type": "number", "example": 19.0760},
+                    "longitude": {"type": "number", "example": 72.8777},
+                    "address": {"type": "string", "example": "Mumbai, Maharashtra"}
+                  }
                 }
               }
             }
@@ -374,83 +829,167 @@
         ],
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "Success - Attendance marked",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {"type": "string", "example": "Attendance marked successfully"},
+                "attendanceId": {"type": "string", "example": "64a1b2c3d4e5f67890123462"},
+                "timestamp": {"type": "string", "format": "date-time", "example": "2024-01-20T09:00:00Z"}
+              }
+            }
           },
           "201": {
-            "description": "Created"
+            "description": "Created - New attendance record created",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {"type": "string", "example": "Attendance record created"},
+                "attendanceId": {"type": "string", "example": "64a1b2c3d4e5f67890123462"}
+              }
+            }
           },
           "400": {
-            "description": "Bad Request"
+            "description": "Bad Request - Invalid attendance data",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {"type": "string", "example": "ValidationError"},
+                "message": {"type": "string", "example": "User ID and type are required"}
+              }
+            }
           },
           "404": {
-            "description": "Not Found"
+            "description": "Not Found - Employee not found",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {"type": "string", "example": "NotFoundError"},
+                "message": {"type": "string", "example": "Employee not found"}
+              }
+            }
           },
           "409": {
-            "description": "Conflict"
+            "description": "Conflict - Attendance already marked",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {"type": "string", "example": "ConflictError"},
+                "message": {"type": "string", "example": "Check-in already marked for today"}
+              }
+            }
           },
           "500": {
-            "description": "Internal Server Error"
+            "description": "Internal Server Error - Failed to mark attendance",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {"type": "string", "example": "ServerError"},
+                "message": {"type": "string", "example": "Failed to process attendance"}
+              }
+            }
           }
         }
       }
     },
     "/setup/generate-token": {
       "get": {
-        "description": "",
+        "summary": "Generate Setup Token",
+        "description": "Generate initial setup token for first-time system initialization. Should only be used once.",
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "Success - Returns setup token",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "setupToken": {"type": "string", "example": "setup_eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."},
+                "expiresIn": {"type": "string", "example": "1h"},
+                "message": {"type": "string", "example": "Use this token for initial admin setup"}
+              }
+            }
           }
         }
       }
     },
     "/setup/admin-setup": {
       "get": {
-        "description": "",
+        "summary": "Verify Setup Token",
+        "description": "Verify the setup token validity before proceeding with admin account creation.",
         "parameters": [
           {
             "name": "x-setup-token",
             "in": "header",
-            "type": "string"
+            "type": "string",
+            "required": true,
+            "description": "Setup token from generate-token endpoint",
+            "example": "setup_eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
           },
           {
             "name": "token",
             "in": "query",
-            "type": "string"
+            "type": "string",
+            "description": "Alternative token parameter (if header not available)",
+            "example": "setup_eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
           }
         ],
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "Success - Token is valid",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "valid": {"type": "boolean", "example": true},
+                "message": {"type": "string", "example": "Setup token is valid, proceed with admin creation"}
+              }
+            }
           },
           "403": {
-            "description": "Forbidden"
+            "description": "Forbidden - Invalid or expired token",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {"type": "string", "example": "TokenError"},
+                "message": {"type": "string", "example": "Invalid or expired setup token"}
+              }
+            }
           }
         }
       }
     },
     "/setup/verify-email": {
       "post": {
-        "description": "",
+        "summary": "Verify Admin Email",
+        "description": "Check email availability during initial admin setup process.",
         "parameters": [
           {
             "name": "x-setup-token",
             "in": "header",
-            "type": "string"
+            "type": "string",
+            "required": true,
+            "description": "Valid setup token",
+            "example": "setup_eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
           },
           {
             "name": "token",
             "in": "query",
-            "type": "string"
+            "type": "string",
+            "description": "Alternative token parameter",
+            "example": "setup_eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
           },
           {
             "name": "body",
             "in": "body",
+            "required": true,
+            "description": "Email verification request",
             "schema": {
               "type": "object",
+              "required": ["email"],
               "properties": {
                 "email": {
-                  "example": "any"
+                  "type": "string",
+                  "format": "email",
+                  "description": "Email address to check for availability",
+                  "example": "admin@alphahealth.com"
                 }
               }
             }
@@ -458,48 +997,94 @@
         ],
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "Success - Email is available",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "available": {"type": "boolean", "example": true},
+                "message": {"type": "string", "example": "Email is available for use"}
+              }
+            }
           },
           "400": {
-            "description": "Bad Request"
+            "description": "Bad Request - Invalid email or missing parameter",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {"type": "string", "example": "ValidationError"},
+                "message": {"type": "string", "example": "Valid email is required"}
+              }
+            }
           },
           "403": {
-            "description": "Forbidden"
+            "description": "Forbidden - Invalid setup token",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {"type": "string", "example": "TokenError"},
+                "message": {"type": "string", "example": "Invalid setup token"}
+              }
+            }
           },
           "500": {
-            "description": "Internal Server Error"
+            "description": "Internal Server Error - Verification failed",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {"type": "string", "example": "ServerError"},
+                "message": {"type": "string", "example": "Failed to verify email availability"}
+              }
+            }
           }
         }
       }
     },
     "/setup/create-admin": {
       "post": {
-        "description": "",
+        "summary": "Create Initial Admin",
+        "description": "Create the first system administrator account during initial setup.",
         "parameters": [
           {
             "name": "x-setup-token",
             "in": "header",
-            "type": "string"
+            "type": "string",
+            "required": true,
+            "description": "Valid setup token",
+            "example": "setup_eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
           },
           {
             "name": "token",
             "in": "query",
-            "type": "string"
+            "type": "string",
+            "description": "Alternative token parameter",
+            "example": "setup_eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
           },
           {
             "name": "body",
             "in": "body",
+            "required": true,
+            "description": "Initial admin account data",
             "schema": {
               "type": "object",
+              "required": ["email", "name", "password"],
               "properties": {
                 "email": {
-                  "example": "any"
+                  "type": "string",
+                  "format": "email",
+                  "description": "Admin email address",
+                  "example": "admin@alphahealth.com"
                 },
                 "name": {
-                  "example": "any"
+                  "type": "string",
+                  "description": "Admin full name",
+                  "example": "System Administrator"
                 },
                 "password": {
-                  "example": "any"
+                  "type": "string",
+                  "format": "password",
+                  "minLength": 8,
+                  "description": "Admin password",
+                  "example": "Admin@Secure123!"
                 }
               }
             }
@@ -507,19 +1092,61 @@
         ],
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "Success - Admin account created",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {"type": "string", "example": "Admin account created successfully"},
+                "admin": {
+                  "type": "object",
+                  "properties": {
+                    "id": {"type": "string", "example": "64a1b2c3d4e5f67890123456"},
+                    "name": {"type": "string", "example": "System Administrator"},
+                    "email": {"type": "string", "example": "admin@alphahealth.com"}
+                  }
+                }
+              }
+            }
           },
           "400": {
-            "description": "Bad Request"
+            "description": "Bad Request - Invalid admin data",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {"type": "string", "example": "ValidationError"},
+                "message": {"type": "string", "example": "Email, name and password are required"}
+              }
+            }
           },
           "403": {
-            "description": "Forbidden"
+            "description": "Forbidden - Invalid setup token",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {"type": "string", "example": "TokenError"},
+                "message": {"type": "string", "example": "Invalid or expired setup token"}
+              }
+            }
           },
           "409": {
-            "description": "Conflict"
+            "description": "Conflict - Admin already exists",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {"type": "string", "example": "DuplicateError"},
+                "message": {"type": "string", "example": "Admin account already exists"}
+              }
+            }
           },
           "500": {
-            "description": "Internal Server Error"
+            "description": "Internal Server Error - Creation failed",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {"type": "string", "example": "ServerError"},
+                "message": {"type": "string", "example": "Failed to create admin account"}
+              }
+            }
           }
         }
       }
