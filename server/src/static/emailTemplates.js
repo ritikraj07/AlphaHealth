@@ -239,9 +239,8 @@ class EmailTemplates {
                 <h3>Your Login Details:</h3>
                 <p><strong>Email:</strong> ${employeeData.email}</p>
                 ${tempPassword ? `<p><strong>Temporary Password:</strong> ${tempPassword}</p>` : ''}
-                <p><strong>Employee ID:</strong> ${employeeData.employeeId}</p>
-                <p><strong>Department:</strong> ${employeeData.department}</p>
-                <p><strong>Position:</strong> ${employeeData.position}</p>
+                <p><strong>Employee ID:</strong> ${employeeData.id}</p>
+                <p><strong>Position:</strong> ${employeeData.role}</p>
             </div>
 
             <div class="warning">

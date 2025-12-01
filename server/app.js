@@ -3,13 +3,30 @@ const path = require("path");
 const morgan = require('morgan')
 const swaggerUi = require('swagger-ui-express');
 const apiDocument = require('./api-docs.json');
+const helmet = require('helmet');
+const { v4: uuidv4 } = require('uuid');
 var cors = require('cors')
 const app = express();
 
 
 const routers = require("./src/routes/index");
 
-app.use(cors())
+
+// ========== 1. SECURITY MIDDLEWARES (FIRST!) ==========
+app.use(helmet()); // Security headers
+app.use(cors());   // CORS
+
+app.use((req, res, next) => {
+  // Generate request ID
+  req.requestId = uuidv4();
+  
+  // Add to response headers
+  res.setHeader('X-Request-ID', req.requestId);
+  
+  next();
+});
+
+
 
 // Serve static files from static folder
 app.use('/static', express.static(path.join(__dirname, 'src/static')));

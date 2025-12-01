@@ -1,8 +1,9 @@
 const { hashPassword } = require("../utils/auth");
 const Employee = require("../models/employee.model");
+const Mail = require("../utils/mail");
 
 /**
- * 
+ *  
  * Employee Controller
  *  
  * Handles all business logic for employee management including
@@ -122,7 +123,18 @@ const createEmployee = async (req, res) => {
 
          // Convert to object and remove sensitive data
         const employeeResponse = employee.toObject();
-        delete employeeResponse.password;
+        // delete employeeResponse.password;
+
+        console.log("Employee created successfully:", employeeResponse);
+
+        const mailer = new Mail();
+
+        try { 
+            await mailer.sendEmployeeCreationEmail(employeeResponse, password);
+            console.log("Email sent successfully");
+        } catch (error) {
+            console.error("Email sending error:", error);
+        }
 
         return res.status(201).send({ 
             success: true,

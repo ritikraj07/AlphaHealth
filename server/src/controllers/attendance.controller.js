@@ -2,6 +2,15 @@ const mongoose = require("mongoose");
 const Attendance = require("../models/attendance.model");
 const User = require("../models/employee.model");
 
+/**
+ * Marks attendance for a user.
+ * 
+ * @param {Object} req.body - Request body containing user ID, type (check-in/check-out), plan, remarks, and location.
+ * @param {Response} res - Response object to return the HTTP response.
+ * @returns {Promise<Response>} - Promise that resolves the HTTP response.
+ * @throws {Error} - If the request body is invalid or if the attendance record cannot be saved.
+ */
+
 const MarkAttendance = async (req, res) => {
     // Start a new session to track transactions (remember money transactions type of transactions)
     const session = await mongoose.startSession();

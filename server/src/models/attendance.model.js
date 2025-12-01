@@ -1,13 +1,118 @@
 const mongoose = require("mongoose");
 
+/**
+ * Attendance Schema
+ * 
+ * Defines the data structure for tracking employee attendance with geolocation validation.
+ * Supports check-in/check-out functionality with location tracking and daily visit planning.
+ * 
+ * @schema Attendance
+ * @property {ObjectId} _id - Auto-generated unique identifier
+ * @property {ObjectId} employee - Reference to the User who marked attendance
+ * @property {Date} date - The calendar date for attendance tracking
+ * @property {Date} startTime - Check-in timestamp when employee starts work
+ * @property {Date} endTime - Check-out timestamp when employee ends work
+ * @property {ObjectId[]} plan - Array of planned Doctor/Chemist visits for the day
+ * @property {string} remarks - Additional notes or comments about attendance
+ * @property {string} status - Attendance status (present/absent/leave)
+ * @property {Object} startLocation - Geolocation coordinates at check-in
+ * @property {Object} endLocation - Geolocation coordinates at check-out
+ * @property {Date} createdAt - Auto-generated document creation timestamp
+ * @property {Date} updatedAt - Auto-generated last update timestamp
+ */
 const attendanceSchema = new mongoose.Schema({
-    employee: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
-    date: { type: Date, required: true },
-    startTime: { type: Date },
-    endTime: { type: Date },
-    plan: [{ type: mongoose.Schema.Types.ObjectId, ref: "DoctorChemist" }],
-    remarks: { type: String },
-    status: { type: String, enum: ["present", "absent", "leave"], default: "present" },
+    /**
+     * Reference to the employee/user who marked attendance
+     * @type {ObjectId}
+     * @ref User
+     * @required
+     * @description Links to the User model for employee information
+     */
+    employee: { 
+        type: mongoose.Schema.Types.ObjectId, 
+        ref: "Employee", 
+        required: true 
+    },
+    
+    /**
+     * Calendar date for attendance record
+     * @type {Date}
+     * @required
+     * @description Used to group and query attendance by date
+     * @example "2024-01-15T00:00:00.000Z"
+     */
+    date: { 
+        type: Date, 
+        required: true 
+    },
+    
+    /**
+     * Check-in timestamp when employee starts work
+     * @type {Date}
+     * @description Recorded when employee marks attendance as "check-in"
+     * @example "2024-01-15T09:00:00.000Z"
+     */
+    startTime: { 
+        type: Date 
+    },
+    
+    /**
+     * Check-out timestamp when employee ends work
+     * @type {Date}
+     * @description Recorded when employee marks attendance as "check-out"
+     * @example "2024-01-15T18:00:00.000Z"
+     */
+    endTime: { 
+        type: Date 
+    },
+    
+    /**
+     * Array of planned Doctor/Chemist visits for the day
+     * @type {ObjectId[]}
+     * @ref DoctorChemist
+     * @description Pre-planned visits that the employee intends to complete
+     * @example ["507f1f77bcf86cd799439011", "507f1f77bcf86cd799439012"]
+     */
+    plan: [{ 
+        type: mongoose.Schema.Types.ObjectId, 
+        ref: "DoctorChemist" 
+    }],
+    
+    /**
+     * Additional notes or comments about the attendance
+     * @type {string}
+     * @description Free-text field for remarks, reasons, or additional context
+     * @example "Working from client location", "Late due to traffic"
+     */
+    remarks: { 
+        type: String 
+    },
+    
+    /**
+     * Attendance status for the day
+     * @type {string}
+     * @enum ["present", "absent", "leave"]
+     * @default "present"
+     * @description Tracks the overall attendance status
+     * - "present": Employee is working
+     * - "absent": Employee is not working without approval
+     * - "leave": Employee is on approved leave
+     */
+    status: { 
+        type: String, 
+        enum: ["present", "absent", "leave"], 
+        default: "present" 
+    },
+    
+    /**
+     * Geolocation coordinates recorded at check-in time
+     * @type {Object}
+     * @required
+     * @property {string} type - GeoJSON type (always 'Point')
+     * @property {number[]} coordinates - [longitude, latitude] array
+     * @description MongoDB GeoJSON format for spatial queries and validation
+     * @example { type: "Point", coordinates: [77.2311, 28.6517] }
+     */
     startLocation: {
         type: {
             type: String,
@@ -20,6 +125,16 @@ const attendanceSchema = new mongoose.Schema({
             required: true
         }
     },
+    
+    /**
+     * Geolocation coordinates recorded at check-out time
+     * @type {Object}
+     * @required
+     * @property {string} type - GeoJSON type (always 'Point')
+     * @property {number[]} coordinates - [longitude, latitude] array
+     * @description MongoDB GeoJSON format for spatial queries and validation
+     * @example { type: "Point", coordinates: [77.1025, 28.5355] }
+     */
     endLocation: {
         type: {
             type: String,
@@ -32,7 +147,27 @@ const attendanceSchema = new mongoose.Schema({
             required: true
         }
     }
+}, {
+    /**
+     * Schema Options
+     * @option timestamps - Automatically manage createdAt and updatedAt fields
+     */
+    timestamps: true
 });
 
+/**
+ * Attendance Model
+ * 
+ * Mongoose model representing employee attendance records in the database.
+ * Provides methods for CRUD operations, geospatial queries, and attendance analytics.
+ * 
+ * @model Attendance
+ * @collection attendances - MongoDB collection name (auto-pluralized)
+ * 
+ * @method calculateWorkingHours - Computes duration between startTime and endTime
+ * @method findNearbyAttendances - Geospatial query for attendances in area
+ * @method getEmployeeMonthlyReport - Aggregates attendance data per employee per month
+ */
 const Attendance = mongoose.model("Attendance", attendanceSchema);
+
 module.exports = Attendance;

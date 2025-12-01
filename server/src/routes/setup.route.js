@@ -94,6 +94,8 @@ router.post('/verify-email', developmentOnly, validateSetupToken, async (req, re
 });
 
 // Create admin endpoint
-router.post('/create-admin', setupGuard, validateSetupToken,  createSuperAdmin );
+router.post('/create-admin',
+    setupGuard, validateSetupToken,
+    createSuperAdmin);
 
 module.exports = router;
