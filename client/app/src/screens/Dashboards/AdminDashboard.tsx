@@ -6,21 +6,24 @@ import {
   TouchableOpacity,
   Alert,
 } from "react-native";
-import React, { useState } from 'react'
-import Navbar from '../../shared/componets/Navbar'
+import React, { JSX, useState } from 'react'
 import { Octicons, Feather, EvilIcons, FontAwesome6, AntDesign } from "@expo/vector-icons";
 import AddEmployeeModal from "../Modals/AddEmployeeModal";
 
 type Props = {
-    title: string,
-    number: number,
-    subtitle: string,
-    iconFrom: string,
-    icon: any
+  title: string;
+  numberOfEmployees: number;
+  subtitle: string;
+  iconFrom: string;
+  icon: any;
+};
 
-}
-
-const EmployeeBox = (emp: Props, )=>{
+/**
+ * A component that displays an employee's information in a card format.
+ * @param {Props} emp - an object containing the title, number, subtitle, iconFrom, and icon for the employee.
+ * @returns {JSX.Element} - a JSX element representing the employee's information in a card format.
+ */
+const EmployeeBox = (emp: Props, ): JSX.Element=>{
     const Icon = () => {
         if (emp.iconFrom === "Feather") {
           return <Feather name={emp.icon} size={24} color="black" />;
@@ -32,32 +35,50 @@ const EmployeeBox = (emp: Props, )=>{
           return <AntDesign name={emp.icon} size={24} color="black" />;
         }
     }
-    return ( <View style={styles.statItem}>
-            <View style={styles.statIcon} >
-            <Text style={styles.statMainText}>{emp.title}</Text>
-            <Icon />
-
-            </View>
-            <Text style={styles.statNumber}>{emp.number}</Text>
-            <Text style={styles.statSubText}>{emp.subtitle}</Text>
-          </View>)
+    return (
+      <View style={styles.statItem}>
+        <View style={styles.statIcon}>
+          <Text style={styles.statMainText}>{emp.title}</Text>
+          <Icon />
+        </View>
+        <Text style={styles.statNumber}>{emp.numberOfEmployees}</Text>
+        <Text style={styles.statSubText}>{emp.subtitle}</Text>
+      </View>
+    );
 }
 
-export default function AdminDashboard() {
-   const [isAddEmployeeModalVisible, setIsAddEmployeeModalVisible] =
-    useState(false);
+/**
+ * Admin dashboard screen
+ * This screen displays statistics about employees, doctors, and system usage, and provides quick actions for administrative tasks.
+ * @returns {JSX.Element} - a JSX element representing the admin dashboard screen.
+ */
+export default function AdminDashboard(): JSX.Element {
+  const [isAddEmployeeModalVisible, setIsAddEmployeeModalVisible] = useState(false);
+  const [TotalEmployee, setTotlalEmployee] = useState<number>(6);
+  const [TotalDoctors, setTotalDoctors] = useState<number>(4);
+  const [TotalChemists, setTotalChemists] = useState<number>(5);
+  const [TotalHospitals, setTotalHospitals] = useState<number>(3);
+  const [TotalManager, setTotalManager] = useState<number>(5);
+  const [TotalHR, setTotalHR] = useState<number>(1);
   
-   const handleAddEmployee = (employeeData: any) => {
+  // Function to open the add employee modal
+  
+/**
+ * Handle the submission of a new employee
+ * @param {any} employeeData - Object containing the new employee's information
+ * @returns {void}
+ */
+   const handleAddEmployee = (employeeData: any): void => {
      console.log("New employee:", employeeData);
-     // Here you would typically make an API call to save the employee
+     // Add n API call to save the employee later when ReduxRTK is implemented
      Alert.alert("Success", "Employee added successfully!");
      setIsAddEmployeeModalVisible(false);
    };
 
     const employee = [
-        {title: "Total Employee", number: 6, subtitle: "All system users", iconFrom: "Feather", icon: "users"},
-        {title: "Managers", number: 1, subtitle: "Management level", iconFrom: "AntDesign", icon: "profile"},
-        {title: "HR Staff", number: 1, subtitle: "Human resources", iconFrom: "Feather", icon: "users"},
+        {title: "Total Employee", number: TotalEmployee, subtitle: "All system users", iconFrom: "Feather", icon: "users"},
+        {title: "Managers", number: TotalManager, subtitle: "Management level", iconFrom: "AntDesign", icon: "profile"},
+        {title: "HR Staff", number: TotalHR, subtitle: "Human resources", iconFrom: "Feather", icon: "users"},
     ]
   return (
     <View style={{ flex: 1, backgroundColor: "#ffffff" }}>
@@ -87,7 +108,7 @@ export default function AdminDashboard() {
             <EmployeeBox
               key={index}
               title={emp.title}
-              number={emp.number}
+              numberOfEmployees={emp.number}
               subtitle={emp.subtitle}
               iconFrom={emp.iconFrom}
               icon={emp.icon}
@@ -102,8 +123,9 @@ export default function AdminDashboard() {
               <Text style={styles.statMainText}>Doctors</Text>
               <Feather name="database" size={24} color="black" />
             </View>
-            <Text style={styles.statSubText}>Doctors: 4</Text>
-            <Text style={styles.statSubText}>Chemists: 5</Text>
+            <Text style={styles.statSubText}>Doctors: {TotalDoctors}</Text>
+            <Text style={styles.statSubText}>Chemists: {TotalChemists}</Text>
+            {/* Record of which thing */}
             <Text style={styles.statSubText}>Records: 0</Text>
           </View>
 

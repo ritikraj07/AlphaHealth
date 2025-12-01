@@ -1,9 +1,8 @@
-// store/api/apiSlice.ts
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const baseQuery = fetchBaseQuery({
-  baseUrl: process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000/api',
+  baseUrl: "https://alphahealth.onrender.com/api",
   prepareHeaders: async (headers) => {
     const token = await AsyncStorage.getItem('userToken');
     
@@ -22,7 +21,8 @@ const baseQueryWithLogging = async (args: any, api: any, extraOptions: any) => {
     url: args.url,
     method: args.method,
     body: args.body,
-    fullUrl: `${process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000/api'}${args.url}`
+    fullUrl:"https://alphahealth.onrender.com/api"
+    
   });
 
   const result = await baseQuery(args, api, extraOptions);

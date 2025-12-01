@@ -2,6 +2,17 @@ import { StyleSheet, Text, TouchableOpacity, View, ScrollView } from 'react-nati
 
 import { Ionicons, Feather, EvilIcons, AntDesign, MaterialIcons } from "@expo/vector-icons";
 
+/**
+ * ReportsAnalytics screen
+ * 
+ * This screen allows employees to view their performance and customer coverage metrics.
+ * 
+ * It displays the number of days worked, calls completed, and average call duration for each doctor.
+ * 
+ * It also displays the doctor coverage rate and the target frequency for each doctor.
+ * 
+ * The screen also shows the average coverage rate for all doctors, as well as the number of doctors with low coverage rates.
+ */
 export default function ReportsAnalytics() {
 
 
@@ -15,9 +26,6 @@ export default function ReportsAnalytics() {
             <Text style={styles.title}>Reports & Analytics</Text>
         <Text style={styles.subtitle}>Track your performance and customer coverage metrics</Text>     
       </View>
-
-      
-    
 
 
 

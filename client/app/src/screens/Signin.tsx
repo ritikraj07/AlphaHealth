@@ -15,8 +15,7 @@ import {
   useAdminLoginMutation,
   useLoginMutation,
 } from "../shared/store/api/authApi";
-import { Config } from "../config/constants";
-import { testNetworkConnection } from "../utils/networkTest";
+
 
 
 
@@ -38,7 +37,7 @@ export default function SignIn() {
       console.log("🧪 Testing server connection...");
 
       const testUrls = [
-        "http://localhost:3000",
+        "https://alphahealth.onrender.com/",
         "http://10.0.2.2:3000", // Android emulator
         "http://127.0.0.1:3000",
       ];
@@ -54,6 +53,8 @@ export default function SignIn() {
           return; // Stop testing if one works
         } catch (error) {
           console.log(`❌ Cannot reach: ${url}`, error);
+        } finally {
+          
         }
       }
 
@@ -69,6 +70,7 @@ export default function SignIn() {
   }, []); // Empty dependency array - runs once on mount
 
   const handleEmployeeLogin = async () => {
+    setIsLoading(true);
     if (serverStatus === "offline") {
       Alert.alert(
         "Server Offline",
@@ -82,7 +84,7 @@ export default function SignIn() {
       return;
     }
 
-    setIsLoading(true);
+    
     try {
       console.log("📤 Attempting employee login...");
       const result = await login({ email, password }).unwrap();
@@ -121,13 +123,13 @@ export default function SignIn() {
       return;
     }
 
-    if (!password.endsWith("@admin")) {
-      Alert.alert(
-        "Access Denied",
-        "Admin access requires password ending with @admin"
-      );
-      return;
-    }
+    // if (!password.endsWith("@admin")) {
+    //   Alert.alert(
+    //     "Access Denied",
+    //     "Admin access requires password ending with @admin"
+    //   );
+    //   return;
+    // }
 
     setIsLoading(true);
     try {
@@ -139,9 +141,11 @@ export default function SignIn() {
         password: adminPassword,
       }).unwrap();
 
+      console.log("Admin login result:", result);
+
       if (result.success) {
         Alert.alert("Success", "Admin login successful!");
-        navigation.navigate("AdminDashboard" as never);
+        navigation.navigate("Main" as never);
       }
     } catch (error: any) {
       console.log("❌ Admin login error:", error);
@@ -166,6 +170,7 @@ export default function SignIn() {
       style={styles.container}
       contentContainerStyle={styles.contentContainer}
     >
+      <ActivityIndicator size="large" style={styles.loader} color="hotpink" animating={isLoading} />
       {/* Header */}
       <View style={{ alignItems: "center" }}>
         <Image
@@ -300,5 +305,8 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     alignItems: "center",
+  },
+  loader: {
+    
   },
 });

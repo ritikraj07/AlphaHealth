@@ -4,6 +4,14 @@ import { Ionicons, Feather, EvilIcons } from "@expo/vector-icons";
 import LeaveModal from './Modals/LeaveModal';
 import { useState } from 'react';
 
+/**
+ * LeaveManagement screen
+ * 
+ * This screen allows employees to manage their leave applications and view their leave balance.
+ * It displays the number of remaining leaves for each type (sick, casual, earned, public holidays) and allows employees to apply for leaves.
+ * The screen also displays the employee's leave history, including the status of their recent applications.
+ * 
+ */
 export default function LeaveManagement() {
    const [isLeaveModalVisible, setIsLeaveModalVisible] = useState<boolean>(false);
 

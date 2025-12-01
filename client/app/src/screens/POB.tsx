@@ -49,6 +49,10 @@ const HospitalsCard = () => {
 
 
 
+/**
+ * Manage purchase orders from doctors, chemists, and hospitals
+ * @returns {JSX.Element}
+ */
 export default function POB() {
   return (
     <ScrollView style={[styles.container]}

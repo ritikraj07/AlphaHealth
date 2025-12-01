@@ -4,8 +4,26 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { global_styles } from '../shared/style'
 import { useState, useEffect } from 'react';
 import * as Location from 'expo-location';
-import { locationService } from '../shared/services/locationService';
+// import { locationService } from '../shared/services/locationService';
 
+/**
+ * Attendance component that fetches user location and allows them to mark their attendance.
+ * Fetches location using Expo's location service and formats the address in a more readable way using Expo's geocoding service.
+ * Handles attendance button press and calls markAttendance function.
+ * Calls markAttendance function which makes the API call to the attendance server.
+ * 
+ * 
+ * State:
+ *   location - Current location of the user.
+ *   address - Formatted address based on user location.
+ *   locationError - Error message if user denies location permission or if location fetch fails.
+ *   isLoading - Boolean indicating if location fetch is in progress.
+ *   isGettingAddress - Boolean indicating if address formatting is in progress.
+ *   greeting - Morning/afternoon/evening greeting based on current time.
+ *   btnText - Text of the attendance button based on whether attendance has been marked.
+ *   bottomText - Text below the attendance button indicating whether attendance has been marked.
+ *   isDayStarted - Boolean indicating whether attendance has been marked for the day.
+ */
 export default function Attendance() {
   const [location, setLocation] = useState<any>(null);
   const [address, setAddress] = useState<string>('');
@@ -27,69 +45,7 @@ export default function Attendance() {
     else setGreeting("Good Evening, Super!");
   }, []);
 
-  // Enhanced address formatting using Expo's geocoding
-  const getEnhancedAddress = async (latitude: number, longitude: number) => {
-    try {
-      setIsGettingAddress(true);
-      
-      const addressResponse = await Location.reverseGeocodeAsync({
-        latitude,
-        longitude
-      });
 
-      if (addressResponse.length > 0) {
-        const locationInfo = addressResponse[0];
-        
-        // Smart address building - prioritize local names
-        let fullAddress = '';
-        
-        // Option 1: Use name (often contains local landmark/building name)
-        if (locationInfo.name) {
-          fullAddress = locationInfo.name;
-        }
-        
-        // Option 2: Combine street with area for better context
-        if (locationInfo.street && locationInfo.district) {
-          fullAddress = `${locationInfo.street}, ${locationInfo.district}`;
-        } else if (locationInfo.street) {
-          fullAddress = locationInfo.street;
-        }
-        
-        // Add city/region for context
-        if (locationInfo.city && !fullAddress.includes(locationInfo.city)) {
-          fullAddress += fullAddress ? `, ${locationInfo.city}` : locationInfo.city;
-        }
-        
-        // Add region if different from city
-        if (locationInfo.region && locationInfo.region !== locationInfo.city) {
-          fullAddress += `, ${locationInfo.region}`;
-        }
-        
-        // Add postal code if available
-        if (locationInfo.postalCode) {
-          fullAddress += ` ${locationInfo.postalCode}`;
-        }
-        
-        // Final fallback
-        if (!fullAddress) {
-          fullAddress = `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`;
-        }
-        
-        setAddress(fullAddress);
-        return fullAddress;
-        
-      } else {
-        setAddress('Location detected - Address not available');
-        return null;
-      }
-    } catch (error) {
-      console.error('Error getting enhanced address:', error);
-      setAddress('Near coordinates: ' + latitude.toFixed(4) + ', ' + longitude.toFixed(4));
-      return null;
-    } finally {
-      setIsGettingAddress(false);
-    }
-  };
 
   // Get detailed address with multiple attempts
   const getDetailedAddress = async (latitude: number, longitude: number) => {

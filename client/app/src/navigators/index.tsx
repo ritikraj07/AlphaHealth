@@ -2,7 +2,7 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { Ionicons, FontAwesome6 } from "@expo/vector-icons";
 import Attendance from "../screens/Attendance";
-import Dashboard from "../screens/Dashboard";
+// import Dashboard from "../screens/Dashboard";
 import DocCheMan from "../screens/DocCheManagement";
 import LeaveMana from "../screens/LeaveManagement";
 import POB from "../screens/POB";
@@ -17,6 +17,12 @@ import EmployeeDashboard from "../screens/Dashboards/EmployeeDashboard";
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 
+/**
+ * Bottom navigation tabs for the application
+ * 
+ * @param {object} user - User object with role, either "admin" or "employee"
+ * @returns {JSX.Element} Bottom navigation tabs component
+ */
 export const BottomTabs = () => {
   // const user = { role: "employee" };
   const user = { role: "admin" };
@@ -134,6 +140,11 @@ export const BottomTabs = () => {
   );
 };
 
+/**
+ * This function renders a stack navigator with SignIn as the first screen and
+ * BottomTabs after sign in. The header is hidden for all screens.
+ * @returns {JSX.Element} The stack navigator component.
+ */
 export default function Navigation() {
   return (
     <Stack.Navigator

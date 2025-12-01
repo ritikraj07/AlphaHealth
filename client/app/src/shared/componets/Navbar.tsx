@@ -3,6 +3,11 @@ import React from 'react'
 import { Ionicons } from '@expo/vector-icons'
 import { useNavigation } from '@react-navigation/native'
 
+/**
+ * Navbar component that displays the company logo and employee information on the left side
+ * and a logout button with an icon on the right side.
+ * When the logout button is pressed, it navigates to the SignIn page and resets the navigation stack.
+ */
 export default function Navbar() {
   const navigation = useNavigation();
 
