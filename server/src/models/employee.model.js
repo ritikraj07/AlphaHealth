@@ -7,9 +7,6 @@ const mongoose = require("mongoose");
  * structures where managers can be either Employees or Admins. Includes comprehensive
  * leave tracking, role-based permissions, and organizational context.
  * 
- * @version 1.0.0
- * @author Ritik Raj
- * @since 2025 NOVEMBER
  */
 const employeeSchema = new mongoose.Schema({
     /**

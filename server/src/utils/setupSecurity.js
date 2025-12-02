@@ -44,7 +44,7 @@ async function isSetupAllowed() {
 
   // Delete all existing admins
   // !! Don't forget to remove this in production
-    // await Admin.deleteMany({ role: { $in: ['admin', 'superadmin'] } });
+    // await Admin.deleteMany({ role: { $in: ['admin'] } });
   const adminCount = await Admin.countDocuments({ 
     role: { $in: ['admin', 'superadmin'] } 
   });

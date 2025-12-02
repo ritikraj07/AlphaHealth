@@ -7,11 +7,21 @@ const { setupGuard } = require('../middlewares/setupGuard');
 const { generateSecureToken, validateSetupToken } = require('../utils/setupSecurity');
 
 const { hashPassword } = require('../utils/auth');
-const { createSuperAdmin } = require('../controllers/admin.controller');
+const { createAdmin } = require('../controllers/admin.controller');
 const emailVerifier = require('../utils/emailVerifier');
 
 const router = Router();
 
+/**
+ * Checks if the current environment is development and allows the
+ * request to proceed if true. Otherwise, it returns a 403
+ * response with a message indicating that the admin setup is only
+ * available in development environment.
+ * @function developmentOnly
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ * @param {function} next - Express next function
+ */
 const developmentOnly = (req, res, next) => {
   if (process.env.NODE_ENV !== 'development') {
     return res.status(403).json({
@@ -41,7 +51,8 @@ router.get('/generate-token', (req, res) => {
 
 
 
-// Serve static setup files
+// Serve static setup files 
+// act as middleware to serve static files
 router.use('/static', (req, res) => {
     const filePath = path.join(__dirname, '../views/setup', req.path);
     
@@ -64,7 +75,7 @@ router.get('/admin-setup',setupGuard, validateSetupToken, (req, res) => {
     res.sendFile(setupPagePath);
 });
 
-// Add to your setup.route.js
+// Verify email
 router.post('/verify-email', developmentOnly, validateSetupToken, async (req, res) => {
     try {
         const { email } = req.body;
@@ -94,8 +105,6 @@ router.post('/verify-email', developmentOnly, validateSetupToken, async (req, re
 });
 
 // Create admin endpoint
-router.post('/create-admin',
-    setupGuard, validateSetupToken,
-    createSuperAdmin);
+router.post('/create-admin',  setupGuard, validateSetupToken,  createAdmin);
 
 module.exports = router;

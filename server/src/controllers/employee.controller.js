@@ -2,79 +2,30 @@ const { hashPassword } = require("../utils/auth");
 const Employee = require("../models/employee.model");
 const Mail = require("../utils/mail");
 
-/**
- *  
- * Employee Controller
- *  
- * Handles all business logic for employee management including
- * creation, retrieval, updates, and deletion of employee records.
- * 
- * @version 1.0.0
- * @since 2025 NOVEMBER
- */
+
 
 /**
- * @typedef {Object} ApiResponse
- * @property {boolean} success - Indicates if the request was successful
- * @property {string} message - Human-readable response message
- * @property {Object} [data] - Response data payload
- * @property {string} [error] - Error message if success is false
- */
-
-/**
- * Creates a new employee in the system
+ * Creates a new employee record in the system
  * 
  * @route POST /api/employees
- * @access Private (Admin/Manager)
+ * @access Private (admin authentication required)
  * 
- * @param {Object} req - Express request object
- * @param {Object} req.body - Request body
+ * @param {Object} req.body - Request body containing name, email, password, role, hq, manager, and managerModel
  * @param {string} req.body.name - Employee's full name
- * @param {string} req.body.email - Employee's email address
+ * @param {string} req.body.email - Unique email address for authentication
  * @param {string} req.body.password - Employee's password
- * @param {string} req.body.role - Employee's role (employee/manager)
- * @param {string} req.body.hq - Headquarter ID
- * @param {string} req.body.manager - Manager ID
- * @param {string} [req.body.managerModel] - Manager model type (Employee/Admin)
+ * @param {string} req.body.role - Employee's organizational role (either 'employee' or 'manager')
+ * @param {string} req.body.hq - Headquarter location ID
+ * @param {string} req.body.manager - Manager's ID (either an Employee or Admin ID)
+ * @param {string} [req.body.managerModel='Employee'] - Model name of manager (either 'Employee' or 'Admin')
  * 
- * @param {Object} res - Express response object
- * 
- * @returns {Promise<ApiResponse>} Created employee data
- * 
- * @example
- * // Request
- * POST /api/employees
- * {
- *   "name": "John Doe",
- *   "email": "john.doe@company.com",
- *   "password": "securePassword123",
- *   "role": "employee",
- *   "hq": "507f1f77bcf86cd799439011",
- *   "manager": "507f1f77bcf86cd799439012",
- *   "managerModel": "Employee"
- * }
- * 
- * // Response
- * {
- *   "success": true,
- *   "message": "Employee created successfully",
- *   "data": {
- *     "_id": "507f1f77bcf86cd799439013",
- *     "name": "John Doe",
- *     "email": "john.doe@company.com",
- *     "role": "employee",
- *     "hq": "507f1f77bcf86cd799439011",
- *     "manager": "507f1f77bcf86cd799439012",
- *     "managerModel": "Employee"
- *   }
- * }
+ * @returns {Promise<Object>} - Response containing success, message, and data (employee object without password)
+ * @throws {Error} - Employee creation error
  */
-
-
 const createEmployee = async (req, res) => {
     try {
         // Check if employee already exists
-        const { name, email, password, role, hq, manager, managerModel = 'Employee' } = req.body;
+        const { name, email, password, role, hq, manager = req.userId, managerModel = 'Employee' } = req.body;
 
         // Validate required fields
         if (!name || !email || !password || !role || !hq || !manager) {

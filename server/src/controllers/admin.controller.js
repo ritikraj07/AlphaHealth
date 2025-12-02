@@ -7,7 +7,21 @@ const { createToken } = require("../validators/auth.validator");
 
 
 
-const createSuperAdmin = async (req, res) => {
+/**
+ * Creates a new admin in the system
+ * 
+ * @route POST /api/admin/setup
+ * @access Private (Setup token required)
+ * 
+ * @param {Object} req.body - Request body containing email, name, and password
+ * @param {string} req.body.email - Unique email address for authentication
+ * @param {string} req.body.name - Super admin's full name
+ * @param {string} req.body.password - Super admin's password
+ * 
+ * @returns {Promise<Object>} - Response containing success, message, and data (name, email, role, and token)
+ * @throws {Error} - Admin creation error
+ */
+const createAdmin = async (req, res) => {
    let requestId = req.requestId || Date.now() + '-' + Math.random().toString(36).substr(2, 9);
   try {
     const { name, email, password } = req.body;
@@ -61,7 +75,7 @@ const createSuperAdmin = async (req, res) => {
       name,
       email,
       password: hashedPassword,
-      role: "superadmin", // First admin gets superadmin role
+      role: "admin", 
     });
 
     const savedAdmin = await admin.save();
@@ -187,6 +201,7 @@ const loginAdmin = async (req, res) => {
         name: admin.name,
         email: admin.email,
         role: admin.role,
+        _id: admin._id,
         token,
       },
     });
@@ -200,4 +215,4 @@ const loginAdmin = async (req, res) => {
   }
 };
 
-module.exports = { createSuperAdmin, loginAdmin };
+module.exports = { createAdmin, loginAdmin };
