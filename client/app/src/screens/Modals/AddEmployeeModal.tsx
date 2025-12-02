@@ -11,6 +11,8 @@ import {
 } from "react-native";
 import React, { useState } from "react";
 import { Ionicons, Feather } from "@expo/vector-icons";
+import { useGetHeadQuartersQuery } from "../../shared/store/api/hqApi";
+
 
 // Define the props interface
 interface AddEmployeeModalProps {
@@ -22,9 +24,10 @@ interface AddEmployeeModalProps {
 // Define types
 interface EmployeeData {
   name: string;
-  role: "employee" | "manager";
   email: string;
-  headquarter: string;
+  password: string;
+  role: "employee" | "manager";
+  hq: string; // id of headquarter
 }
 
 type RoleType = "employee" | "manager";
@@ -40,10 +43,14 @@ export default function AddEmployeeModal({
   const [headquarter, setHeadquarter] = useState<string>("");
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
+  
   const roles: { id: RoleType; label: string }[] = [
     { id: "employee", label: "Employee" },
     { id: "manager", label: "Manager" },
   ];
+
+  const {data: HQ, isLoading, error, refetch } = useGetHeadQuartersQuery({});
+  // console.log("data==>", HQ?.data);
 
   const headquarters = [
     "North HQ",
@@ -52,6 +59,7 @@ export default function AddEmployeeModal({
     "West HQ",
     "Central HQ",
   ];
+
 
   // Validate form
   const validateForm = (): boolean => {
@@ -85,7 +93,8 @@ export default function AddEmployeeModal({
       name: name.trim(),
       role,
       email: email.trim(),
-      headquarter,
+      hq: headquarter,
+      password: "initialPassword",
     };
 
     // Call the parent component's function
@@ -215,15 +224,16 @@ export default function AddEmployeeModal({
                   Headquarter <Text style={styles.required}>*</Text>
                 </Text>
                 <View style={styles.headquarterContainer}>
-                  {headquarters.map((hq) => (
+                  {HQ?.data.map((hq: any) => (
                     <TouchableOpacity
-                      key={hq}
+                      key={hq._id}
                       style={[
                         styles.headquarterButton,
-                        headquarter === hq && styles.headquarterButtonSelected,
+                        headquarter === hq._id && styles.headquarterButtonSelected,
                       ]}
                       onPress={() => {
-                        setHeadquarter(hq);
+                        setHeadquarter(hq._id);
+                        console.log(hq, headquarter);
                         if (errors.headquarter)
                           setErrors({ ...errors, headquarter: "" });
                       }}
@@ -231,10 +241,11 @@ export default function AddEmployeeModal({
                       <Text
                         style={[
                           styles.headquarterText,
-                          headquarter === hq && styles.headquarterTextSelected,
+                          headquarter === hq._id &&
+                          styles.headquarterTextSelected,
                         ]}
                       >
-                        {hq}
+                        {hq.name}
                       </Text>
                     </TouchableOpacity>
                   ))}

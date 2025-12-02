@@ -4,11 +4,13 @@ import { apiSlice } from './api/apiSlice';
 
 // Import your slices
 import authReducer from './slices/authSlice';
+import adminSlice from './slices/adminSlice';
 // import userReducer from './slices/userSlice';
 
 export const store = configureStore({
   reducer: {
     auth: authReducer,
+    admin: adminSlice,
     // user: userReducer,
     // Add the generated reducer as a specific top-level slice
     [apiSlice.reducerPath]: apiSlice.reducer,

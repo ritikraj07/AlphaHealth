@@ -3,6 +3,13 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const baseQuery = fetchBaseQuery({
   baseUrl: "https://alphahealth.onrender.com/api",
+/**
+ * Prepare headers for API requests.
+ * If a valid user token is stored, it will be added as a Bearer token.
+ * Content type is set to 'application/json' by default.
+ * @param {Headers} headers - Headers object passed from the API.
+ * @returns {Promise<Headers>} - Prepared headers object with optional authorization and content type set.
+ */
   prepareHeaders: async (headers) => {
     const token = await AsyncStorage.getItem('userToken');
     

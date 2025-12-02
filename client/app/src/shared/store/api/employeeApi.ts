@@ -31,10 +31,11 @@ export interface EmployeeResponse {
 export interface CreateEmployeeRequest {
   name: string;
   email: string;
-  department: string;
-  position: string;
-  phone?: string;
   password: string;
+  role: 'employee' | 'manager';
+  hq: string;
+  manager: string;
+  managerModel: string
 }
 
 export interface UpdateEmployeeRequest {
@@ -72,6 +73,19 @@ export const employeeApi = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     // Get all employees with pagination and search
     getEmployees: builder.query<EmployeesResponse, GetEmployeesArgs>({
+/**
+ * Builds a query string for retrieving a paginated list of employees
+ * with optional filtering and searching.
+ * 
+ * @param {Object} params - Query parameters
+ * @param {number} [params.page=1] - Page number for pagination
+ * @param {number} [params.limit=10] - Number of records per page
+ * @param {string} [params.search=''] - Search in name and email
+ * @param {string} [params.department=''] - Filter by department
+ * @param {string} [params.status=''] - Filter by status (active/inactive)
+ * 
+ * @returns {string} Query string for API request
+ */
       query: ({ page = 1, limit = 10, search = '', department = '', status = '' }) => {
         const params = new URLSearchParams({
           page: page.toString(),

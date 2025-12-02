@@ -9,6 +9,8 @@ import {
 import React, { JSX, useState } from 'react'
 import { Octicons, Feather, EvilIcons, FontAwesome6, AntDesign } from "@expo/vector-icons";
 import AddEmployeeModal from "../Modals/AddEmployeeModal";
+import { useCreateEmployeeMutation } from "../../shared/store/api/employeeApi";
+import { useSelector } from "react-redux";
 
 type Props = {
   title: string;
@@ -60,7 +62,10 @@ export default function AdminDashboard(): JSX.Element {
   const [TotalHospitals, setTotalHospitals] = useState<number>(3);
   const [TotalManager, setTotalManager] = useState<number>(5);
   const [TotalHR, setTotalHR] = useState<number>(1);
-  
+  const [createEmployee, isLoading] = useCreateEmployeeMutation();
+  const admin = useSelector((state: any) => state.admin);
+  // console.log(" Admin: from admin dashboard ==> ", admin );
+
   // Function to open the add employee modal
   
 /**
@@ -71,6 +76,16 @@ export default function AdminDashboard(): JSX.Element {
    const handleAddEmployee = (employeeData: any): void => {
      console.log("New employee:", employeeData);
      // Add n API call to save the employee later when ReduxRTK is implemented
+  
+     createEmployee({
+       name: employeeData.name,
+       email: employeeData.email,
+       password: employeeData.password,
+       role: employeeData.role,
+       hq: employeeData.hq,
+       manager: admin._id,
+       managerModel: "Admin",
+     });
      Alert.alert("Success", "Employee added successfully!");
      setIsAddEmployeeModalVisible(false);
    };

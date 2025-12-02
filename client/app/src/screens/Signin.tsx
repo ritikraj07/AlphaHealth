@@ -15,6 +15,8 @@ import {
   useAdminLoginMutation,
   useLoginMutation,
 } from "../shared/store/api/authApi";
+import { useDispatch } from "react-redux";
+import { setAdmin } from "../shared/store/slices/adminSlice";
 
 
 
@@ -28,7 +30,8 @@ export default function SignIn() {
     "checking" | "online" | "offline"
   >("checking");
 
-  const [adminLogin] = useAdminLoginMutation();
+  const dispatch = useDispatch();
+  const [adminLogin, isAdminLoginLoading] = useAdminLoginMutation();
   const [login] = useLoginMutation();
 
   // Test network connection
@@ -123,13 +126,13 @@ export default function SignIn() {
       return;
     }
 
-    // if (!password.endsWith("@admin")) {
-    //   Alert.alert(
-    //     "Access Denied",
-    //     "Admin access requires password ending with @admin"
-    //   );
-    //   return;
-    // }
+    if (!password.endsWith("@admin")) {
+      Alert.alert(
+        "Access Denied",
+        "Admin access requires password ending with @admin"
+      );
+      return;
+    }
 
     setIsLoading(true);
     try {
@@ -145,6 +148,7 @@ export default function SignIn() {
 
       if (result.success) {
         Alert.alert("Success", "Admin login successful!");
+        dispatch(setAdmin(result.data));
         navigation.navigate("Main" as never);
       }
     } catch (error: any) {
@@ -208,6 +212,7 @@ export default function SignIn() {
         <TouchableOpacity
           style={styles.btm}
           onPress={handleEmployeeLogin}
+          // onPress={()=>navigation.navigate("Main" as never)}
           onLongPress={handleAdminLogin}
         >
           <Text style={styles.btmText}>Sign In</Text>
