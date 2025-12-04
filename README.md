@@ -1,5 +1,5 @@
 
-# AlphaHealth — Employee Management App 🩺
+# PharmaPrime — Employee Management App 🩺
 
 > Centralized employee & field-force management for Admins and Employees — attendance, leaves, POB (Proof of Business) visits, doctor/chemist database, field productivity tracking and analytics.
 > React Native client + Node.js/Express backend + MongoDB. Geo-tracking, OTP/email notifications and role-based access included.
@@ -8,10 +8,10 @@
 
 ## Quick links
 
-* Live backend: [https://alphahealth.onrender.com/](https://alphahealth.onrender.com/)
-* API docs (Swagger): [https://alphahealth.onrender.com/api-docs/](https://alphahealth.onrender.com/api-docs/)
+* Live backend: [https://PharmaPrime.onrender.com/](https://PharmaPrime.onrender.com/)
+* API docs (Swagger): [https://PharmaPrime.onrender.com/api-docs/](https://PharmaPrime.onrender.com/api-docs/)
 * Figma (design): [https://www.figma.com/make/zowwkwF4sV8lmmgiaTXV74/Employee-Management-App?node-id=0-1&p=f&t=Ia5BHcXOXdklokdB-0](https://www.figma.com/make/zowwkwF4sV8lmmgiaTXV74/Employee-Management-App?node-id=0-1&p=f&t=Ia5BHcXOXdklokdB-0)
-* Repository: `ritikraj07/AlphaHealth` (this repo)
+* Repository: `ritikraj07/PharmaPrime` (this repo)
 
 ---
 
@@ -22,7 +22,7 @@
 3. [Tech stack](#tech-stack)
 4. [Architecture & folder layout](#architecture--folder-layout)
 5. [Environment variables (`.env.example`)](#environment-variables-envexample)
-6. [Install & run (dev)](#install--run-dev)
+6. [Install & run (dev)](#install--run-development)
 7. [API & endpoints](#api--endpoints)
 8. [Security & validation notes](#security--validation-notes)
 9. [Logging, monitoring & OTP/email](#logging-monitoring--otpemail)
@@ -35,7 +35,7 @@
 
 ## Project overview
 
-**AlphaHealth** is a full-stack Employee Management application focused on field operations. It replaces manual spreadsheets and disconnected tools with a single platform where Admins and Employees can manage:
+**PharmaPrime** is a full-stack Employee Management application focused on field operations. It replaces manual spreadsheets and disconnected tools with a single platform where Admins and Employees can manage:
 
 * Daily attendance (check-in / check-out with geo coordinates)
 * Leave requests and approvals
@@ -103,7 +103,7 @@ The system keeps data structured using MongoDB schemas for Employee, Admin, Atte
 (High level — adapt to actual layout in repo)
 
 ```
-AlphaHealth/
+PharmaPrime/
 ├── server/
 │   ├── controllers/
 │   ├── routes/
@@ -135,7 +135,7 @@ Use the following as a base. Replace the placeholder values with real credential
 PORT=5000
 MONGO_URI=<your_mongodb_connection_string>
 JWT_SECRET=<a_strong_random_secret>
-SERVER_URL=https://alphahealth.onrender.com
+SERVER_URL=https://PharmaPrime.onrender.com
 
 # Client
 APP_URL=http://localhost:19000   # or the expo URL when running locally
@@ -167,8 +167,8 @@ LOG_LEVEL=info
 ### 1. Clone the repo
 
 ```bash
-git clone https://github.com/ritikraj07/AlphaHealth.git
-cd AlphaHealth
+git clone https://github.com/ritikraj07/PharmaPrime.git
+cd PharmaPrime
 ```
 
 ### 2. Server (backend)
@@ -182,7 +182,7 @@ npm run dev      # uses nodemon (see package.json: "dev": "nodemon index.js")
 npm start        # production start (node index.js)
 ```
 
-**Quick check**: Server listens on `PORT` from `.env`. API docs available at `/api-docs/` (e.g. [https://alphahealth.onrender.com/api-docs/](https://alphahealth.onrender.com/api-docs/))
+**Quick check**: Server listens on `PORT` from `.env`. API docs available at `/api-docs/` (e.g. [https://PharmaPrime.onrender.com/api-docs/](https://PharmaPrime.onrender.com/api-docs/))
 
 ### 3. Client (React Native / Expo)
 
@@ -203,7 +203,7 @@ npm run ios
 
 A complete, interactive API documentation is available via Swagger at:
 
-**[https://alphahealth.onrender.com/api-docs/](https://alphahealth.onrender.com/api-docs/)**
+**[https://PharmaPrime.onrender.com/api-docs/](https://PharmaPrime.onrender.com/api-docs/)**
 
 You can use the Swagger UI to review available endpoints, request/response schemas, required headers, and example payloads. This README lists the main resource groups (examples):
 
@@ -224,7 +224,7 @@ You can use the Swagger UI to review available endpoints, request/response schem
 
 ## Security & validation notes
 
-AlphaHealth already includes several security measures (from packages in `package.json`), and I recommend the following checklist to keep the app secure and production ready:
+PharmaPrime already includes several security measures (from packages in `package.json`), and I recommend the following checklist to keep the app secure and production ready:
 
 * [x] `helmet` for HTTP headers (already in `package.json`)
 * [x] CORS configured (use a strict origin whitelist for production)
@@ -274,9 +274,9 @@ AlphaHealth already includes several security measures (from packages in `packag
 * Client currently uses a static UI with completed navigation & flows; further UX polishing and mobile testing required
 * Hardening and additional production-grade monitoring (Sentry) needed
 
-<!-- --- -->
+---
 
-<!-- ## Contributing & contact
+## Contributing & contact
 
 This project is maintained by **Ritik Raj**. If you want to contribute:
 
@@ -285,7 +285,7 @@ This project is maintained by **Ritik Raj**. If you want to contribute:
 3. Make changes, keep commits atomic & useful
 4. Open a PR and describe the change, motivation, and testing steps
 
-If you want me to add a CONTRIBUTING.md with a PR template, I can generate that too. -->
+If you want me to add a CONTRIBUTING.md with a PR template, I can generate that too.
 
 ---
 
