@@ -1,6 +1,7 @@
-const { hashPassword } = require("../utils/auth");
+const { hashPassword, comparePassword } = require("../utils/auth");
 const Employee = require("../models/employee.model");
 const Mail = require("../utils/mail");
+const { createToken } = require("../validators/auth.validator");
 
 
 
@@ -453,8 +454,49 @@ const getManagerTeam = async (req, res) => {
 
 
 
+const loginEmpoloyee = async (req, res) => {
+    try {
+        const { email, password } = req.body;
+        const employee = await Employee.findOne({ email }).select('+password');
+        if (!employee) {
+            return res.status(404).json({
+                success: false,
+                message: "No employee found with this email",
+            });
+        }
+        const passwordMatch = await comparePassword(password, employee.password);
+        if (!passwordMatch) {
+            return res.status(401).json({
+                success: false,
+                message: "Invalid email or password",
+            });
+        }
+        const token = createToken(employee._id);
+        res.json({
+            success: true,
+            message: "Login successful",
+            data: {
+                _id: employee._id,
+                name: employee.name,
+                email: employee.email,
+                role: employee.role,
+                token,
+            },
+        });
+     }
+    catch (error) {
+          console.error("Login error:", error);
+            res.status(500).json({
+                success: false,
+                message: "An error occurred during login",
+            });
+    }
+ }
+
 
 module.exports = { createEmployee, getEmployee,   getEmployeeById,
     updateEmployee,
     deleteEmployee,
-    getManagerTeam };
+    getManagerTeam,
+    loginEmpoloyee
+};
