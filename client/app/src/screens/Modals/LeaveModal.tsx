@@ -9,10 +9,13 @@ import {
   TouchableWithoutFeedback,
   Keyboard,
   Platform,
+  ToastAndroid,
 } from "react-native";
 import React, { useState } from "react";
 import { Ionicons, Feather } from "@expo/vector-icons";
 import DateTimePicker from "@react-native-community/datetimepicker";
+import { useApplyLeaveMutation } from "../../shared/store/api/leaveApi";
+
 
 // Define the props interface
 interface LeaveModalProps {
@@ -23,6 +26,7 @@ interface LeaveModalProps {
 type DateField = "start" | "end";
 
 export default function LeaveModal({ visible, onClose }: LeaveModalProps) {
+ 
   const [leaveType, setLeaveType] = useState<string>("casual");
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
@@ -30,6 +34,9 @@ export default function LeaveModal({ visible, onClose }: LeaveModalProps) {
   const [showDatePicker, setShowDatePicker] = useState<boolean>(false);
   const [currentDateField, setCurrentDateField] = useState<DateField>("start");
   const [tempDate, setTempDate] = useState<Date>(new Date());
+  const [applyLeave] = useApplyLeaveMutation();
+  
+ 
 
   const leaveTypes = [
     { id: "casual", label: "Casual" },
@@ -118,28 +125,82 @@ export default function LeaveModal({ visible, onClose }: LeaveModalProps) {
     return true;
   };
 
-  const handleSubmit = () => {
-    if (!validateDates()) {
-      return;
-    }
-
-    if (!reason.trim()) {
-      alert("Please enter a reason for leave");
-      return;
-    }
-
-    // Handle leave submission logic here
-    console.log({
-      leaveType,
-      startDate: formatDate(startDate),
-      endDate: formatDate(endDate),
-      reason,
-    });
-
-    // You can add API call here
-    alert("Leave application submitted successfully!");
-    onClose();
+  // Clear form
+  const clearForm = () => {
+    setLeaveType("casual");
+    setStartDate(null);
+    setEndDate(null);
+    setReason("");
   };
+
+ const handleSubmit = async () => {
+   if (!validateDates()) {
+     return;
+   }
+
+   if (!reason.trim()) {
+     alert("Please enter a reason for leave");
+     return;
+   }
+
+   try {
+     // Format dates for backend - MUST be ISO string or YYYY-MM-DD
+     const formatForBackend = (date: Date | null): string => {
+       if (!date) return "";
+       // Option 1: ISO string (recommended)
+       return date.toISOString();
+       // Option 2: YYYY-MM-DD format
+       // const year = date.getFullYear();
+       // const month = (date.getMonth() + 1).toString().padStart(2, "0");
+       // const day = date.getDate().toString().padStart(2, "0");
+       // return `${year}-${month}-${day}`;
+     };
+
+     // Ensure leaveType matches backend enum
+     const validLeaveType = leaveType as
+       | "sick"
+       | "casual"
+       | "earned"
+       | "public"
+       | "maternity"
+       | "paternity";
+
+    //  console.log("Sending leave application:", {
+    //    type: validLeaveType,
+    //    startDate: formatForBackend(startDate),
+    //    endDate: formatForBackend(endDate),
+    //    reason,
+    //  });
+
+     const response = await applyLeave({
+       type: validLeaveType,
+       startDate: formatForBackend(startDate),
+       endDate: formatForBackend(endDate),
+       reason,
+     }).unwrap();
+
+     clearForm();
+
+     ToastAndroid.show(response.message, ToastAndroid.SHORT);
+   } catch (error: any) {
+     console.error("Error applying leave:", error);
+
+     // Parse backend error
+     let errorMessage = "Failed to apply leave";
+
+     if (error?.data) {
+       if (error.data.error) {
+         errorMessage = error.data.error;
+       } else if (error.data.message) {
+         errorMessage = error.data.message;
+       }
+     }
+
+     ToastAndroid.show(errorMessage, ToastAndroid.LONG);
+   } finally {
+     onClose();
+   }
+ };
 
   return (
     <Modal

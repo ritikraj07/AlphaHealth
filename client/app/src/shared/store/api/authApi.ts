@@ -11,11 +11,11 @@ export const authApi = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     adminLogin: builder.mutation({
       query: (credentials) => {
-        console.log('Admin Login Attempt:', {
-          email: credentials.email,
-          url: Config.ADMIN_LOGIN_URL,
-          fullRequest: `${Config.API_URL}/admin/login`
-        });
+        // console.log('Admin Login Attempt:', {
+        //   email: credentials.email,
+        //   url: Config.ADMIN_LOGIN_URL,
+        //   fullRequest: `${Config.API_URL}/admin/login`
+        // });
         
         return {
           url: '/admin/login',
@@ -35,19 +35,19 @@ export const authApi = apiSlice.injectEndpoints({
           console.log('❌ Admin Login Error:', error);
         }
       },
-      invalidatesTags: ['User'],
+      
     }),
 
     login: builder.mutation({
       query: (credentials) => {
-        console.log('🔐 Employee Login Attempt:', {
-          email: credentials.email,
-          url: Config.EMPLOYEE_LOGIN_URL,
-          fullRequest: `${Config.API_URL}/auth/login`
-        });
+        // console.log('🔐 Employee Login Attempt:', {
+        //   email: credentials.email,
+        //   url: Config.EMPLOYEE_LOGIN_URL,
+        //   fullRequest: `${Config.API_URL}/employee/login`
+        // });
         
         return {
-          url: '/auth/login',
+          url: '/employee/login',
           method: 'POST',
           body: credentials,
         };
@@ -55,16 +55,16 @@ export const authApi = apiSlice.injectEndpoints({
       async onQueryStarted(arg, { dispatch, queryFulfilled }) {
         try {
           const { data } = await queryFulfilled;
-          console.log('✅ Employee Login Success:', data);
+          
           if (data.success) {
-            await AsyncStorage.setItem('userToken', data.data.token);
-            await AsyncStorage.setItem('userRole', data.data.user.role);
+            // ! persist token can to store in local storage here
+            console.log('✅ Employee Login Success:', data);
           }
         } catch (error) {
           console.log('❌ Employee Login Error:', error);
         }
       },
-      invalidatesTags: ['User'],
+      invalidatesTags: [],
     }),
     // ... rest of  code
   }),

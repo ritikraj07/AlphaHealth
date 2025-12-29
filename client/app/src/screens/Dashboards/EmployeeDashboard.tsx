@@ -9,12 +9,33 @@ import {
   Ionicons,
   Entypo,
 } from "@expo/vector-icons";
-import Navbar from "../../shared/componets/Navbar";
+
+import { useAppSelector } from "../../shared/store/hooks";
+import { useGetMyDetailQuery } from "../../shared/store/api/employeeApi";
+import MedicineBottleLoader from "../../shared/componets/MedicineBottleLoader";
 
 export default function EmployeeDashboard() {
   const year = new Date().getFullYear();
-  const name = "John Doe";
-  const headQuater = "North HQ";
+  const auth = useAppSelector((state) => state.auth);
+  // console.log(auth)
+  const { data, isLoading, isError } = useGetMyDetailQuery({ id: auth?.userId });
+  const name = data?.data?.name;
+  const headQuater = data?.data?.hq?.name;
+  
+  
+  // console.log(data)
+  
+
+   if (isLoading) {
+     return (
+       <View
+         style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
+       >
+         <MedicineBottleLoader message="" />
+       </View>
+     );
+   }
+  if (isError) return <Text>Error loading profile</Text>;
 
   return (
     <View style={{ flex: 1 }}>

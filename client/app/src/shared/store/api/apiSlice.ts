@@ -11,7 +11,9 @@ const baseQuery = fetchBaseQuery({
  * @returns {Promise<Headers>} - Prepared headers object with optional authorization and content type set.
  */
   prepareHeaders: async (headers) => {
-    const token = await AsyncStorage.getItem('userToken');
+    
+    const token = await AsyncStorage.getItem('token');
+    // console.log('token from api slice', token);
     
     if (token) {
       headers.set('authorization', `Bearer ${token}`);
@@ -46,6 +48,6 @@ const baseQueryWithLogging = async (args: any, api: any, extraOptions: any) => {
 export const apiSlice = createApi({
   reducerPath: 'api',
   baseQuery: baseQueryWithLogging, // Use the logging version
-  tagTypes: ['User', 'Employee', 'Leave'],
+  tagTypes: ['Employee', 'Leave'],
   endpoints: () => ({}),
 });

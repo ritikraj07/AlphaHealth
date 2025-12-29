@@ -1,9 +1,11 @@
-import { StyleSheet, Text, TouchableOpacity, View, Alert } from 'react-native'
+import { StyleSheet, Text, TouchableOpacity, View, Alert, ToastAndroid } from 'react-native'
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from 'expo-linear-gradient';
 import { global_styles } from '../shared/style'
 import { useState, useEffect } from 'react';
 import * as Location from 'expo-location';
+import { useMarkAttendanceMutation } from '../shared/store/api/attendanceApi';
+
 // import { locationService } from '../shared/services/locationService';
 
 /**
@@ -25,6 +27,9 @@ import * as Location from 'expo-location';
  *   isDayStarted - Boolean indicating whether attendance has been marked for the day.
  */
 export default function Attendance() {
+    const [markAttendance, { isLoading: isMarking }] =
+      useMarkAttendanceMutation();
+
   const [location, setLocation] = useState<any>(null);
   const [address, setAddress] = useState<string>('');
   const [locationError, setLocationError] = useState<any>(null);
@@ -34,8 +39,10 @@ export default function Attendance() {
   // Dynamic states
   const [greeting, setGreeting] = useState("");
   const [btnText, setBtnText] = useState("START DAY");
-  const [bottomText, setBottomText] = useState("Morning Attendance • Not Logged In");
+  const [bottomText, setBottomText] = useState("Check-in for Attendance");
   const [isDayStarted, setIsDayStarted] = useState(false);
+
+
 
   // Set greeting based on time
   useEffect(() => {
@@ -155,7 +162,12 @@ export default function Attendance() {
         coordinates: [longitude, latitude]
       };
 
+      // Update states
       setLocation(locationData);
+      console.log('Location:', locationData);
+      // i want to mark attendance in server after getting location
+      // markAttendance(locationData); 
+      // how to do this
 
       // 3. Get detailed address
       const detailedAddress = await getDetailedAddress(latitude, longitude);
@@ -175,26 +187,43 @@ export default function Attendance() {
   };
 
   // Handle attendance button press
-  const handleAttendance = async () => {
-    const locationData = await getCurrentLocation();
-    
-    if (!locationData) {
-      return;
-    }
+ const handleAttendance = async () => {
+   try {
+     const locationData = await getCurrentLocation();
 
-    await markAttendance(locationData);
-  };
+     if (!locationData) {
+       return;
+     }
+     console.log("Location data:", locationData);
 
-  // Call your attendance API
-  const markAttendance = async (locationData: any) => {
-    console.log('Location data:', locationData);
-    console.log('Address:', address);
-    
-    // Remove this return statement when ready for actual API call
-    return;
-    
-    // Your API call code here...
-  };
+     // IMPORTANT: Coordinates should be [longitude, latitude], not [latitude, longitude]
+     const result = await markAttendance({
+       type: "check-in",
+       location: {
+         coordinates: [locationData.longitude, locationData.latitude], // Fix the order
+       },
+     }).unwrap();
+
+     console.log("Attendance result:", result);
+
+     // result is the entire response object
+     if (result.success) {
+       ToastAndroid.show(result.message, ToastAndroid.SHORT);
+     } else {
+
+       ToastAndroid.show(result.message || "Unknown error", ToastAndroid.SHORT);
+     }
+   } catch (error: any) {
+     console.error("Error marking attendance:", error);
+
+     // Handle error from unwrap()
+     const errorMessage =
+       error?.data?.message || error?.message || "Failed to mark attendance";
+     ToastAndroid.show(errorMessage, ToastAndroid.SHORT);
+   }
+ };
+
+
 
   return (
     <View style={global_styles.container}>

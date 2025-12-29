@@ -17,6 +17,9 @@ import {
 } from "../shared/store/api/authApi";
 import { useDispatch } from "react-redux";
 import { setAdmin } from "../shared/store/slices/adminSlice";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { setCredentials } from "../shared/store/slices/authSlice";
+
 
 
 
@@ -32,7 +35,10 @@ export default function SignIn() {
 
   const dispatch = useDispatch();
   const [adminLogin, isAdminLoginLoading] = useAdminLoginMutation();
-  const [login] = useLoginMutation();
+  const [login, isLoginLoading] = useLoginMutation();
+  
+
+
 
   // Test network connection
   useEffect(() => {
@@ -91,10 +97,40 @@ export default function SignIn() {
     try {
       console.log("📤 Attempting employee login...");
       const result = await login({ email, password }).unwrap();
+      
+     
 
       if (result.success) {
+        const { token, role, _id, name } = result.data;
+
+        // Persist
+        await AsyncStorage.setItem("token", token);
+        await AsyncStorage.setItem("role", role);
+        await AsyncStorage.setItem("userId", _id);
+        await AsyncStorage.setItem("name", name);
+
+        // 🔍 VERIFY
+        const savedToken = await AsyncStorage.getItem("token");
+        const savedRole = await AsyncStorage.getItem("role");
+        const savedUserId = await AsyncStorage.getItem("userId");
+        const savedName = await AsyncStorage.getItem("name");
+
+
+         console.log("🔐 AsyncStorage check:", {
+           savedToken,
+           savedRole,
+           savedUserId,
+           savedName,
+         });
+        
+        dispatch(setCredentials({ token, role, _id, name }));
         Alert.alert("Success", "Login successful!");
-        navigation.navigate("Main" as never);
+         navigation.reset({
+           index: 0,
+           routes: [{ name: "Main" as never }],
+         });
+      } else {
+        Alert.alert("Login Failed", result.message || "Invalid credentials");
       }
     } catch (error: any) {
       console.log("❌ Login error:", error);
@@ -148,8 +184,31 @@ export default function SignIn() {
 
       if (result.success) {
         Alert.alert("Success", "Admin login successful!");
+        const { token, role, _id, name } = result.data;
+
+        // Persist
+        await AsyncStorage.setItem("token", token);
+        await AsyncStorage.setItem("role", role);
+        await AsyncStorage.setItem("userId", _id);
+
+        // 🔍 VERIFY
+        const savedToken = await AsyncStorage.getItem("token");
+        const savedRole = await AsyncStorage.getItem("role");
+        const savedUserId = await AsyncStorage.getItem("userId");
+
+        console.log("🔐 AsyncStorage check:", {
+          savedToken,
+          savedRole,
+          savedUserId,
+        });
+
         dispatch(setAdmin(result.data));
-        navigation.navigate("Main" as never);
+        dispatch(setCredentials({ token, role, _id, name }));
+        navigation.reset({
+        index: 0,
+        routes: [{ name: "Main" as never }],
+      });
+
       }
     } catch (error: any) {
       console.log("❌ Admin login error:", error);

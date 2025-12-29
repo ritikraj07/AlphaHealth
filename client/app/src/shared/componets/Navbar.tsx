@@ -2,6 +2,11 @@ import { StyleSheet, Text, TouchableOpacity, View, Image } from 'react-native'
 import React from 'react'
 import { Ionicons } from '@expo/vector-icons'
 import { useNavigation } from '@react-navigation/native'
+import { useAppSelector } from '../store/hooks';
+import { useDispatch } from 'react-redux';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { clearCredentials } from '../store/slices/authSlice';
+import { apiSlice } from '../store/api/apiSlice';
 
 /**
  * Navbar component that displays the company logo and employee information on the left side
@@ -10,12 +15,21 @@ import { useNavigation } from '@react-navigation/native'
  */
 export default function Navbar() {
   const navigation = useNavigation();
+  const dispatch = useDispatch();
+  const { name, role } = useAppSelector((state) => state.auth);
+  console.log("------->", name, role);
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     // Navigate to SignIn page and reset the navigation stack
+    await AsyncStorage.multiRemove(["token", "role", "userId"]);
+
+    dispatch(clearCredentials());
+    dispatch(apiSlice.util.resetApiState());
+
+
     navigation.reset({
       index: 0,
-      routes: [{ name: 'SignIn' as never }],
+      routes: [{ name: 'SignIn1' as never }],
     });
   };
 
@@ -34,8 +48,8 @@ export default function Navbar() {
         {/* Employee info */}
         <View style={styles.employeeInfo}>
           <View style={styles.nameLocation}>
-            <Text style={styles.employeeName}>John Doe</Text>
-            <Text style={styles.employeeLocation}>North HQ</Text>
+            <Text style={styles.employeeName}>{name}</Text>
+            <Text style={styles.employeeLocation}>HQ</Text>
           </View>
         </View>
       </View>

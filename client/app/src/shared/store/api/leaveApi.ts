@@ -10,14 +10,14 @@ export interface Leave {
   startDate: string;
   endDate: string;
   reason: string;
-  leaveType: 'sick' | 'casual' | 'earned' | 'public';
+  leaveType:string;
   status: 'pending' | 'approved' | 'rejected';
-  adminNotes?: string;
   duration: number;
   createdAt: string;
   updatedAt: string;
 }
 
+// ! Leaves
 export interface LeavesResponse {
   success: boolean;
   leaves: Leave[];
@@ -26,16 +26,19 @@ export interface LeavesResponse {
   totalPages: number;
 }
 
+// ! Leave
 export interface LeaveResponse {
   success: boolean;
   leave: Leave;
+  message: string;
+  data: Leave;
 }
 
 export interface ApplyLeaveRequest {
   startDate: string;
   endDate: string;
   reason: string;
-  leaveType: 'sick' | 'casual' | 'earned' | 'public';
+  type: string | 'sick' | 'casual' | 'earned' | 'public' | 'maternity' | 'paternity';
 }
 
 export interface UpdateLeaveStatusRequest {

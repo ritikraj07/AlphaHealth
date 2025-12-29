@@ -3,6 +3,9 @@ import { StyleSheet, Text, TouchableOpacity, View, ScrollView } from 'react-nati
 import { Ionicons, Feather, EvilIcons } from "@expo/vector-icons";
 import LeaveModal from './Modals/LeaveModal';
 import { useState } from 'react';
+import MedicineBottleLoader from '../shared/componets/MedicineBottleLoader';
+import { useAppSelector } from '../shared/store/hooks';
+import { useGetMyDetailQuery } from '../shared/store/api/employeeApi';
 
 /**
  * LeaveManagement screen
@@ -13,8 +16,28 @@ import { useState } from 'react';
  * 
  */
 export default function LeaveManagement() {
-   const [isLeaveModalVisible, setIsLeaveModalVisible] = useState<boolean>(false);
+  const [isLeaveModalVisible, setIsLeaveModalVisible] = useState<boolean>(false);
+   const auth = useAppSelector((state) => state.auth);
+   const { data, isLoading, isError } = useGetMyDetailQuery({
+     id: auth?.userId,
+   });
+  
+  if (isLoading) {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <MedicineBottleLoader message="Getting leave details" />
+      </View>
+    );
+  }
 
+  if (isError) {
+    return <Text>Error loading leave details</Text>;
+  }
+
+  const sickLeave = data?.data?.leavesTaken?.sick;
+  const casualLeave = data?.data?.leavesTaken?.casual;
+  const earnedLeave = data?.data?.leavesTaken?.earned;
+  const publicHolidays = data?.data?.leavesTaken?.public;
 
   return (
     <View style={{ flex: 1, backgroundColor: "#ffffff" }} >
@@ -52,7 +75,7 @@ export default function LeaveManagement() {
               <Text style={styles.leaveName}>Sick Leave</Text>
               <EvilIcons name="heart" size={24} color="red" />
             </View>
-            <Text style={styles.leaveCount}>5</Text>
+            <Text style={styles.leaveCount}>{ sickLeave}</Text>
             <Text style={styles.leaveDescription}>out of 5 remaining</Text>
           </View>
 
@@ -62,7 +85,7 @@ export default function LeaveManagement() {
               <Text style={styles.leaveName}>Casual Leave</Text>
               <Feather name="coffee" size={24} color="blue" />
             </View>
-            <Text style={styles.leaveCount}>5</Text>
+            <Text style={styles.leaveCount}>{casualLeave }</Text>
             <Text style={styles.leaveDescription}>out of 5 remaining</Text>
           </View>
 
@@ -72,7 +95,7 @@ export default function LeaveManagement() {
               <Text style={styles.leaveName}>Earned Leave</Text>
               <Feather name="gift" size={24} color="green" />
             </View>
-            <Text style={styles.leaveCount}>10</Text>
+            <Text style={styles.leaveCount}> {earnedLeave} </Text>
             <Text style={styles.leaveDescription}>out of 10 remaining</Text>
           </View>
 
@@ -82,7 +105,7 @@ export default function LeaveManagement() {
               <Text style={styles.leaveName}>Public Holidays</Text>
               <Feather name="calendar" size={24} color="orange" />
             </View>
-            <Text style={styles.leaveCount}>10</Text>
+            <Text style={styles.leaveCount}> {publicHolidays} </Text>
             <Text style={styles.leaveDescription}>fixed allocation</Text>
           </View>
         </View>

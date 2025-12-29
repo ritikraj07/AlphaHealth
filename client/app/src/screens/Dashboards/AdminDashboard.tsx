@@ -11,6 +11,7 @@ import { Octicons, Feather, EvilIcons, FontAwesome6, AntDesign } from "@expo/vec
 import AddEmployeeModal from "../Modals/AddEmployeeModal";
 import { useCreateEmployeeMutation } from "../../shared/store/api/employeeApi";
 import { useSelector } from "react-redux";
+import MedicineBottleLoader from "../../shared/componets/MedicineBottleLoader";
 
 type Props = {
   title: string;
@@ -55,6 +56,8 @@ const EmployeeBox = (emp: Props, ): JSX.Element=>{
  * @returns {JSX.Element} - a JSX element representing the admin dashboard screen.
  */
 export default function AdminDashboard(): JSX.Element {
+  
+  
   const [isAddEmployeeModalVisible, setIsAddEmployeeModalVisible] = useState(false);
   const [TotalEmployee, setTotlalEmployee] = useState<number>(6);
   const [TotalDoctors, setTotalDoctors] = useState<number>(4);
@@ -63,7 +66,10 @@ export default function AdminDashboard(): JSX.Element {
   const [TotalManager, setTotalManager] = useState<number>(5);
   const [TotalHR, setTotalHR] = useState<number>(1);
   const [createEmployee, isLoading] = useCreateEmployeeMutation();
-  const admin = useSelector((state: any) => state.admin);
+
+ 
+    // Redux store
+    const admin = useSelector((state: any) => state.admin);
   // console.log(" Admin: from admin dashboard ==> ", admin );
 
   // Function to open the add employee modal
@@ -97,6 +103,7 @@ export default function AdminDashboard(): JSX.Element {
     ]
   return (
     <View style={{ flex: 1, backgroundColor: "#ffffff" }}>
+      
       <AddEmployeeModal
         visible={isAddEmployeeModalVisible}
         onClose={() => setIsAddEmployeeModalVisible(false)}

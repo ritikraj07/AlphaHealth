@@ -1,18 +1,34 @@
 import { apiSlice } from './apiSlice';
 
+
+export interface leavesTaken {
+  sick: number;
+  casual: number;
+  earned: number;
+  public: number;
+
+}
 // Define TypeScript interfaces
 export interface Employee {
   _id: string;
   name: string;
   email: string;
-  department: string;
-  position: string;
-  employeeId: string;
-  phone?: string;
-  joiningDate: string;
-  status: 'active' | 'inactive';
+  role: string;
+  hq: {
+    _id: string;
+    name: string;
+  };
+  manager: string;
+  leavesTaken: leavesTaken;
+  managerModel: string;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface EmployeeResponse{
+  success: boolean;
+  data: Employee,
+  message: string
 }
 
 export interface EmployeesResponse {
@@ -23,7 +39,7 @@ export interface EmployeesResponse {
   totalPages: number;
 }
 
-export interface EmployeeResponse {
+export interface CreateEmployeeResponse {
   success: boolean;
   employee: Employee;
 }
@@ -38,14 +54,7 @@ export interface CreateEmployeeRequest {
   managerModel: string
 }
 
-export interface UpdateEmployeeRequest {
-  name?: string;
-  email?: string;
-  department?: string;
-  position?: string;
-  phone?: string;
-  status?: 'active' | 'inactive';
-}
+
 
 // Define query argument types
 export type GetEmployeesArgs = {
@@ -60,44 +69,16 @@ export type GetEmployeeArgs = {
   id: string;
 };
 
-export type UpdateEmployeeArgs = {
-  id: string;
-  data: UpdateEmployeeRequest;
-};
 
-export type DeleteEmployeeArgs = {
-  id: string;
-};
+
 
 export const employeeApi = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     // Get all employees with pagination and search
     getEmployees: builder.query<EmployeesResponse, GetEmployeesArgs>({
-/**
- * Builds a query string for retrieving a paginated list of employees
- * with optional filtering and searching.
- * 
- * @param {Object} params - Query parameters
- * @param {number} [params.page=1] - Page number for pagination
- * @param {number} [params.limit=10] - Number of records per page
- * @param {string} [params.search=''] - Search in name and email
- * @param {string} [params.department=''] - Filter by department
- * @param {string} [params.status=''] - Filter by status (active/inactive)
- * 
- * @returns {string} Query string for API request
- */
-      query: ({ page = 1, limit = 10, search = '', department = '', status = '' }) => {
-        const params = new URLSearchParams({
-          page: page.toString(),
-          limit: limit.toString(),
-        });
-
-        if (search) params.append('search', search);
-        if (department) params.append('department', department);
-        if (status) params.append('status', status);
-
-        return `/employee?${params.toString()}`;
-      },
+      query: ({ page = 1, limit = 10, search = '', department = '', status = '' }) => ({
+        url: `/employees?page=${page}&limit=${limit}&search=${search}&department=${department}&status=${status}`,
+      }),
       providesTags: (result) =>
         result
           ? [
@@ -107,14 +88,19 @@ export const employeeApi = apiSlice.injectEndpoints({
           : [{ type: 'Employee', id: 'LIST' }],
     }),
 
-    // Get single employee by ID
-    getEmployee: builder.query<EmployeeResponse, GetEmployeeArgs>({
-      query: ({ id }) => `/employee/${id}`,
-      providesTags: (result, error, { id }) => [{ type: 'Employee', id }],
+    // Get employee by ID
+   getMyDetail: builder.query<EmployeeResponse, GetEmployeeArgs>({
+     query: ({ id }) => ({
+       url: `/employee/${id}`,
+       method: 'GET',
+      }),
     }),
 
+
+    
+
     // Create new employee
-    createEmployee: builder.mutation<EmployeeResponse, CreateEmployeeRequest>({
+    createEmployee: builder.mutation<CreateEmployeeResponse, CreateEmployeeRequest>({
       query: (employeeData) => ({
         url: '/employee',
         method: 'POST',
@@ -123,46 +109,21 @@ export const employeeApi = apiSlice.injectEndpoints({
       invalidatesTags: [{ type: 'Employee', id: 'LIST' }],
     }),
 
-    // Update employee
-    updateEmployee: builder.mutation<EmployeeResponse, UpdateEmployeeArgs>({
-      query: ({ id, data }) => ({
-        url: `/employee/${id}`,
-        method: 'PUT',
-        body: data,
-      }),
-      invalidatesTags: (result, error, { id }) => [{ type: 'Employee', id }],
-    }),
+   
 
-    // Delete employee
-    deleteEmployee: builder.mutation<{ success: boolean; message: string }, DeleteEmployeeArgs>({
-      query: ({ id }) => ({
-        url: `/employee/${id}`,
-        method: 'DELETE',
-      }),
-      invalidatesTags: (result, error, { id }) => [
-        { type: 'Employee', id },
-        { type: 'Employee', id: 'LIST' },
-      ],
-    }),
+   
 
-    // Bulk delete employees
-    bulkDeleteEmployees: builder.mutation<{ success: boolean; message: string }, { ids: string[] }>({
-      query: ({ ids }) => ({
-        url: '/employee/bulk-delete',
-        method: 'POST',
-        body: { ids },
-      }),
-      invalidatesTags: [{ type: 'Employee', id: 'LIST' }],
-    }),
+    
+ 
   }),
 });
 
 // Export hooks with TypeScript types
 export const {
-  useGetEmployeesQuery,
-  useGetEmployeeQuery,
+  
   useCreateEmployeeMutation,
-  useUpdateEmployeeMutation,
-  useDeleteEmployeeMutation,
-  useBulkDeleteEmployeesMutation,
+  useGetEmployeesQuery,
+  useGetMyDetailQuery
+  
+  
 } = employeeApi;
