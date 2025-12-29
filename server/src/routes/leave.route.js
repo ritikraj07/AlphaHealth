@@ -1,12 +1,12 @@
 const {Router} = require('express');
+const { verifyToken } = require('../validators/auth.validator');
+const { ApplyLeave } = require('../controllers/leave.controller');
 const router = Router();
 
 
 /********************************* POST RREQUESTS ****************************************/
-
-router.post("/apply", (req, res) => {
-    res.send("Mark Leave")
-})
+// apply for leave
+router.post("/", verifyToken, ApplyLeave);
 
 /********************************* GET RREQUESTS ****************************************/
 

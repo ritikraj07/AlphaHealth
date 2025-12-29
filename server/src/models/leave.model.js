@@ -43,7 +43,7 @@ const leaveSchema = new mongoose.Schema({
      */
     type: { 
         type: String, 
-        enum: ["sick", "casual", "public"], 
+        enum: ["sick", "casual", "public", "earned","maternity", "paternity" ], 
         required: true 
     },
     
@@ -71,6 +71,10 @@ const leaveSchema = new mongoose.Schema({
     endDate: { 
         type: Date, 
         required: true 
+    },
+    reason: {
+        type: String,
+        required: true
     },
     
     /**

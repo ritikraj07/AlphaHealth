@@ -12,8 +12,6 @@ const mongoose = require("mongoose");
  * @property {Date} date - The calendar date for attendance tracking
  * @property {Date} startTime - Check-in timestamp when employee starts work
  * @property {Date} endTime - Check-out timestamp when employee ends work
- * @property {ObjectId[]} plan - Array of planned Doctor/Chemist visits for the day
- * @property {string} remarks - Additional notes or comments about attendance
  * @property {string} status - Attendance status (present/absent/leave)
  * @property {Object} startLocation - Geolocation coordinates at check-in
  * @property {Object} endLocation - Geolocation coordinates at check-out
@@ -66,27 +64,8 @@ const attendanceSchema = new mongoose.Schema({
         type: Date 
     },
     
-    /**
-     * Array of planned Doctor/Chemist visits for the day
-     * @type {ObjectId[]}
-     * @ref DoctorChemist
-     * @description Pre-planned visits that the employee intends to complete
-     * @example ["507f1f77bcf86cd799439011", "507f1f77bcf86cd799439012"]
-     */
-    plan: [{ 
-        type: mongoose.Schema.Types.ObjectId, 
-        ref: "DoctorChemist" 
-    }],
     
-    /**
-     * Additional notes or comments about the attendance
-     * @type {string}
-     * @description Free-text field for remarks, reasons, or additional context
-     * @example "Working from client location", "Late due to traffic"
-     */
-    remarks: { 
-        type: String 
-    },
+
     
     /**
      * Attendance status for the day

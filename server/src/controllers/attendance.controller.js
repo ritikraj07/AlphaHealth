@@ -14,18 +14,18 @@ const User = require("../models/employee.model");
 const MarkAttendance = async (req, res) => {
     // Start a new session to track transactions (remember money transactions type of transactions)
     const session = await mongoose.startSession();
+    const userId = req.userId;
     
     try {
         // Start a transaction
         session.startTransaction();
         
         const { 
-            userId, 
             type, // 'check-in' or 'check-out'
-            plan = [], 
-            remarks = "", 
             location 
         } = req.body;
+
+        
 
         // 1. Input validation
         if (!userId || !type) {
@@ -51,6 +51,7 @@ const MarkAttendance = async (req, res) => {
                 message: "Type must be either 'check-in' or 'check-out'"
             });
         }
+        
 
         // 2. Validate user exists
         const user = await User.findById(userId).session(session);
@@ -67,15 +68,17 @@ const MarkAttendance = async (req, res) => {
         const tomorrow = new Date(today);
         tomorrow.setDate(tomorrow.getDate() + 1);
 
+        
         // 3. Find today's attendance record
         let attendance = await Attendance.findOne({
-            user: userId,
+            employee: userId,
             date: {
                 $gte: today,
                 $lt: tomorrow
             }
         }).session(session);
 
+        
         // 4. Handle check-in
         if (type === 'check-in') {
             if (attendance) {
@@ -88,11 +91,9 @@ const MarkAttendance = async (req, res) => {
 
             // Create new attendance record
             attendance = new Attendance({
-                user: userId,
+                employee: userId,
                 date: today,
                 startTime: new Date(),
-                plan: plan,
-                remarks: remarks,
                 startLocation: {
                     type: 'Point',
                     coordinates: location.coordinates
@@ -116,6 +117,7 @@ const MarkAttendance = async (req, res) => {
             });
         }
 
+        
         // 5. Handle check-out
         if (type === 'check-out') {
             if (!attendance) {
@@ -149,12 +151,7 @@ const MarkAttendance = async (req, res) => {
             // Add working hours to attendance
             attendance.workingHours = parseFloat(workingHours.toFixed(2));
 
-            // Update remarks if provided during check-out
-            if (remarks) {
-                attendance.remarks = attendance.remarks ? 
-                    `${attendance.remarks}. Check-out: ${remarks}` : 
-                    `Check-out: ${remarks}`;
-            }
+            
 
             await attendance.save({ session });
             await session.commitTransaction();

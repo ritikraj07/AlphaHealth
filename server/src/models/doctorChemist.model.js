@@ -30,6 +30,10 @@ const doctorChemistSchema = new mongoose.Schema(
       type: String, 
       required: true 
     },
+    email: {
+      type: String,
+      unique: true
+    },
     
     /**
      * Classification type of the entity
@@ -87,8 +91,20 @@ const doctorChemistSchema = new mongoose.Schema(
      * @example "507f1f77bcf86cd799439012"
      */
     addedBy: { 
-      type: mongoose.Schema.Types.ObjectId, 
-      ref: "Employee" || "Admin"
+      id: { 
+            type: mongoose.Schema.Types.ObjectId, 
+            required: true, 
+            refPath: 'createdBy.model' 
+          },
+      role: { 
+             type: String, 
+             required: true 
+            },
+      model: { 
+              type: String, 
+              required: true, 
+              enum: ['Admin', 'Employee'] 
+              }
     },
   },
   {
