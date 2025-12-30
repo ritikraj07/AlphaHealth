@@ -16,18 +16,15 @@ import {
 } from "@expo/vector-icons";
 import AddDoctorChemistModal from "./Modals/AddDocOrChemist";
 import { useState } from "react";
+import { useGetHeadQuartersQuery } from "../shared/store/api/hqApi";
 
 
 export default function DocCheManagement() {
-   const [isModalVisible, setIsModalVisible] = useState(false);
-
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const {data: HQ, isLoading, error, refetch } = useGetHeadQuartersQuery({});
+console.log(HQ)
    // Mock headquarters data - you would get this from your API
-   const headquarters = [
-     { _id: "1", name: "North HQ" },
-     { _id: "2", name: "South HQ" },
-     { _id: "3", name: "East HQ" },
-     { _id: "4", name: "West HQ" },
-   ];
+  const headquarters = HQ?.data;
 
    const handleAddProfessional = (data: any) => {
      console.log("New professional:", data);

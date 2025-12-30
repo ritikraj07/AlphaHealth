@@ -22,6 +22,13 @@ export default function LeaveManagement() {
      id: auth?.userId,
    });
   
+  
+
+  const sickLeave = data?.data?.leavesTaken?.sick;
+  const casualLeave = data?.data?.leavesTaken?.casual;
+  const earnedLeave = data?.data?.leavesTaken?.earned;
+  const publicHolidays = data?.data?.leavesTaken?.public;
+
   if (isLoading) {
     return (
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
@@ -33,12 +40,6 @@ export default function LeaveManagement() {
   if (isError) {
     return <Text>Error loading leave details</Text>;
   }
-
-  const sickLeave = data?.data?.leavesTaken?.sick;
-  const casualLeave = data?.data?.leavesTaken?.casual;
-  const earnedLeave = data?.data?.leavesTaken?.earned;
-  const publicHolidays = data?.data?.leavesTaken?.public;
-
   return (
     <View style={{ flex: 1, backgroundColor: "#ffffff" }} >
       <LeaveModal

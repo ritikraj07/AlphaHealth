@@ -79,14 +79,14 @@ const createEmployee = async (req, res) => {
 
         console.log("Employee created successfully:", employeeResponse);
 
-        const mailer = new Mail();
+        // const mailer = new Mail();
 
-        try { 
-            await mailer.sendEmployeeCreationEmail(employeeResponse, password);
-            console.log("Email sent successfully");
-        } catch (error) {
-            console.error("Email sending error:", error);
-        }
+        // try { 
+        //     await mailer.sendEmployeeCreationEmail(employeeResponse, password);
+        //     console.log("Email sent successfully");
+        // } catch (error) {
+        //     console.error("Email sending error:", error);
+        // }
 
         return res.status(201).send({ 
             success: true,

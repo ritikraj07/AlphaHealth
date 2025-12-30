@@ -5,13 +5,27 @@ import {
   View,
   TouchableOpacity,
   Alert,
+  ToastAndroid,
+  RefreshControl,
 } from "react-native";
 import React, { JSX, useState } from 'react'
-import { Octicons, Feather, EvilIcons, FontAwesome6, AntDesign } from "@expo/vector-icons";
+import {
+  Octicons,
+  Feather,
+  EvilIcons,
+  FontAwesome6,
+  AntDesign,
+  Ionicons,
+} from "@expo/vector-icons";
 import AddEmployeeModal from "../Modals/AddEmployeeModal";
 import { useCreateEmployeeMutation } from "../../shared/store/api/employeeApi";
-import { useSelector } from "react-redux";
-import MedicineBottleLoader from "../../shared/componets/MedicineBottleLoader";
+
+
+import { useGetAdminDashboardQuery } from "../../shared/store/api/adminApi";
+import AdminDashboardSkeleton from "../../shared/componets/skeletons/AdminDashboardSkeleton";
+import AddHeadQuarterModal from "../Modals/AddHeadQuarterModal";
+import { useAppSelector } from "../../shared/store/hooks";
+
 
 type Props = {
   title: string;
@@ -56,61 +70,85 @@ const EmployeeBox = (emp: Props, ): JSX.Element=>{
  * @returns {JSX.Element} - a JSX element representing the admin dashboard screen.
  */
 export default function AdminDashboard(): JSX.Element {
+  const {
+    data,
+    isLoading: dashboardLoading,
+    isFetching,
+    refetch, } = useGetAdminDashboardQuery({});
+  
+  const [createEmployee, { isLoading: createEmployeeLoading }] =  useCreateEmployeeMutation();
+  const {token, role, userId, name} = useAppSelector((state) => state.auth);
+
+  const TotalEmployee = data?.data?.employees?.total ?? 0;
+  const TotalManager = data?.data?.employees?.managers ?? 0;
+  const TotalHR = data?.data?.employees?.hr ?? 0;
+  const TotalDoctors = data?.data?.doctors?.doctors ?? 0;
+  const TotalChemists = data?.data?.doctors?.chemists ?? 0;
+  const TotalHospitals = data?.data?.hospitals?.hospitals ?? 0;
+  const HQ = data?.data?.hqDistribution;
+  const TodaysAttendace = data?.data?.attendace?.presentToday ?? 0;
+  const PendingLeaves = data?.data?.leaves?.pending ?? 0;
+  const ApprovedLeaves = data?.data?.leaves?.approved ?? 0;
+  const RejectedLeaves = data?.data?.leaves?.rejected ?? 0;
+  
+
   
   
   const [isAddEmployeeModalVisible, setIsAddEmployeeModalVisible] = useState(false);
-  const [TotalEmployee, setTotlalEmployee] = useState<number>(6);
-  const [TotalDoctors, setTotalDoctors] = useState<number>(4);
-  const [TotalChemists, setTotalChemists] = useState<number>(5);
-  const [TotalHospitals, setTotalHospitals] = useState<number>(3);
-  const [TotalManager, setTotalManager] = useState<number>(5);
-  const [TotalHR, setTotalHR] = useState<number>(1);
-  const [createEmployee, isLoading] = useCreateEmployeeMutation();
-
- 
-    // Redux store
-    const admin = useSelector((state: any) => state.admin);
-  // console.log(" Admin: from admin dashboard ==> ", admin );
-
-  // Function to open the add employee modal
+  const [isAddHQModalVisible, setIsAddHQModalVisible] = useState(false);
   
-/**
- * Handle the submission of a new employee
- * @param {any} employeeData - Object containing the new employee's information
- * @returns {void}
- */
-   const handleAddEmployee = (employeeData: any): void => {
-     console.log("New employee:", employeeData);
-     // Add n API call to save the employee later when ReduxRTK is implemented
-  
-     createEmployee({
-       name: employeeData.name,
-       email: employeeData.email,
-       password: employeeData.password,
-       role: employeeData.role,
-       hq: employeeData.hq,
-       manager: admin._id,
-       managerModel: "Admin",
-     });
-     Alert.alert("Success", "Employee added successfully!");
-     setIsAddEmployeeModalVisible(false);
-   };
-
     const employee = [
-        {title: "Total Employee", number: TotalEmployee, subtitle: "All system users", iconFrom: "Feather", icon: "users"},
-        {title: "Managers", number: TotalManager, subtitle: "Management level", iconFrom: "AntDesign", icon: "profile"},
-        {title: "HR Staff", number: TotalHR, subtitle: "Human resources", iconFrom: "Feather", icon: "users"},
-    ]
+      {
+        title: "Total Employee",
+        number: TotalEmployee,
+        subtitle: "All system users",
+        iconFrom: "Feather",
+        icon: "users",
+      },
+      {
+        title: "Managers",
+        number: TotalManager,
+        subtitle: "Management level",
+        iconFrom: "AntDesign",
+        icon: "profile",
+      },
+      {
+        title: "Today's Attendace",
+        number: TodaysAttendace,
+        subtitle: "Total Present ",
+        iconFrom: "FontAwesome6",
+        icon: "hand",
+      },
+    ];
+  
+   if (dashboardLoading) {
+     return <AdminDashboardSkeleton />;
+   }
   return (
-    <View style={{ flex: 1, backgroundColor: "#ffffff" }}>
-      
+    <View
+      style={{
+        flex: 1,
+        backgroundColor: "#ffffff",
+      }}
+    >
       <AddEmployeeModal
         visible={isAddEmployeeModalVisible}
         onClose={() => setIsAddEmployeeModalVisible(false)}
-        onAddEmployee={handleAddEmployee}
+        managerId={userId}
+        managerModel="Admin"
+      />
+      <AddHeadQuarterModal
+        visible={isAddHQModalVisible}
+        onClose={() => setIsAddHQModalVisible(false)}
+        onAddHQ={() => {}}
       />
 
-      <ScrollView style={styles.container}>
+      <ScrollView
+        style={styles.container}
+        refreshControl={
+          <RefreshControl refreshing={isFetching} onRefresh={refetch} />
+        }
+      >
         {/* Header Section - EXACT MATCH */}
         <View style={styles.header}>
           <View style={styles.headerContent}>
@@ -154,35 +192,36 @@ export default function AdminDashboard(): JSX.Element {
           <View style={styles.statDivider} />
         </View>
 
+        {/* Third Row Stats - Applied Leave */}
+        <View style={styles.statsSection}>
+          <View style={styles.statItem}>
+            <View style={styles.statIcon}>
+              <Text style={styles.statMainText}>Applied Leave</Text>
+              <Ionicons name="calendar-outline" size={24} />
+            </View>
+            <Text style={styles.statSubText}>Pending: {PendingLeaves}</Text>
+            <Text style={styles.statSubText}>Approved: {ApprovedLeaves}</Text>
+            <Text style={styles.statSubText}>Rejected: {RejectedLeaves}</Text>
+          </View>
+
+          <View style={styles.statDivider} />
+        </View>
+
         {/* HQ Distribution Section - EXACT MATCH */}
         <View style={styles.section}>
           <Text style={styles.sectionMainTitle}>HQ Distribution</Text>
           <Text style={styles.sectionSubTitle}>
             Employee distribution across headquarters
           </Text>
-
-          <View style={styles.distributionContainer}>
-            <View style={styles.distributionRow}>
-              <Text style={styles.hqName}>North HQ</Text>
-              <Text style={styles.hqCount}>4 employees</Text>
-              <Text style={styles.hqPercent}>67%</Text>
+          {HQ.map((hq: any, index: any) => (
+            <View key={index} style={styles.distributionContainer}>
+              <View style={styles.distributionRow}>
+                <Text style={styles.hqName}>{hq.name}</Text>
+                <Text style={styles.hqCount}>{hq.employeeCount} employees</Text>
+                <Text style={styles.hqPercent}>{hq.percentage}%</Text>
+              </View>
             </View>
-            <View style={styles.distributionRow}>
-              <Text style={styles.hqName}>South HQ</Text>
-              <Text style={styles.hqCount}>1 employees</Text>
-              <Text style={styles.hqPercent}>17%</Text>
-            </View>
-            <View style={styles.distributionRow}>
-              <Text style={styles.hqName}>East HQ</Text>
-              <Text style={styles.hqCount}>1 employees</Text>
-              <Text style={styles.hqPercent}>17%</Text>
-            </View>
-            <View style={styles.distributionRow}>
-              <Text style={styles.hqName}>West HQ</Text>
-              <Text style={styles.hqCount}>0 employees</Text>
-              <Text style={styles.hqPercent}>0%</Text>
-            </View>
-          </View>
+          ))}
         </View>
 
         {/* Quick Actions Section - EXACT MATCH */}
@@ -192,189 +231,221 @@ export default function AdminDashboard(): JSX.Element {
 
           <View style={styles.actionsContainer}>
             <View style={styles.actionRow}>
-              <TouchableOpacity
+              <ActionButton
+                icon={<Octicons name="person-add" size={24} color="#fff" />}
+                label="Add Employee"
                 onPress={() => setIsAddEmployeeModalVisible(true)}
-                style={styles.actionButton}
-              >
-                <Octicons name="person-add" size={24} color="#e91e62" />
-                <Text style={styles.actionButtonText}>Add Employee</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.actionButton}>
+              />
+              <ActionButton
+                icon={<FontAwesome6 name="city" size={24} color="#fff" />}
+                label="Add Headquarter"
+                onPress={() => {
+                  setIsAddHQModalVisible(true);
+                }}
+              />
+
+              {/* <TouchableOpacity style={styles.actionButton}>
                 <Feather name="database" size={24} color="#e91e62" />
                 <Text style={styles.actionButtonText}>System Reports</Text>
-              </TouchableOpacity>
+              </TouchableOpacity> */}
             </View>
             <View style={styles.actionRow}>
-              <TouchableOpacity style={styles.actionButton}>
-                <Feather name="users" size={24} color="#e91e62" />
-                <Text style={styles.actionButtonText}>Manage Doctors</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.actionButton}>
-                <AntDesign name="profile" size={24} color="#e91e62" />
-                <Text style={styles.actionButtonText}>HQ Settings</Text>
-              </TouchableOpacity>
+              <ActionButton
+                icon={<Feather name="users" size={24} color="#ffffffff" />}
+                label="Manage Doctors"
+                onPress={() => {}}
+              />
+              <ActionButton
+                icon={<AntDesign name="profile" size={24} color="#e3e3e3ff" />}
+                label="HQ Settings"
+                onPress={() => {}}
+              />
             </View>
           </View>
         </View>
+
+        {/* Footer Section - just for spacing */}
+        <View style={{ height: 100 }}></View>
+        {/* <Footer /> */}
       </ScrollView>
     </View>
   );
 }
 
+const ActionButton = ({
+  icon,
+  label,
+  onPress,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  onPress: () => void;
+}) => (
+  <TouchableOpacity style={styles.actionBtn} onPress={onPress}>
+    {icon}
+    <Text style={styles.actionText}>{label}</Text>
+  </TouchableOpacity>
+);
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#ffffff',
+    backgroundColor: "#ffffff",
     paddingHorizontal: 16,
-
-    
   },
-  headerContent:{
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-
+  headerContent: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
   },
   header: {
     paddingTop: 10,
     paddingBottom: 16,
     marginBottom: 16,
   },
-  statIcon:{
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom:30
+  statIcon: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 30,
   },
   headerTitle: {
     fontSize: 24,
-    fontWeight: '600',
-    color: '#000000',
+    fontWeight: "600",
+    color: "#000000",
     marginBottom: 4,
   },
   headerSubtitle: {
     fontSize: 16,
-    color: '#666666ff',
+    color: "#666666ff",
     marginBottom: 12,
   },
   adminAccessContainer: {
-    alignSelf: 'flex-start',
-    backgroundColor: '#e91e62',
+    alignSelf: "flex-start",
+    backgroundColor: "#e91e62",
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 4,
   },
   adminAccessText: {
-    color: '#ffffff',
+    color: "#ffffff",
     fontSize: 12,
-    fontWeight: '700',
+    fontWeight: "700",
     letterSpacing: 0.5,
-    
   },
   statsSection: {
-    
-    backgroundColor: '#ffffff',
-    flexWrap: 'nowrap',
+    backgroundColor: "#ffffff",
+    flexWrap: "nowrap",
   },
   statItem: {
     flex: 1,
     padding: 16,
-    borderWidth:0.5,
+    borderWidth: 0.5,
     marginVertical: 8,
     borderRadius: 8,
-
-    
   },
   statDivider: {
     width: 1,
-    backgroundColor: '#e5e5e5',
+    backgroundColor: "#e5e5e5",
   },
   statMainText: {
     fontSize: 14,
-    fontWeight: '500',
-    color: '#000000',
+    fontWeight: "500",
+    color: "#000000",
     marginBottom: 8,
   },
   statNumber: {
     fontSize: 24,
-    fontWeight: '600',
-    color: '#000000',
+    fontWeight: "600",
+    color: "#000000",
     marginBottom: 4,
   },
   statSubText: {
     fontSize: 12,
-    color: '#666666',
+    color: "#666666",
   },
   section: {
-    backgroundColor: '#ffffff',
+    backgroundColor: "#ffffff",
     padding: 16,
     borderWidth: 1,
-    borderColor: '#e5e5e5',
+    borderColor: "#e5e5e5",
     marginTop: 16,
     borderRadius: 8,
     marginBottom: 40,
   },
   sectionMainTitle: {
     fontSize: 18,
-    fontWeight: '600',
-    color: '#000000',
+    fontWeight: "600",
+    color: "#000000",
     marginBottom: 4,
   },
   sectionSubTitle: {
     fontSize: 14,
-    color: '#666666',
+    color: "#666666",
     marginBottom: 16,
   },
   distributionContainer: {
     gap: 0,
   },
   distributionRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#f5f5f5',
+    borderBottomColor: "#f5f5f5",
   },
   hqName: {
     fontSize: 16,
-    color: '#000000',
+    color: "#000000",
     flex: 1,
   },
   hqCount: {
     fontSize: 16,
-    color: '#000000',
+    color: "#000000",
     flex: 1,
-    textAlign: 'center',
+    textAlign: "center",
   },
   hqPercent: {
     fontSize: 16,
-    color: '#000000',
+    color: "#000000",
     flex: 1,
-    textAlign: 'right',
-    fontWeight: '500',
+    textAlign: "right",
+    fontWeight: "500",
   },
   actionsContainer: {
     gap: 12,
   },
   actionRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
     gap: 12,
   },
   actionButton: {
     flex: 1,
-    
+
     paddingVertical: 16,
     paddingHorizontal: 12,
     borderRadius: 8,
-    alignItems: 'center',
+    alignItems: "center",
     borderWidth: 0.5,
-    borderColor: 'grey',
+    borderColor: "grey",
   },
   actionButtonText: {
-    color: '#000000ff',
+    color: "#000000ff",
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: "600",
   },
-})
+  actionBtn: {
+    flex: 1,
+    backgroundColor: "#e91e62",
+    padding: 14,
+    borderRadius: 12,
+    alignItems: "center",
+  },
+  actionText: {
+    color: "#fff",
+    marginTop: 6,
+    fontWeight: "600",
+  },
+});

@@ -9,6 +9,7 @@ import {
   ScrollView,
   Alert,
   ActivityIndicator,
+  ToastAndroid,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import {
@@ -116,15 +117,16 @@ export default function SignIn() {
         const savedName = await AsyncStorage.getItem("name");
 
 
-         console.log("🔐 AsyncStorage check:", {
-           savedToken,
-           savedRole,
-           savedUserId,
-           savedName,
-         });
+        //  console.log("🔐 AsyncStorage check:", {
+        //    savedToken,
+        //    savedRole,
+        //    savedUserId,
+        //    savedName,
+        //  });
         
         dispatch(setCredentials({ token, role, _id, name }));
-        Alert.alert("Success", "Login successful!");
+        // Alert.alert("Success", "Login successful!");
+        ToastAndroid.show("Login successful!", ToastAndroid.SHORT);
          navigation.reset({
            index: 0,
            routes: [{ name: "Main" as never }],
@@ -183,7 +185,8 @@ export default function SignIn() {
       console.log("Admin login result:", result);
 
       if (result.success) {
-        Alert.alert("Success", "Admin login successful!");
+        // Alert.alert("Success", "Admin login successful!");
+        ToastAndroid.show("Login successful!", ToastAndroid.SHORT);
         const { token, role, _id, name } = result.data;
 
         // Persist

@@ -106,7 +106,7 @@ export const employeeApi = apiSlice.injectEndpoints({
         method: 'POST',
         body: employeeData,
       }),
-      invalidatesTags: [{ type: 'Employee', id: 'LIST' }],
+      invalidatesTags: ['AdminDashboard',{ type: 'Employee', id: 'LIST' },],
     }),
 
    

@@ -26,21 +26,10 @@ const baseQuery = fetchBaseQuery({
 
 // Add logging to see the actual requests
 const baseQueryWithLogging = async (args: any, api: any, extraOptions: any) => {
-  console.log('🔄 Making API request:', {
-    url: args.url,
-    method: args.method,
-    body: args.body,
-    fullUrl:"https://alphahealth.onrender.com/api"
-    
-  });
-
+  const request = typeof args === "string" ? { url: args } : args;
+  // console.log("🔄 Making API request:", request);
   const result = await baseQuery(args, api, extraOptions);
-  
-  console.log('📡 API Response:', {
-    url: args.url,
-    status: result.meta?.response?.status,
-    error: result.error
-  });
+  // console.log("📡 API Response:", result);
 
   return result;
 };
@@ -48,6 +37,6 @@ const baseQueryWithLogging = async (args: any, api: any, extraOptions: any) => {
 export const apiSlice = createApi({
   reducerPath: 'api',
   baseQuery: baseQueryWithLogging, // Use the logging version
-  tagTypes: ['Employee', 'Leave'],
+  tagTypes: ['Employee', 'Leave', 'Dashboard', 'HQ', 'AdminDashboard'],
   endpoints: () => ({}),
 });

@@ -35,25 +35,45 @@ export const BottomTabs = () => {
 
   
   return (
-    <View style={{ flex: 1 }}>
+    <View style={{ flex: 1, backgroundColor: "transparent" }}>
       <Navbar />
       <Tab.Navigator
         screenOptions={{
           tabBarActiveTintColor: "#e91e62", // Blue active color
           tabBarInactiveTintColor: "#8E8E93", // Gray inactive color
           headerShown: false,
+
           tabBarStyle: {
-            backgroundColor: "white",
-            height: 80,
-            paddingTop: 8,
-            paddingBottom: 8,
-            borderTopWidth: 1,
-            borderTopColor: "#E5E5E5",
-            elevation: 0,
-            shadowOpacity: 0,
+            backgroundColor: "#fffffff3",
+            borderTopWidth: 0,
+
+            ...(role === "admin"
+              ? {
+                  height: 70,
+                  marginHorizontal: 16,
+                  // marginBottom: 12,
+                  borderTopLeftRadius: 24,
+                  borderTopRightRadius: 24,
+                  // borderRadius: 24,
+                  elevation: 12,
+                  shadowColor: "#000",
+                  shadowOpacity: 0.15,
+                  shadowRadius: 12,
+                shadowOffset: { width: 0, height: 6 },
+                position: "absolute",
+                bottom: 0,
+                  
+                }
+              : {
+                  height: 80,
+                  borderTopWidth: 1,
+                  borderTopColor: "#E5E5E5",
+                  elevation: 0,
+                  shadowOpacity: 0,
+                }),
           },
           tabBarLabelStyle: {
-            fontSize: 9,
+            fontSize: role === "admin" ? 10 : 9,
             fontWeight: "500",
             marginTop: 4,
           },
@@ -65,7 +85,6 @@ export const BottomTabs = () => {
         <Tab.Screen
           name="Dashboard"
           component={role === "admin" ? AdminDashboard : EmployeeDashboard}
-          
           options={{
             tabBarIcon: ({ color, size, focused }) => (
               <Ionicons
@@ -76,19 +95,21 @@ export const BottomTabs = () => {
             ),
           }}
         />
-        <Tab.Screen
-          name="Attendance"
-          component={Attendance}
-          options={{
-            tabBarIcon: ({ color, size, focused }) => (
-              <Ionicons
-                name={focused ? "calendar" : "calendar-outline"}
-                size={size}
-                color={color}
-              />
-            ),
-          }}
-        />
+        {role !== "admin" && (
+          <Tab.Screen
+            name="Attendance"
+            component={Attendance}
+            options={{
+              tabBarIcon: ({ color, size, focused }) => (
+                <Ionicons
+                  name={focused ? "calendar" : "calendar-outline"}
+                  size={size}
+                  color={color}
+                />
+              ),
+            }}
+          />
+        )}
         <Tab.Screen
           name="Doctor"
           component={DocCheMan}
@@ -102,19 +123,23 @@ export const BottomTabs = () => {
             ),
           }}
         />
-        <Tab.Screen
-          name="Leave"
-          component={LeaveMana}
-          options={{
-            tabBarIcon: ({ color, size, focused }) => (
-              <Ionicons
-                name={focused ? "airplane" : "airplane-outline"}
-                size={size}
-                color={color}
-              />
-            ),
-          }}
-        />
+
+        {role !== "admin" && (
+          <Tab.Screen
+            name="Leave"
+            component={LeaveMana}
+            options={{
+              tabBarIcon: ({ color, size, focused }) => (
+                <Ionicons
+                  name={focused ? "airplane" : "airplane-outline"}
+                  size={size}
+                  color={color}
+                />
+              ),
+            }}
+          />
+        )}
+
         <Tab.Screen
           name="POB"
           component={POB}
@@ -161,7 +186,14 @@ export default function Navigation() {
   // TODO : Need to be fixed
   // TODO : What if i change the name main1 or main2
   return (
-    <Stack.Navigator screenOptions={{ headerShown: false }}>
+    <Stack.Navigator
+      screenOptions={{
+        headerShown: false,
+        animation: "fade",
+
+        
+      }}
+    >
       {isAuthenticated ? (
         <Stack.Screen name="Main1" component={BottomTabs} />
       ) : (

@@ -51,12 +51,16 @@ if (!isReady) {
   return (
     <Provider store={store}>
       <SafeAreaProvider>
-      <StatusBar style="auto" translucent backgroundColor="white"   />
-      <SafeAreaView style={{ flex: 1, backgroundColor:"black" }}>
-        <Navigation />
-      </SafeAreaView>
+        <StatusBar style="auto" translucent backgroundColor="white" />
+        <SafeAreaView style={{
+          flex: 1, backgroundColor: "#e91e62",
+          paddingBottom: -100
+        }}>
+          <Navigation />
+        </SafeAreaView>
       </SafeAreaProvider>
-
-      </Provider>
-)
+    </Provider>
+  );
 }
+
+

@@ -8,17 +8,22 @@ import {
   ScrollView,
   TouchableWithoutFeedback,
   Keyboard,
+  ToastAndroid,
+  ActivityIndicator,
 } from "react-native";
 import React, { useState } from "react";
 import { Ionicons, Feather } from "@expo/vector-icons";
 import { useGetHeadQuartersQuery } from "../../shared/store/api/hqApi";
+import { useCreateEmployeeMutation } from "../../shared/store/api/employeeApi";
 
 
 // Define the props interface
 interface AddEmployeeModalProps {
   visible: boolean;
   onClose: () => void;
-  onAddEmployee: (employee: EmployeeData) => void;
+  
+  managerId: string;
+  managerModel: string
 }
 
 // Define types
@@ -35,31 +40,23 @@ type RoleType = "employee" | "manager";
 export default function AddEmployeeModal({
   visible,
   onClose,
-  onAddEmployee,
+  managerId,
+  managerModel
 }: AddEmployeeModalProps) {
+  const { data: HQ, isLoading , error, refetch } = useGetHeadQuartersQuery({});
+  const [createEmployee, { isLoading: isCreateEmployeeLoading }] =  useCreateEmployeeMutation();
   const [name, setName] = useState<string>("");
   const [role, setRole] = useState<RoleType>("employee");
   const [email, setEmail] = useState<string>("");
   const [headquarter, setHeadquarter] = useState<string>("");
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
-  
   const roles: { id: RoleType; label: string }[] = [
     { id: "employee", label: "Employee" },
     { id: "manager", label: "Manager" },
   ];
 
-  const {data: HQ, isLoading, error, refetch } = useGetHeadQuartersQuery({});
   // console.log("data==>", HQ?.data);
-
-  const headquarters = [
-    "North HQ",
-    "South HQ",
-    "East HQ",
-    "West HQ",
-    "Central HQ",
-  ];
-
 
   // Validate form
   const validateForm = (): boolean => {
@@ -89,19 +86,18 @@ export default function AddEmployeeModal({
       return;
     }
 
+    const DEFAULT_PASSWORD = "initialPassword";
+
+
     const employeeData: EmployeeData = {
       name: name.trim(),
       role,
       email: email.trim(),
       hq: headquarter,
-      password: "initialPassword",
+      password: DEFAULT_PASSWORD,
     };
 
-    // Call the parent component's function
-    onAddEmployee(employeeData);
-
-    // Reset form
-    resetForm();
+    handleAddEmployee(employeeData);
   };
 
   // Reset form
@@ -118,6 +114,37 @@ export default function AddEmployeeModal({
     resetForm();
     onClose();
   };
+
+   const handleAddEmployee = async  (employeeData: any)=> {
+       console.log("New employee:", employeeData);
+     // Add n API call to save the employee later when ReduxRTK is implemented
+     
+       try { 
+         let response = await createEmployee({
+           name: employeeData.name,
+           email: employeeData.email,
+           password: employeeData.password,
+           role: employeeData.role,
+           hq: employeeData.hq,
+           manager: managerId,
+           managerModel: managerModel,
+         }).unwrap();
+         console.log("Response:", response);
+         if (response.success) {
+           ToastAndroid.show("Employee added successfully!", ToastAndroid.SHORT);
+           handleClose();
+                  
+         } else {
+           ToastAndroid.show("Failed to add employee", ToastAndroid.SHORT);
+         }
+  
+         
+       } catch (error) {
+         ToastAndroid.show("Something went wrong", ToastAndroid.SHORT);
+         console.error("Error adding employee:", error);
+      }
+        
+     };
 
   return (
     <Modal
@@ -224,31 +251,35 @@ export default function AddEmployeeModal({
                   Headquarter <Text style={styles.required}>*</Text>
                 </Text>
                 <View style={styles.headquarterContainer}>
-                  {HQ?.data.map((hq: any) => (
-                    <TouchableOpacity
-                      key={hq._id}
-                      style={[
-                        styles.headquarterButton,
-                        headquarter === hq._id && styles.headquarterButtonSelected,
-                      ]}
-                      onPress={() => {
-                        setHeadquarter(hq._id);
-                        console.log(hq, headquarter);
-                        if (errors.headquarter)
-                          setErrors({ ...errors, headquarter: "" });
-                      }}
-                    >
-                      <Text
+                  {isLoading ? (
+                    <ActivityIndicator size="small" color="#007AFF" />
+                  ) : (
+                    HQ?.data.map((hq: any) => (
+                      <TouchableOpacity
+                        key={hq._id}
                         style={[
-                          styles.headquarterText,
+                          styles.headquarterButton,
                           headquarter === hq._id &&
-                          styles.headquarterTextSelected,
+                            styles.headquarterButtonSelected,
                         ]}
+                        onPress={() => {
+                          setHeadquarter(hq._id);
+                          if (errors.headquarter)
+                            setErrors({ ...errors, headquarter: "" });
+                        }}
                       >
-                        {hq.name}
-                      </Text>
-                    </TouchableOpacity>
-                  ))}
+                        <Text
+                          style={[
+                            styles.headquarterText,
+                            headquarter === hq._id &&
+                              styles.headquarterTextSelected,
+                          ]}
+                        >
+                          {hq.name}
+                        </Text>
+                      </TouchableOpacity>
+                    ))
+                  )}
                 </View>
                 {errors.headquarter ? (
                   <Text style={styles.errorText}>{errors.headquarter}</Text>
@@ -257,15 +288,24 @@ export default function AddEmployeeModal({
 
               {/* Action Buttons */}
               <TouchableOpacity
-                style={styles.submitButton}
+                style={[
+                  styles.submitButton,
+                  isCreateEmployeeLoading && styles.disabledButton,
+                ]}
                 onPress={handleSubmit}
+                disabled={isCreateEmployeeLoading || isLoading}
               >
-                <Text style={styles.submitButtonText}>Add Employee</Text>
+                {isCreateEmployeeLoading ? (
+                  <ActivityIndicator size="small" color="#fff" />
+                ) : (
+                  <Text style={styles.submitButtonText}>Add Employee</Text>
+                )}
               </TouchableOpacity>
 
               <TouchableOpacity
                 style={styles.cancelButton}
                 onPress={handleClose}
+                disabled={isCreateEmployeeLoading || isLoading}
               >
                 <Text style={styles.cancelButtonText}>Cancel</Text>
               </TouchableOpacity>
@@ -352,6 +392,9 @@ const styles = StyleSheet.create({
   roleContainer: {
     flexDirection: "row",
     gap: 12,
+  },
+  disabledButton: {
+    opacity: 0.7,
   },
   roleButton: {
     flex: 1,
