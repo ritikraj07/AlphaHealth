@@ -5,6 +5,10 @@ import { global_styles } from '../shared/style'
 import { useState, useEffect } from 'react';
 import * as Location from 'expo-location';
 import { useMarkAttendanceMutation } from '../shared/store/api/attendanceApi';
+import { formatDate } from '../shared/services/formateDate';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import AttendanceSummaryCard from './Modals/AttendanceSummaryCard';
+import { useAppSelector } from '../shared/store/hooks';
 
 // import { locationService } from '../shared/services/locationService';
 
@@ -27,8 +31,8 @@ import { useMarkAttendanceMutation } from '../shared/store/api/attendanceApi';
  *   isDayStarted - Boolean indicating whether attendance has been marked for the day.
  */
 export default function Attendance() {
-    const [markAttendance, { isLoading: isMarking }] =
-      useMarkAttendanceMutation();
+  const [markAttendance, { isLoading: isMarking }] = useMarkAttendanceMutation();
+  const {name} = useAppSelector((state) => state.auth);
 
   const [location, setLocation] = useState<any>(null);
   const [address, setAddress] = useState<string>('');
@@ -40,7 +44,46 @@ export default function Attendance() {
   const [greeting, setGreeting] = useState("");
   const [btnText, setBtnText] = useState("START DAY");
   const [bottomText, setBottomText] = useState("Check-in for Attendance");
-  const [isDayStarted, setIsDayStarted] = useState(false);
+  const [isDayStarted, setIsDayStarted] = useState<boolean>(false);
+  const [attendanceSummary, setAttendanceSummary] = useState<any> ({
+    startTime: "",
+    endTime: "",
+    startLocation: {
+      coordinates: [],
+    },
+    endLocation: {
+      coordinates: [],
+    },
+  });
+  const [showSummary, setShowSummary] = useState(false);
+
+
+  // Check if day has been started
+useEffect(() => {
+  const checkDay = async () => {
+    let date = formatDate(new Date());
+    let dayStarted = await AsyncStorage.getItem(date);
+
+    if (dayStarted) {
+      setIsDayStarted(true);
+      setBtnText("END DAY");
+      setBottomText("Check-out for Attendance");
+    }
+    // !test purposes code
+    // await AsyncStorage.removeItem(date);
+
+    let yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    let yesterdayDate = formatDate(yesterday);
+
+    let yesterdayDayStarted = await AsyncStorage.getItem(yesterdayDate);
+    if (yesterdayDayStarted) {
+      await AsyncStorage.removeItem(yesterdayDate);
+    }
+  };
+
+  checkDay();
+}, []);
 
 
 
@@ -165,9 +208,8 @@ export default function Attendance() {
       // Update states
       setLocation(locationData);
       console.log('Location:', locationData);
-      // i want to mark attendance in server after getting location
-      // markAttendance(locationData); 
-      // how to do this
+
+      // !IMPORTANT: Coordinates should be [longitude, latitude], not [latitude, latitude]
 
       // 3. Get detailed address
       const detailedAddress = await getDetailedAddress(latitude, longitude);
@@ -194,23 +236,53 @@ export default function Attendance() {
      if (!locationData) {
        return;
      }
-     console.log("Location data:", locationData);
+    //  console.log("Location data:", locationData);
 
-     // IMPORTANT: Coordinates should be [longitude, latitude], not [latitude, longitude]
+     // !IMPORTANT: Coordinates should be [longitude, latitude], not [latitude, longitude]
      const result = await markAttendance({
-       type: "check-in",
+       type: isDayStarted ? "check-out" : "check-in",
        location: {
-         coordinates: [locationData.longitude, locationData.latitude], // Fix the order
+         coordinates: [locationData.longitude, locationData.latitude], 
        },
      }).unwrap();
 
+    //  Mark attendance in local storage
+     let date = formatDate(new Date());
+     await AsyncStorage.setItem(date, "true");
      console.log("Attendance result:", result);
 
+      // Attendance result: {"data": {"attendanceId": "69537d9026a8ecb6355884e9", "date": "2025-12-30T00:00:00.000Z", "endLocation": {"coordinates": [Array], "type": "Point"}, "endTime": "2025-12-30T07:28:51.240Z", "startLocation": {"coordinates": [Array], "type": "Point"}, "startTime": "2025-12-30T07:21:52.883Z", "workingHours": 0.12}, "message": "Check-out recorded successfully", "success": true}      
+
+
+     
+     let dayStarted = await AsyncStorage.getItem(date);
+
+      if (dayStarted) {
+        setIsDayStarted(true);
+        setBtnText("END DAY");
+        setBottomText("Check-out for Attendance");
+      }
+     
      // result is the entire response object
      if (result.success) {
        ToastAndroid.show(result.message, ToastAndroid.SHORT);
-     } else {
 
+       if (isDayStarted) {
+         setIsDayStarted(false);
+         setBtnText("START DAY");
+         setBottomText("Check-in for Attendance");
+         setShowSummary(true);
+         setAttendanceSummary({
+           attendanceId: result.data.attendanceId,
+           date: result.data.date,
+           startTime: result.data.startTime,
+           endTime: result.data.endTime,
+           startLocation: result.data.startLocation,
+           endLocation: result.data.endLocation,
+         });
+       }
+      
+     } else {
        ToastAndroid.show(result.message || "Unknown error", ToastAndroid.SHORT);
      }
    } catch (error: any) {
@@ -237,14 +309,15 @@ export default function Attendance() {
           <View style={styles.addressContainer}>
             <Text style={styles.addressLabel}>Current Location</Text>
             {isGettingAddress ? (
-              <Text style={styles.addressLoading}>Getting location details...</Text>
-            ) : (
-              <Text style={styles.addressText}>
-                {address}
+              <Text style={styles.addressLoading}>
+                Getting location details...
               </Text>
+            ) : (
+              <Text style={styles.addressText}>{address}</Text>
             )}
             <Text style={styles.coordinatesText}>
-              📍 {location?.latitude?.toFixed(6)}, {location?.longitude?.toFixed(6)}
+              📍 {location?.latitude?.toFixed(6)},{" "}
+              {location?.longitude?.toFixed(6)}
             </Text>
           </View>
         </View>
@@ -260,12 +333,14 @@ export default function Attendance() {
       {/* Card */}
       <View style={styles.card}>
         <LinearGradient
-          colors={isDayStarted ? ['#FF6B6B', '#FF8E53'] : ['#FF416C', '#8A2BE2']} 
+          colors={
+            isDayStarted ? ["#FF6B6B", "#FF8E53"] : ["#FF416C", "#8A2BE2"]
+          }
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 0 }}
           style={styles.btnWrapper}
         >
-          <TouchableOpacity 
+          <TouchableOpacity
             style={[styles.btn, isLoading && styles.btnDisabled]}
             onPress={handleAttendance}
             disabled={isLoading}
@@ -273,14 +348,14 @@ export default function Attendance() {
             {isLoading ? (
               <Ionicons name="refresh" size={20} color="white" />
             ) : (
-              <Ionicons 
-                name={isDayStarted ? "stop-outline" : "play-outline"} 
-                size={22} 
-                color="white" 
+              <Ionicons
+                name={isDayStarted ? "stop-outline" : "play-outline"}
+                size={22}
+                color="white"
               />
             )}
             <Text style={styles.btnText}>
-              {isLoading ? 'PROCESSING...' : btnText}
+              {isLoading ? "PROCESSING..." : btnText}
             </Text>
           </TouchableOpacity>
         </LinearGradient>
@@ -288,8 +363,11 @@ export default function Attendance() {
         {/* Bottom Text */}
         <Text style={styles.bottomText}>{bottomText}</Text>
       </View>
+      {showSummary && (
+        <AttendanceSummaryCard user={name} attendance={attendanceSummary} />
+      )}
     </View>
-  )
+  );
 }
 
 const styles = StyleSheet.create({

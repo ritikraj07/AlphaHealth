@@ -149,7 +149,7 @@ const MarkAttendance = async (req, res) => {
             const workingHours = (endTime - startTime) / (1000 * 60 * 60); // Convert to hours
 
             // Add working hours to attendance
-            attendance.workingHours = parseFloat(workingHours.toFixed(2));
+            // attendance.workingHours = parseFloat(workingHours.toFixed(2));
 
             
 
@@ -164,7 +164,7 @@ const MarkAttendance = async (req, res) => {
                     date: attendance.date,
                     startTime: attendance.startTime,
                     endTime: attendance.endTime,
-                    workingHours: attendance.workingHours,
+                    workingHours: workingHours,
                     startLocation: attendance.startLocation,
                     endLocation: attendance.endLocation
                 }
