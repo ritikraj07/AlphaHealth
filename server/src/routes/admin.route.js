@@ -1,5 +1,6 @@
 const {Router} = require("express");
-const { loginAdmin } = require("../controllers/admin.controller");
+const { loginAdmin, GetAdminDashboard } = require("../controllers/admin.controller");
+const { verifyToken } = require("../validators/auth.validator");
 
 
 
@@ -11,6 +12,7 @@ const router = Router();
 router.post("/login", loginAdmin);
 
 /********************************* GET RREQUESTS ****************************************/
+router.get("/dashboard", verifyToken, GetAdminDashboard);
 /********************************* PATCH RREQUESTS ****************************************/
 /********************************* DELETE RREQUESTS ****************************************/
 /********************************* PUT RREQUESTS ****************************************/

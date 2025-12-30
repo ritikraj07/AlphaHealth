@@ -1,4 +1,9 @@
 const Admin = require("../models/admin.model");
+const Attendance = require("../models/attendance.model");
+const DoctorChemist = require("../models/doctorChemist.model");
+const Employee = require("../models/employee.model");
+const Headquarter = require("../models/headquater.model");
+const Leave = require("../models/leave.model");
 const { hashPassword, comparePassword } = require("../utils/auth");
 const emailVerifier = require("../utils/emailVerifier");
 const logger = require("../utils/logger");
@@ -215,4 +220,168 @@ const loginAdmin = async (req, res) => {
   }
 };
 
-module.exports = { createAdmin, loginAdmin };
+/***
+ * What i need in admin dashboard
+ * 1. Employee stats
+ * 2. Doctor / Chemist stats
+ *  
+ */
+const GetAdminDashboard = async (req, res) => {
+  try {
+    const adminId = req.userId;
+    const admin = await Admin.findById(adminId);
+
+    if (!admin) {
+      return res.status(404).json({
+        success: false,
+        message: "Admin not found",
+      });
+    }
+    /* ================= EMPLOYEE STATS ================= */
+    const employeeStats = await Employee.aggregate([
+      {
+        $group: {
+          _id: "$role",
+          count: { $sum: 1 }
+        }
+      }
+    ]);
+
+    const employeeSummary = {
+      total: 0,
+      managers: 0,
+      hr: 0,
+      employees: 0,
+    };
+
+    employeeStats.forEach(item => {
+      employeeSummary.total += item.count;
+
+      if (item._id === "manager") employeeSummary.managers = item.count;
+      if (item._id === "hr") employeeSummary.hr = item.count;
+      if (item._id === "employee") employeeSummary.employees = item.count;
+    });
+
+    /* ================= DOCTOR / CHEMIST ================= */
+    const doctorChemistStats = await DoctorChemist.aggregate([
+      {
+        $group: {
+          _id: "$type",
+          count: { $sum: 1 }
+        }
+      }
+    ]);
+
+    const doctorSummary = {
+      doctors: 0,
+      chemists: 0
+    };
+
+    doctorChemistStats.forEach(item => {
+      if (item._id === "doctor") doctorSummary.doctors = item.count;
+      if (item._id === "chemist") doctorSummary.chemists = item.count;
+    });
+
+    /* ================= LEAVE STATS ================= */
+    const leaveByType = await Leave.aggregate([
+      {
+        $group: {
+          _id: "$type",
+          count: { $sum: 1 }
+        }
+      }
+    ]);
+
+    const leaveStatus = await Leave.aggregate([
+      {
+        $group: {
+          _id: "$status",
+          count: { $sum: 1 }
+        }
+      }
+    ]);
+
+    const leaveSummary = {
+      pending: 0,
+      approved: 0,
+      rejected: 0,
+      byType: {}
+    };
+
+    leaveStatus.forEach(item => {
+      leaveSummary[item._id] = item.count;
+    });
+
+    leaveByType.forEach(item => {
+      leaveSummary.byType[item._id] = item.count;
+    });
+
+    /* ================= HQ DISTRIBUTION ================= */
+    const hqDistribution = await Employee.aggregate([
+      {
+        $group: {
+          _id: "$hq",
+          employeeCount: { $sum: 1 }
+        }
+      },
+      {
+        $lookup: {
+          from: "headquarters",
+          localField: "_id",
+          foreignField: "_id",
+          as: "hq"
+        }
+      },
+      { $unwind: "$hq" },
+      {
+        $project: {
+          _id: 0,
+          hqId: "$hq._id",
+          name: "$hq.name",
+          employeeCount: 1
+        }
+      }
+    ]);
+
+    const totalEmployees = employeeSummary.total || 1;
+    const hqWithPercentage = hqDistribution.map(hq => ({
+      ...hq,
+      percentage: Math.round((hq.employeeCount / totalEmployees) * 100)
+    }));
+
+    /* ================= ATTENDANCE ================= */
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const presentToday = await Attendance.countDocuments({
+      date: today,
+      status: "present"
+    });
+
+    /* ================= FINAL RESPONSE ================= */
+    res.json({
+      success: true,
+      message: "Admin Dashboard Fetched Successfully",
+      data: {
+        employees: employeeSummary,
+        doctors: doctorSummary,
+        leaves: leaveSummary,
+        hqDistribution: hqWithPercentage,
+        attendance: {
+          presentToday
+        }
+      }
+    });
+
+  } catch (error) {
+    console.error("Admin Dashboard Error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Internal server error"
+    });
+  }
+};
+
+
+
+module.exports = { createAdmin, loginAdmin, GetAdminDashboard };
