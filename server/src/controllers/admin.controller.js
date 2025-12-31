@@ -382,6 +382,32 @@ const GetAdminDashboard = async (req, res) => {
   }
 };
 
+const GetAdminProfile = async (req, res) => {
+  try { 
+    let adminId = req.userId;
+    const admin = await Admin.findById(adminId).select('-password');
+    if (!admin) {
+      return res.status(404).json({
+        success: false,
+        message: "Admin not found",
+      });
+    }
+    res.status(200).json({
+      success: true,
+      message: "Admin Profile Fetched Successfully",
+      data: admin
+    });
+  } catch (error) {
+      console.error("Admin Profile Error:", error);
+      res.status(500).json({
+        success: false,
+        message: "Internal server error",
+
+      })
+    }
+ }
+
+  
 
 
-module.exports = { createAdmin, loginAdmin, GetAdminDashboard };
+module.exports = { createAdmin, loginAdmin, GetAdminDashboard, GetAdminProfile };

@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 const Attendance = require("../models/attendance.model");
 const User = require("../models/employee.model");
+const calculateWorkingTime = require("../utils/calculateWorkingHours");
 
 /**
  * Marks attendance for a user.
@@ -146,7 +147,7 @@ const MarkAttendance = async (req, res) => {
             // Calculate working hours
             const startTime = new Date(attendance.startTime);
             const endTime = new Date(attendance.endTime);
-            const workingHours = (endTime - startTime) / (1000 * 60 * 60); // Convert to hours
+            const workingHours = calculateWorkingTime(startTime, endTime);
 
             // Add working hours to attendance
             // attendance.workingHours = parseFloat(workingHours.toFixed(2));
@@ -210,44 +211,69 @@ const MarkAttendance = async (req, res) => {
     }
 };
 
+
+
 // Additional function to get today's attendance status
 const GetTodayAttendance = async (req, res) => {
     try {
-        const { userId } = req.params;
+        const employeeId = req.userId;
 
-        if (!userId) {
+        if (!employeeId) {
             return res.status(400).json({
                 success: false,
-                message: "User ID is required"
+                message: "Employee ID is required",
             });
         }
 
         const today = new Date();
         today.setHours(0, 0, 0, 0);
+
         const tomorrow = new Date(today);
         tomorrow.setDate(tomorrow.getDate() + 1);
 
         const attendance = await Attendance.findOne({
-            user: userId,
+            user: employeeId,
             date: {
                 $gte: today,
-                $lt: tomorrow
-            }
-        }).populate('user', 'name email role')
-          .populate('plan', 'name type contact');
+                $lt: tomorrow,
+            },
+        });
 
+        // 🟡 No attendance today
         if (!attendance) {
             return res.status(200).json({
                 success: true,
-                data: null,
-                message: "No attendance recorded for today"
+                data: {
+                    workStarted: false,
+                    workEnded: false,
+                    workingHours: 0,
+                    attendance: null,
+                },
+                message: "No attendance recorded for today",
             });
+        }
+
+        const workStarted = !!attendance.startTime;
+        const workEnded = !!attendance.endTime;
+
+        let workingHours = 0;
+
+        if (workStarted) {
+            workingHours = calculateWorkingTime(
+                attendance.startTime,
+                workEnded ? attendance.endTime : null
+            );
         }
 
         return res.status(200).json({
             success: true,
-            data: attendance,
-            message: "Today's attendance retrieved successfully"
+            data: {
+                workStarted,
+                workEnded,
+                workingHours,
+                attendance,
+            },
+            message: "Today's attendance retrieved successfully",
         });
 
     } catch (error) {
@@ -255,10 +281,11 @@ const GetTodayAttendance = async (req, res) => {
         return res.status(500).json({
             success: false,
             message: "Internal server error",
-            error: process.env.NODE_ENV === 'development' ? error.message : undefined
+            error: process.env.NODE_ENV === "development" ? error.message : undefined,
         });
     }
 };
+
 
 // Function to get attendance history
 const GetAttendanceHistory = async (req, res) => {
