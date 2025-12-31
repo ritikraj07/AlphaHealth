@@ -228,14 +228,16 @@ const GetTodayAttendance = async (req, res) => {
         const today = new Date();
         today.setHours(0, 0, 0, 0);
 
-        const tomorrow = new Date(today);
-        tomorrow.setDate(tomorrow.getDate() + 1);
+        
+
+        const endOfDay = new Date();
+        endOfDay.setHours(23, 59, 59, 999);
 
         const attendance = await Attendance.findOne({
-            user: employeeId,
+            employee: employeeId,
             date: {
                 $gte: today,
-                $lt: tomorrow,
+                $lt: endOfDay,
             },
         });
 
