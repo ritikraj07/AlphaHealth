@@ -22,12 +22,13 @@ import { useGetHeadQuartersQuery } from "../shared/store/api/hqApi";
 export default function DocCheManagement() {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const {data: HQ, isLoading, error, refetch } = useGetHeadQuartersQuery({});
-console.log(HQ)
+
    // Mock headquarters data - you would get this from your API
-  const headquarters = HQ?.data;
+  const headquarters = HQ?.data ?? [];
+
 
    const handleAddProfessional = (data: any) => {
-     console.log("New professional:", data);
+    //  console.log("New professional:", data);
      // Here you would typically make an API call to save the professional
      Alert.alert(
        "Success",
