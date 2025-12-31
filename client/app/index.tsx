@@ -8,20 +8,23 @@ import store from "./src/shared/store";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { setCredentials } from "./src/shared/store/slices/authSlice";
 
+import * as SplashScreen from "expo-splash-screen";
+import { ToastAndroid } from "react-native";
+SplashScreen.preventAutoHideAsync();
+
 
 
 export default function Index() {
-const [isReady, setIsReady] = useState(false);
+const [ready, setReady] = useState(false);
 
 useEffect(() => {
-  const hydrateAuth = async () => {
+  async function prepareApp() {
     try {
+      // 🔹 Hydrate auth
       const token = await AsyncStorage.getItem("token");
       const role = await AsyncStorage.getItem("role");
       const userId = await AsyncStorage.getItem("userId");
       const name = await AsyncStorage.getItem("name");
-      console.log("Hydrating auth...");
-      console.log(token, "\n", role, "\n", userId, "\n", name);
 
       if (token && role && userId) {
         store.dispatch(
@@ -29,24 +32,31 @@ useEffect(() => {
             token,
             role,
             _id: userId,
-            name
+            name,
           })
         );
       }
-    } catch (error) {
-      console.log("Auth hydration failed", error);
-      
-    } finally {
-      setIsReady(true);
-    }
-  };
 
-  hydrateAuth();
+      // Optional minimum splash duration (UX polish)
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+    } catch (e) {
+      // We might want to provide this error information to an error reporting service
+      ToastAndroid.show("Something went wrong", ToastAndroid.SHORT);
+      console.log("Startup error", e);
+    } finally {
+      setReady(true);
+      await SplashScreen.hideAsync();
+    }
+  }
+
+  prepareApp();
 }, []);
 
-if (!isReady) {
-  return null; // TODO SplashScreen
+
+if (!ready) {
+  return null;
 }
+
   
   return (
     <Provider store={store}>
