@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "employee-management",
-    "slug": "employee-management",
+    "name": "PharmaPrime",
+    "slug": "Pharmacy-Management",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
-    "scheme": "employeemanagement",
+    "icon": "./assets/images/icon.webp",
+    "scheme": "pharmacy-management-app",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
@@ -16,8 +16,8 @@
       }
     },
     "android": {
+      "package": "com.pharmaprime.app",
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
         "backgroundImage": "./assets/images/android-icon-background.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
@@ -39,8 +39,8 @@
       [
         "expo-splash-screen",
         {
-          "image": "./assets/images/splash-icon.png",
-          "imageWidth": 200,
+          "image": "./assets/images/splash-icon.webp",
+          "imageWidth": 300,
           "resizeMode": "contain",
           "backgroundColor": "#ffffff",
           "dark": {
