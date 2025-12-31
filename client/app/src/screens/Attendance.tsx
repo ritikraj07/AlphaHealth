@@ -34,7 +34,7 @@ import AttendanceSkeleton from '../shared/componets/skeletons/AttendanceSkeleton
 export default function Attendance() {
   const { data: myTodaysAttendance, isLoading: isLoadingMyTodaysAttendance, isError, error, isFetching, refetch } = useGetMyTodaysAttendanceQuery();
   const [markAttendance, { isLoading: isMarking }] = useMarkAttendanceMutation();
-  const {name, userId} = useAppSelector((state) => state.auth);
+  const {name, userId} = useAppSelector((state: { auth: any; }) => state.auth);
 
   const [location, setLocation] = useState<any>(null);
   const [address, setAddress] = useState<string>('');

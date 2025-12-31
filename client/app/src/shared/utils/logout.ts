@@ -17,10 +17,10 @@ export const performLogout = async (
   dispatch(apiSlice.util.resetApiState());
 
   // 4. Reset navigation stack
-  navigation.dispatch(
-    CommonActions.reset({
-      index: 0,
-      routes: [{ name: "SignIn1" }],
-    })
-  );
+  // navigation.dispatch(
+  //   CommonActions.reset({
+  //     index: 0,
+  //     routes: [{ name: "SignIn" }],
+  //   })
+  // );
 };

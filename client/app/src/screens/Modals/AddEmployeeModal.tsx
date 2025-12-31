@@ -131,17 +131,17 @@ export default function AddEmployeeModal({
          }).unwrap();
          console.log("Response:", response);
          if (response.success) {
-           ToastAndroid.show("Employee added successfully!", ToastAndroid.SHORT);
+           ToastAndroid.show(response?.message, ToastAndroid.SHORT);
            handleClose();
                   
          } else {
-           ToastAndroid.show("Failed to add employee", ToastAndroid.SHORT);
+           ToastAndroid.show(response?.message, ToastAndroid.SHORT);
          }
   
          
        } catch (error) {
-         ToastAndroid.show("Something went wrong", ToastAndroid.SHORT);
-         console.error("Error adding employee:", error);
+         ToastAndroid.show(error?.data?.message, ToastAndroid.SHORT);
+        //  console.error("Error adding employee:", error);
       }
         
      };

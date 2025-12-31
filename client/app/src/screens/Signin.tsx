@@ -20,6 +20,7 @@ import { useDispatch } from "react-redux";
 import { setAdmin } from "../shared/store/slices/adminSlice";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { setCredentials } from "../shared/store/slices/authSlice";
+import { Ionicons } from "@expo/vector-icons";
 
 
 
@@ -33,7 +34,7 @@ export default function SignIn() {
   const [serverStatus, setServerStatus] = useState<
     "checking" | "online" | "offline"
   >("checking");
-
+const [showPassword, setShowPassword] = useState(false);
   const dispatch = useDispatch();
   const [adminLogin, isAdminLoginLoading] = useAdminLoginMutation();
   const [login, isLoginLoading] = useLoginMutation();
@@ -128,10 +129,10 @@ export default function SignIn() {
         dispatch(setCredentials({ token, role, _id, name }));
         // Alert.alert("Success", "Login successful!");
         ToastAndroid.show("Login successful!", ToastAndroid.SHORT);
-         navigation.reset({
-           index: 0,
-           routes: [{ name: "Main" as never }],
-         });
+        //  navigation.reset({
+        //    index: 0,
+        //    routes: [{ name: "Main" as never }],
+        //  });
       } else {
         ToastAndroid.show(result.message || "Invalid credentials", ToastAndroid.SHORT);
         // Alert.alert("Login Failed", result.message || "Invalid credentials");
@@ -197,22 +198,25 @@ export default function SignIn() {
         await AsyncStorage.setItem("userId", _id);
 
         // 🔍 VERIFY
-        const savedToken = await AsyncStorage.getItem("token");
-        const savedRole = await AsyncStorage.getItem("role");
-        const savedUserId = await AsyncStorage.getItem("userId");
+        // const savedToken = await AsyncStorage.getItem("token");
+        // const savedRole = await AsyncStorage.getItem("role");
+        // const savedUserId = await AsyncStorage.getItem("userId");
 
-        console.log("🔐 AsyncStorage check:", {
-          savedToken,
-          savedRole,
-          savedUserId,
-        });
+        // console.log("🔐 AsyncStorage check:", {
+        //   savedToken,
+        //   savedRole,
+        //   savedUserId,
+        // });
 
         dispatch(setAdmin(result.data));
         dispatch(setCredentials({ token, role, _id, name }));
-        navigation.reset({
-        index: 0,
-        routes: [{ name: "Main" as never }],
-      });
+        //   navigation.reset({
+        //   index: 0,
+        //   routes: [{ name: "Main" as never }],
+        // });
+      } else {
+        ToastAndroid.show(result.message || "Invalid admin credentials", ToastAndroid.SHORT);
+        // Alert.alert("Admin Login Failed", result.message || "Invalid admin credentials");
 
       }
     } catch (error: any) {
@@ -238,12 +242,17 @@ export default function SignIn() {
       style={styles.container}
       contentContainerStyle={styles.contentContainer}
     >
-      <ActivityIndicator size="large" style={styles.loader} color="hotpink" animating={isLoading} />
+      <ActivityIndicator
+        size="large"
+        style={{}}
+        color="hotpink"
+        animating={isLoading}
+      />
       {/* Header */}
       <View style={{ alignItems: "center" }}>
         <Image
           style={styles.logo}
-          source={require("../shared/images/logo.png")}
+          source={require("../shared/images/icon.png")}
         />
         <Text style={styles.title}>Employee Management System</Text>
         <Text style={styles.subtile}>Sign in to your account to continue</Text>
@@ -265,13 +274,26 @@ export default function SignIn() {
         />
 
         <Text style={styles.lable}>Password</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Enter your password"
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry
-        />
+        <View style={styles.inputWrapper}>
+          <TextInput
+            style={styles.input}
+            placeholder="Enter your password"
+            value={password}
+            onChangeText={setPassword}
+            secureTextEntry={!showPassword}
+          />
+
+          <TouchableOpacity
+            style={styles.eyeIcon}
+            onPress={() => setShowPassword(!showPassword)}
+          >
+            <Ionicons
+              name={showPassword ? "eye-off" : "eye"}
+              size={20}
+              color="gray"
+            />
+          </TouchableOpacity>
+        </View>
 
         <TouchableOpacity
           style={styles.btm}
@@ -301,11 +323,11 @@ const styles = StyleSheet.create({
   contentContainer: {
     flexGrow: 1,
     paddingHorizontal: 15,
-    paddingVertical: 70,
+    paddingVertical: 0,
   },
   logo: {
-    width: 150,
-    height: 70,
+    width: 100,
+    height: 100,
     resizeMode: "contain",
     marginBottom: 10,
   },
@@ -339,15 +361,15 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     marginBottom: 5,
   },
-  input: {
-    height: 40,
-    borderColor: "gray",
-    borderWidth: 0.5,
-    marginBottom: 10,
-    paddingHorizontal: 10,
-    borderRadius: 5,
-    backgroundColor: "white",
-  },
+  // input: {
+  //   height: 40,
+  //   borderColor: "gray",
+  //   borderWidth: 0.5,
+  //   marginBottom: 10,
+  //   paddingHorizontal: 10,
+  //   borderRadius: 5,
+  //   backgroundColor: "white",
+  // },
 
   btm: {
     padding: 10,
@@ -375,7 +397,22 @@ const styles = StyleSheet.create({
     right: 0,
     alignItems: "center",
   },
-  loader: {
-    
+  inputWrapper: {
+    position: "relative",
+  },
+
+  input: {
+    borderWidth: 1,
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingRight: 40, // space for icon
+    height: 48,
+  },
+
+  eyeIcon: {
+    position: "absolute",
+    right: 12,
+    top: "50%",
+    transform: [{ translateY: -10 }],
   },
 });

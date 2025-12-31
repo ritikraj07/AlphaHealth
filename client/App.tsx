@@ -1,16 +1,22 @@
+import "react-native-gesture-handler";
 
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import React, { useEffect, useState } from "react";
 import { StatusBar } from "expo-status-bar";
-import Navigation from "./src/navigators";
+
 import { Provider } from "react-redux";
-import store from "./src/shared/store";
+
+
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { setCredentials } from "./src/shared/store/slices/authSlice";
+import { setCredentials } from "./app/src/shared/store/slices/authSlice";
+
 
 import * as SplashScreen from "expo-splash-screen";
 import { ToastAndroid } from "react-native";
+import Navigation from "./app/src/navigators";
+import store from "./app/src/shared/store";
+import { NavigationContainer } from "@react-navigation/native";
 SplashScreen.preventAutoHideAsync();
 
 
@@ -62,15 +68,20 @@ if (!ready) {
   return (
     <Provider store={store}>
       <GestureHandlerRootView style={{ flex: 1 }}>
-      <SafeAreaProvider>
-        <StatusBar style="auto" translucent backgroundColor="white" />
-        <SafeAreaView style={{
-          flex: 1, backgroundColor: "#e91e62",
-          paddingBottom: -100
-        }}>
-          <Navigation />
-        </SafeAreaView>
-      </SafeAreaProvider>
+        <SafeAreaProvider>
+          <StatusBar style="auto" translucent backgroundColor="white" />
+          <SafeAreaView
+            style={{
+              flex: 1,
+              backgroundColor: "#e91e62",
+              paddingBottom: -100,
+            }}
+          >
+            <NavigationContainer>
+              <Navigation />
+            </NavigationContainer>
+          </SafeAreaView>
+        </SafeAreaProvider>
       </GestureHandlerRootView>
     </Provider>
   );
