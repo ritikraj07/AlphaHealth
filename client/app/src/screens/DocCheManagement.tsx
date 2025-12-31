@@ -5,6 +5,7 @@ import {
   View,
   ScrollView,
   Alert,
+  ToastAndroid,
 } from "react-native";
 
 import {
@@ -17,11 +18,13 @@ import {
 import AddDoctorChemistModal from "./Modals/AddDocOrChemist";
 import { useState } from "react";
 import { useGetHeadQuartersQuery } from "../shared/store/api/hqApi";
+import DocCheSkeleton from "../shared/componets/skeletons/DocCheSkeleton";
+import { RefreshControl } from "react-native-gesture-handler";
 
 
 export default function DocCheManagement() {
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const {data: HQ, isLoading, error, refetch } = useGetHeadQuartersQuery({});
+  const {data: HQ, isLoading,isError ,error, refetch, isFetching } = useGetHeadQuartersQuery({});
 
    // Mock headquarters data - you would get this from your API
   const headquarters = HQ?.data ?? [];
@@ -30,17 +33,21 @@ export default function DocCheManagement() {
    const handleAddProfessional = (data: any) => {
     //  console.log("New professional:", data);
      // Here you would typically make an API call to save the professional
-     Alert.alert(
-       "Success",
-       `${data.type === "doctor" ? "Doctor" : "Chemist"} added successfully!`
-     );
+     ToastAndroid.show("Professional added successfully", ToastAndroid.SHORT);
      setIsModalVisible(false);
-   };
+  };
+  
+  if (isLoading) {
+    return <DocCheSkeleton />
+  }
 
   return (
     <ScrollView
       style={[styles.container, { backgroundColor: "rgba(255, 255, 255, 1)" }]}
       showsVerticalScrollIndicator={false}
+      refreshControl={
+                <RefreshControl refreshing={isFetching} onRefresh={refetch} />
+              }
     >
       <AddDoctorChemistModal
         visible={isModalVisible}

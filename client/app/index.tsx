@@ -1,4 +1,5 @@
 
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import React, { useEffect, useState } from "react";
 import { StatusBar } from "expo-status-bar";
@@ -60,6 +61,7 @@ if (!ready) {
   
   return (
     <Provider store={store}>
+      <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
         <StatusBar style="auto" translucent backgroundColor="white" />
         <SafeAreaView style={{
@@ -69,6 +71,7 @@ if (!ready) {
           <Navigation />
         </SafeAreaView>
       </SafeAreaProvider>
+      </GestureHandlerRootView>
     </Provider>
   );
 }

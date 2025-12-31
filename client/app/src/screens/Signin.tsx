@@ -80,7 +80,7 @@ export default function SignIn() {
   }, []); // Empty dependency array - runs once on mount
 
   const handleEmployeeLogin = async () => {
-    setIsLoading(true);
+    
     if (serverStatus === "offline") {
       Alert.alert(
         "Server Offline",
@@ -90,11 +90,12 @@ export default function SignIn() {
     }
 
     if (!email || !password) {
+      
       Alert.alert("Error", "Please enter both email and password");
       return;
     }
 
-    
+    setIsLoading(true);
     try {
       console.log("📤 Attempting employee login...");
       const result = await login({ email, password }).unwrap();
@@ -132,7 +133,8 @@ export default function SignIn() {
            routes: [{ name: "Main" as never }],
          });
       } else {
-        Alert.alert("Login Failed", result.message || "Invalid credentials");
+        ToastAndroid.show(result.message || "Invalid credentials", ToastAndroid.SHORT);
+        // Alert.alert("Login Failed", result.message || "Invalid credentials");
       }
     } catch (error: any) {
       console.log("❌ Login error:", error);

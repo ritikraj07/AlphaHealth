@@ -1,4 +1,4 @@
-import { StyleSheet, Text, TouchableOpacity, View, Alert, ToastAndroid } from 'react-native'
+import { StyleSheet, Text, TouchableOpacity, View, Alert, ToastAndroid, ScrollView } from 'react-native'
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from 'expo-linear-gradient';
 import { global_styles } from '../shared/style'
@@ -32,7 +32,7 @@ import { useAppSelector } from '../shared/store/hooks';
  */
 export default function Attendance() {
   const [markAttendance, { isLoading: isMarking }] = useMarkAttendanceMutation();
-  const {name} = useAppSelector((state) => state.auth);
+  const {name, userId} = useAppSelector((state) => state.auth);
 
   const [location, setLocation] = useState<any>(null);
   const [address, setAddress] = useState<string>('');
@@ -298,93 +298,103 @@ useEffect(() => {
 
 
   return (
-    <View style={global_styles.container}>
-      {/* Greeting */}
-      <Text style={styles.greeting}>{greeting}</Text>
+    <View style={{ flex: 1, backgroundColor: "#ffffff" }}>
+      <ScrollView
+        style={[styles.container]}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Greeting */}
+        <Text style={styles.greeting}>{greeting}</Text>
 
-      {/* Location Display */}
-      {location && (
-        <View style={styles.locationContainer}>
-          <Ionicons name="location" size={18} color="#4CAF50" />
-          <View style={styles.addressContainer}>
-            <Text style={styles.addressLabel}>Current Location</Text>
-            {isGettingAddress ? (
-              <Text style={styles.addressLoading}>
-                Getting location details...
+        {/* Location Display */}
+        {location && (
+          <View style={styles.locationContainer}>
+            <Ionicons name="location" size={18} color="#4CAF50" />
+            <View style={styles.addressContainer}>
+              <Text style={styles.addressLabel}>Current Location</Text>
+              {isGettingAddress ? (
+                <Text style={styles.addressLoading}>
+                  Getting location details...
+                </Text>
+              ) : (
+                <Text style={styles.addressText}>{address}</Text>
+              )}
+              <Text style={styles.coordinatesText}>
+                📍 {location?.latitude?.toFixed(6)},{" "}
+                {location?.longitude?.toFixed(6)}
               </Text>
-            ) : (
-              <Text style={styles.addressText}>{address}</Text>
-            )}
-            <Text style={styles.coordinatesText}>
-              📍 {location?.latitude?.toFixed(6)},{" "}
-              {location?.longitude?.toFixed(6)}
-            </Text>
+            </View>
           </View>
-        </View>
-      )}
+        )}
 
-      {locationError && (
-        <View style={styles.errorContainer}>
-          <Ionicons name="warning" size={16} color="#FF6B6B" />
-          <Text style={styles.errorText}>{locationError}</Text>
-        </View>
-      )}
+        {locationError && (
+          <View style={styles.errorContainer}>
+            <Ionicons name="warning" size={16} color="#FF6B6B" />
+            <Text style={styles.errorText}>{locationError}</Text>
+          </View>
+        )}
 
-      {/* Card */}
-      <View style={styles.card}>
-        <LinearGradient
-          colors={
-            isDayStarted ? ["#FF6B6B", "#FF8E53"] : ["#FF416C", "#8A2BE2"]
-          }
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 0 }}
-          style={styles.btnWrapper}
-        >
-          <TouchableOpacity
-            style={[styles.btn, isLoading && styles.btnDisabled]}
-            onPress={handleAttendance}
-            disabled={isLoading}
+        {/* Card */}
+        <View style={styles.card}>
+          <LinearGradient
+            colors={
+              isDayStarted ? ["#FF6B6B", "#FF8E53"] : ["#FF416C", "#8A2BE2"]
+            }
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={styles.btnWrapper}
           >
-            {isLoading ? (
-              <Ionicons name="refresh" size={20} color="white" />
-            ) : (
-              <Ionicons
-                name={isDayStarted ? "stop-outline" : "play-outline"}
-                size={22}
-                color="white"
-              />
-            )}
-            <Text style={styles.btnText}>
-              {isLoading ? "PROCESSING..." : btnText}
-            </Text>
-          </TouchableOpacity>
-        </LinearGradient>
+            <TouchableOpacity
+              style={[styles.btn, isLoading && styles.btnDisabled]}
+              onPress={handleAttendance}
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <Ionicons name="refresh" size={20} color="white" />
+              ) : (
+                <Ionicons
+                  name={isDayStarted ? "stop-outline" : "play-outline"}
+                  size={22}
+                  color="white"
+                />
+              )}
+              <Text style={styles.btnText}>
+                {isLoading ? "PROCESSING..." : btnText}
+              </Text>
+            </TouchableOpacity>
+          </LinearGradient>
 
-        {/* Bottom Text */}
-        <Text style={styles.bottomText}>{bottomText}</Text>
-      </View>
-      {showSummary && (
-        <AttendanceSummaryCard user={name} attendance={attendanceSummary} />
-      )}
+          {/* Bottom Text */}
+          <Text style={styles.bottomText}>{bottomText}</Text>
+        </View>
+        {showSummary && (
+          <AttendanceSummaryCard user={name} attendance={attendanceSummary} />
+        )}
+      </ScrollView>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#f8f9fa",
+    paddingHorizontal: 20,
+  },
   greeting: {
     fontSize: 18,
     fontWeight: "600",
-    marginBottom: 15
+    marginBottom: 15,
   },
   locationContainer: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    backgroundColor: '#F0F9FF',
+    flexDirection: "row",
+    alignItems: "flex-start",
+    backgroundColor: "#F0F9FF",
     padding: 15,
     borderRadius: 12,
     marginBottom: 15,
     borderWidth: 1,
-    borderColor: '#BDE0FE',
+    borderColor: "#BDE0FE",
   },
   addressContainer: {
     flex: 1,
@@ -392,43 +402,43 @@ const styles = StyleSheet.create({
   },
   addressLabel: {
     fontSize: 12,
-    fontWeight: '700',
-    color: '#1E40AF',
+    fontWeight: "700",
+    color: "#1E40AF",
     marginBottom: 4,
-    textTransform: 'uppercase',
+    textTransform: "uppercase",
   },
   addressText: {
     fontSize: 14,
-    fontWeight: '500',
-    color: '#1E40AF',
+    fontWeight: "500",
+    color: "#1E40AF",
     lineHeight: 20,
   },
   addressLoading: {
     fontSize: 14,
-    fontStyle: 'italic',
-    color: '#6B7280',
+    fontStyle: "italic",
+    color: "#6B7280",
     lineHeight: 20,
   },
   coordinatesText: {
     fontSize: 11,
-    color: '#6B7280',
-    fontStyle: 'italic',
+    color: "#6B7280",
+    fontStyle: "italic",
     marginTop: 4,
   },
   errorContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#FEF2F2',
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#FEF2F2",
     padding: 12,
     borderRadius: 8,
     marginBottom: 15,
     borderWidth: 1,
-    borderColor: '#FECACA'
+    borderColor: "#FECACA",
   },
   errorText: {
     marginLeft: 8,
     fontSize: 14,
-    color: '#DC2626'
+    color: "#DC2626",
   },
   card: {
     alignItems: "center",
@@ -461,13 +471,13 @@ const styles = StyleSheet.create({
     color: "white",
     fontWeight: "bold",
     marginLeft: 8,
-    fontSize: 16
+    fontSize: 16,
   },
   bottomText: {
     marginTop: 10,
     fontSize: 13,
     color: "#666",
-  }
+  },
 });
 
 

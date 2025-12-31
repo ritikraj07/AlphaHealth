@@ -1,5 +1,6 @@
 import { StyleSheet, Text, TouchableOpacity, View, ScrollView } from 'react-native'
 import { Ionicons, Feather, EvilIcons } from "@expo/vector-icons";
+import { RefreshControl } from 'react-native-gesture-handler';
 
 
 // Doctors Component
@@ -56,7 +57,10 @@ const HospitalsCard = () => {
 export default function POB() {
   return (
     <ScrollView style={[styles.container]}
-     showsVerticalScrollIndicator={false}
+      showsVerticalScrollIndicator={false}
+      refreshControl={
+              <RefreshControl refreshing={false} onRefresh={() => {}} />
+            }
      >
       {/* Header Section */}
       <View style={styles.header}>

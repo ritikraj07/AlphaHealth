@@ -1,6 +1,7 @@
 import { StyleSheet, Text, TouchableOpacity, View, ScrollView } from 'react-native'
 
 import { Ionicons, Feather, EvilIcons, AntDesign, MaterialIcons } from "@expo/vector-icons";
+import { RefreshControl } from 'react-native-gesture-handler';
 
 /**
  * ReportsAnalytics screen
@@ -17,17 +18,29 @@ export default function ReportsAnalytics() {
 
 
   return (
-    <ScrollView style={[styles.container, {backgroundColor: 'white'}]}
-     showsVerticalScrollIndicator={false}
-     >
+    <ScrollView
+      style={[styles.container, { backgroundColor: "white" }]}
+      showsVerticalScrollIndicator={false}
+      refreshControl={
+        <RefreshControl refreshing={false} onRefresh={() => {}} />
+      }
+    >
       {/* Header Section */}
-      <View style={[styles.header, {flexDirection:"column", alignItems:"flex-start", marginBottom:0}]}>
-        
-            <Text style={styles.title}>Reports & Analytics</Text>
-        <Text style={styles.subtitle}>Track your performance and customer coverage metrics</Text>     
+      <View
+        style={[
+          styles.header,
+          {
+            flexDirection: "column",
+            alignItems: "flex-start",
+            marginBottom: 0,
+          },
+        ]}
+      >
+        <Text style={styles.title}>Reports & Analytics</Text>
+        <Text style={styles.subtitle}>
+          Track your performance and customer coverage metrics
+        </Text>
       </View>
-
-
 
       <View style={styles.gridContainer}>
         {/* Days Worked */}
@@ -71,83 +84,111 @@ export default function ReportsAnalytics() {
         </View>
       </View>
 
-
       {/* ---------- */}
       {/* Doctor Coverage Analysis card */}
 
-      <View style={[styles.leaveCard, {width:"100%"}]} >
-          <View style={[styles.cardHeader]}>
-            <Ionicons name="filter-circle-outline" size={24} color="black" />
-            <Text style={[styles.title, {fontSize:20}]}>Doctor Coverage Analysis</Text>
-      </View>
-        <Text style={styles.subtitle}>Coverage vs target frequency for each doctor</Text>     
-
-        <View style={{flexDirection:"row", justifyContent:"space-between", alignItems:"center"}} >
-          <View style={{flexDirection:"row", justifyContent:"flex-start", alignItems:"center"}} >
-            <Text style={{fontWeight:"700", marginRight:10}}>Dr. Smith</Text>
-            <Text style={{backgroundColor:"deepskyblue", paddingHorizontal:2, color:'white', borderRadius:5}}>high</Text>
-          </View>
-          <Text>
-            0/4 calls
+      <View style={[styles.leaveCard, { width: "100%" }]}>
+        <View style={[styles.cardHeader]}>
+          <Ionicons name="filter-circle-outline" size={24} color="black" />
+          <Text style={[styles.title, { fontSize: 20 }]}>
+            Doctor Coverage Analysis
           </Text>
         </View>
+        <Text style={styles.subtitle}>
+          Coverage vs target frequency for each doctor
+        </Text>
 
-        <View style={{width:"100%", height:5, backgroundColor:"pink", marginVertical:10, borderRadius:5}} ></View>
+        <View
+          style={{
+            flexDirection: "row",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
+          <View
+            style={{
+              flexDirection: "row",
+              justifyContent: "flex-start",
+              alignItems: "center",
+            }}
+          >
+            <Text style={{ fontWeight: "700", marginRight: 10 }}>
+              Dr. Smith
+            </Text>
+            <Text
+              style={{
+                backgroundColor: "deepskyblue",
+                paddingHorizontal: 2,
+                color: "white",
+                borderRadius: 5,
+              }}
+            >
+              high
+            </Text>
+          </View>
+          <Text>0/4 calls</Text>
+        </View>
+
+        <View
+          style={{
+            width: "100%",
+            height: 5,
+            backgroundColor: "pink",
+            marginVertical: 10,
+            borderRadius: 5,
+          }}
+        ></View>
         <Text>0% coverage</Text>
       </View>
 
-
       {/* Performance Summary Card */}
 
-      <View style={[styles.leaveCard, {width:"100%"}]} >
-          <View style={[styles.cardHeader]}>
-            <Ionicons name="medal-outline" size={24} color="black" />
-            <Text style={[styles.title, {fontSize:20}]}>Performance Summary</Text>
-      </View>
-        <Text style={styles.subtitle}>Key achievements and areas for improvement</Text>     
-
-      <Text style={{color:"green", fontWeight:"700", marginBottom:20}} >Achievements</Text>
-
-      <Text style={{color:"rgb(247,120,72)", fontWeight:"700"}} >Areas for Improvement</Text>
-      <View>
-        
-      <View style={{flexDirection:"row", alignItems:"center"}} >
-        <Ionicons name="time-outline" size={20} color="rgb(247,120,72)" />
-        <Text style={styles.keyPoints} >
-          Focus on high-potential doctors (0% covered)
+      <View style={[styles.leaveCard, { width: "100%" }]}>
+        <View style={[styles.cardHeader]}>
+          <Ionicons name="medal-outline" size={24} color="black" />
+          <Text style={[styles.title, { fontSize: 20 }]}>
+            Performance Summary
+          </Text>
+        </View>
+        <Text style={styles.subtitle}>
+          Key achievements and areas for improvement
         </Text>
-      </View>
 
-      
-      <View style={{flexDirection:"row", alignItems:"center"}} >
-        <Ionicons name="time-outline" size={20} color="rgb(247,120,72)" />
-        <Text style={styles.keyPoints} >
-          Increase daily call frequency
+        <Text style={{ color: "green", fontWeight: "700", marginBottom: 20 }}>
+          Achievements
         </Text>
-      </View>
 
-      
-      <View style={{flexDirection:"row", alignItems:"center"}} >
-        <Ionicons name="time-outline" size={20} color="rgb(247,120,72)" />
-        <Text style={styles.keyPoints} >
-          Generate more purchase orders
+        <Text style={{ color: "rgb(247,120,72)", fontWeight: "700" }}>
+          Areas for Improvement
         </Text>
-      </View>
+        <View>
+          <View style={{ flexDirection: "row", alignItems: "center" }}>
+            <Ionicons name="time-outline" size={20} color="rgb(247,120,72)" />
+            <Text style={styles.keyPoints}>
+              Focus on high-potential doctors (0% covered)
+            </Text>
+          </View>
 
-      
-      <View style={{flexDirection:"row", alignItems:"center"}} >
-        <Ionicons name="time-outline" size={20} color="rgb(247,120,72)" />
-        <Text style={styles.keyPoints} >
-          Improve overall doctor coverage
-        </Text>
-      </View>
-      </View>
-        
-      </View>
+          <View style={{ flexDirection: "row", alignItems: "center" }}>
+            <Ionicons name="time-outline" size={20} color="rgb(247,120,72)" />
+            <Text style={styles.keyPoints}>Increase daily call frequency</Text>
+          </View>
 
-     
+          <View style={{ flexDirection: "row", alignItems: "center" }}>
+            <Ionicons name="time-outline" size={20} color="rgb(247,120,72)" />
+            <Text style={styles.keyPoints}>Generate more purchase orders</Text>
+          </View>
+
+          <View style={{ flexDirection: "row", alignItems: "center" }}>
+            <Ionicons name="time-outline" size={20} color="rgb(247,120,72)" />
+            <Text style={styles.keyPoints}>
+              Improve overall doctor coverage
+            </Text>
+          </View>
+        </View>
+      </View>
     </ScrollView>
-  )
+  );
 }
 
 const styles = StyleSheet.create({

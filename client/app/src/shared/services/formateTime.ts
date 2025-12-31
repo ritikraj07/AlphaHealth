@@ -15,6 +15,7 @@ export const formatWorkingHours = (workingHours: number): string => {
     // only show seconds if duration is small
     parts.push(`${seconds} sec${seconds > 1 ? "s" : ""}`);
   }
-
-  return parts.join(" ");
+  let totalWorkingTime = parts.join(" ");
+  console.log('\n','\n' ,totalWorkingTime,'\n','\n' ,);
+  return totalWorkingTime;
 };

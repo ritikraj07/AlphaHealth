@@ -67,7 +67,7 @@ const MedicineBottleLoader = ({message}: {message: string}) => {
               styles.liquid,
               {
                 height: heightInterpolate,
-                backgroundColor: "#4CAF50",
+                backgroundColor: "#e91e62",
               },
             ]}
           />
@@ -77,7 +77,7 @@ const MedicineBottleLoader = ({message}: {message: string}) => {
         </View>
         <View style={styles.bottleCap} />
       </Animated.View>
-          <Text style={styles.loadingText}>{ message}</Text>
+      <Text style={styles.loadingText}>{message}</Text>
     </View>
   );
 };
@@ -94,17 +94,17 @@ const styles = StyleSheet.create({
   bottleNeck: {
     width: 30,
     height: 20,
-    backgroundColor: "#2E7D32",
+    backgroundColor: "#e91e62",
     borderTopLeftRadius: 5,
     borderTopRightRadius: 5,
   },
   bottleBody: {
     width: 100,
     height: 120,
-    backgroundColor: "#E8F5E9",
+    backgroundColor: "#ffffffff",
     borderRadius: 10,
     borderWidth: 3,
-    borderColor: "#2E7D32",
+    borderColor: "#e91e62",
     overflow: "hidden",
     position: "relative",
   },
@@ -120,26 +120,26 @@ const styles = StyleSheet.create({
     top: "50%",
     left: 0,
     right: 0,
-    backgroundColor: "rgba(255, 255, 255, 0.9)",
+    backgroundColor: "rgba(255, 255, 255, 1)",
     paddingVertical: 5,
     alignItems: "center",
   },
   labelText: {
-    color: "#2E7D32",
+    color: "#e91e62",
     fontSize: 12,
     fontWeight: "bold",
   },
   bottleCap: {
     width: 40,
     height: 15,
-    backgroundColor: "#2E7D32",
+    backgroundColor: "#e91e62",
     borderBottomLeftRadius: 5,
     borderBottomRightRadius: 5,
   },
   loadingText: {
     marginTop: 20,
     fontSize: 14,
-    color: "#2E7D32",
+    color: "#15cf1fff",
     fontWeight: "500",
   },
 });

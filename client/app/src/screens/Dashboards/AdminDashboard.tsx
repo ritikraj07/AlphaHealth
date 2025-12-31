@@ -20,6 +20,11 @@ import {
 import AddEmployeeModal from "../Modals/AddEmployeeModal";
 import { useCreateEmployeeMutation } from "../../shared/store/api/employeeApi";
 
+import { useNavigation } from "@react-navigation/native";
+import { useDispatch } from "react-redux";
+import { handleApiError } from "../../shared/utils/apiErrorHandler";
+import { performLogout } from "../../shared/utils/logout";
+import GlobalError from "../../shared/componets/common/GlobalError";
 
 import { useGetAdminDashboardQuery } from "../../shared/store/api/adminApi";
 import AdminDashboardSkeleton from "../../shared/componets/skeletons/AdminDashboardSkeleton";
@@ -74,11 +79,12 @@ export default function AdminDashboard(): JSX.Element {
     data,
     isLoading: dashboardLoading,
     isFetching,
-    refetch, } = useGetAdminDashboardQuery({});
+    refetch, error, isError } = useGetAdminDashboardQuery({});
   
   const [createEmployee, { isLoading: createEmployeeLoading }] =  useCreateEmployeeMutation();
-  const {token, role, userId, name} = useAppSelector((state) => state.auth);
-
+  const { userId, name} = useAppSelector((state) => state.auth);
+  const navigation = useNavigation();
+  const dispatch = useDispatch();
   const TotalEmployee = data?.data?.employees?.total ?? 0;
   const TotalManager = data?.data?.employees?.managers ?? 0;
   const TotalHR = data?.data?.employees?.hr ?? 0;
@@ -123,7 +129,33 @@ export default function AdminDashboard(): JSX.Element {
   
    if (dashboardLoading) {
      return <AdminDashboardSkeleton />;
-   }
+  }
+  
+   if (isError) {
+      const { message, showRetry, showSupport, logout } = handleApiError(error);
+  
+      if (logout) {
+        async function logout() {
+          await performLogout(dispatch, navigation);
+        }
+      }
+  
+      return (
+        <GlobalError
+          title="Failed to load Dashboard"
+          message={message}
+          showRetry={showRetry}
+          showSupport={showSupport}
+          onRetry={refetch}
+          onSupport={() => {
+            // Example
+  
+            console.log("Open support screen / email etc");
+          }}
+        />
+      );
+  }
+  
   return (
     <View
       style={{

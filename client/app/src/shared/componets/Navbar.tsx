@@ -7,6 +7,7 @@ import { useDispatch } from 'react-redux';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { clearCredentials } from '../store/slices/authSlice';
 import { apiSlice } from '../store/api/apiSlice';
+import { performLogout } from '../utils/logout';
 
 /**
  * Navbar component that displays the company logo and employee information on the left side
@@ -20,17 +21,7 @@ export default function Navbar() {
   console.log("------->", name, role);
 
   const handleLogout = async () => {
-    // Navigate to SignIn page and reset the navigation stack
-    await AsyncStorage.multiRemove(["token", "role", "userId"]);
-
-    dispatch(clearCredentials());
-    dispatch(apiSlice.util.resetApiState());
-
-
-    navigation.reset({
-      index: 0,
-      routes: [{ name: 'SignIn1' as never }],
-    });
+    await performLogout(dispatch, navigation);
   };
 
   return (

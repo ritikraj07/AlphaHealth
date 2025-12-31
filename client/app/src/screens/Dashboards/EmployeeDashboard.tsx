@@ -1,46 +1,77 @@
-import { ScrollView, StyleSheet, Text, View } from "react-native";
-import React from "react";
 import {
-  Octicons,
-  Feather,
-  EvilIcons,
-  FontAwesome,
   AntDesign,
-  Ionicons,
   Entypo,
+  Feather,
+  FontAwesome,
+  Ionicons,
 } from "@expo/vector-icons";
+import { ScrollView, StyleSheet, Text, View } from "react-native";
 
-import { useAppSelector } from "../../shared/store/hooks";
+import { useNavigation } from "@react-navigation/native";
+import { RefreshControl } from "react-native-gesture-handler";
+import { useDispatch } from "react-redux";
+import GlobalError from "../../shared/componets/common/GlobalError";
 import { useGetMyDetailQuery } from "../../shared/store/api/employeeApi";
-import MedicineBottleLoader from "../../shared/componets/MedicineBottleLoader";
+import { useAppSelector } from "../../shared/store/hooks";
+import { handleApiError } from "../../shared/utils/apiErrorHandler";
+import { performLogout } from "../../shared/utils/logout";
+import EmployeeDashboardSkeleton from "../../shared/componets/skeletons/EmployeeDashboardSkeleton";
 
 export default function EmployeeDashboard() {
+  const navigation = useNavigation();
+  const dispatch = useDispatch();
   const year = new Date().getFullYear();
   const auth = useAppSelector((state) => state.auth);
   // console.log(auth)
-  const { data, isLoading, isError } = useGetMyDetailQuery({ id: auth?.userId });
+  const { data, isLoading, isError, error, isFetching, refetch } =
+    useGetMyDetailQuery({
+      id: auth?.userId,
+    });
   const name = data?.data?.name;
   const headQuater = data?.data?.hq?.name;
-  
-  
-  // console.log(data)
+
   
 
-   if (isLoading) {
-     return (
-       <View
-         style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
-       >
-         <MedicineBottleLoader message="" />
-       </View>
-     );
-   }
-  if (isError) return <Text>Error loading profile</Text>;
+  if (isLoading) {
+    return (
+      <EmployeeDashboardSkeleton />
+    );
+  }
+
+  if (isError) {
+    const { message, showRetry, showSupport, logout } = handleApiError(error);
+
+    if (logout) {
+      async function logout() {
+        await performLogout(dispatch, navigation);
+      }
+    }
+
+    return (
+      <GlobalError
+        title="Failed to load Dashboard"
+        message={message}
+        showRetry={showRetry}
+        showSupport={showSupport}
+        onRetry={refetch}
+        onSupport={() => {
+          // Example
+
+          console.log("Open support screen / email etc");
+        }}
+      />
+    );
+  }
 
   return (
     <View style={{ flex: 1 }}>
       {/* <Navbar /> */}
-      <ScrollView style={styles.container}>
+      <ScrollView
+        style={styles.container}
+        refreshControl={
+          <RefreshControl refreshing={isFetching} onRefresh={refetch} />
+        }
+      >
         {/* Section 1: Greeting */}
         <View style={styles.section}>
           <Text style={styles.title}>Personal Performance Dashboard</Text>
