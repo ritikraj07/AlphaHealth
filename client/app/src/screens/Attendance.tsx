@@ -4,11 +4,12 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { global_styles } from '../shared/style'
 import { useState, useEffect } from 'react';
 import * as Location from 'expo-location';
-import { useMarkAttendanceMutation } from '../shared/store/api/attendanceApi';
+import { useGetMyTodaysAttendanceQuery, useMarkAttendanceMutation } from '../shared/store/api/attendanceApi';
 import { formatDate } from '../shared/services/formateDate';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import AttendanceSummaryCard from './Modals/AttendanceSummaryCard';
+import AttendanceSummaryCard from "../shared/componets/AttendanceSummaryCard";
 import { useAppSelector } from '../shared/store/hooks';
+import AttendanceSkeleton from '../shared/componets/skeletons/AttendanceSkeleton';
 
 // import { locationService } from '../shared/services/locationService';
 
@@ -31,6 +32,7 @@ import { useAppSelector } from '../shared/store/hooks';
  *   isDayStarted - Boolean indicating whether attendance has been marked for the day.
  */
 export default function Attendance() {
+  const { data: myTodaysAttendance, isLoading: isLoadingMyTodaysAttendance, isError, error, isFetching, refetch } = useGetMyTodaysAttendanceQuery();
   const [markAttendance, { isLoading: isMarking }] = useMarkAttendanceMutation();
   const {name, userId} = useAppSelector((state) => state.auth);
 
@@ -45,54 +47,52 @@ export default function Attendance() {
   const [btnText, setBtnText] = useState("START DAY");
   const [bottomText, setBottomText] = useState("Check-in for Attendance");
   const [isDayStarted, setIsDayStarted] = useState<boolean>(false);
-  const [attendanceSummary, setAttendanceSummary] = useState<any> ({
-    startTime: "",
-    endTime: "",
-    startLocation: {
-      coordinates: [],
-    },
-    endLocation: {
-      coordinates: [],
-    },
-  });
-  const [showSummary, setShowSummary] = useState(false);
+  const isButtonDisabled = isLoading || myTodaysAttendance?.data?.workEnded;
 
 
-  // Check if day has been started
+
+
 useEffect(() => {
-  const checkDay = async () => {
-    let date = formatDate(new Date());
-    let dayStarted = await AsyncStorage.getItem(date);
+  const data = myTodaysAttendance?.data;
+  if (!data) return;
 
-    if (dayStarted) {
-      setIsDayStarted(true);
-      setBtnText("END DAY");
-      setBottomText("Check-out for Attendance");
-    }
-    // !test purposes code
-    // await AsyncStorage.removeItem(date);
+  if (!data.workStarted) {
+    setIsDayStarted(false);
+    setBtnText("START DAY");
+    setBottomText("Check-in for Attendance");
+    return;
+  }
 
-    let yesterday = new Date();
-    yesterday.setDate(yesterday.getDate() - 1);
-    let yesterdayDate = formatDate(yesterday);
+  if (data.workStarted && !data.workEnded) {
+    setIsDayStarted(true);
+    setBtnText("END DAY");
+    setBottomText("Check-out for Attendance");
+    return;
+  }
 
-    let yesterdayDayStarted = await AsyncStorage.getItem(yesterdayDate);
-    if (yesterdayDayStarted) {
-      await AsyncStorage.removeItem(yesterdayDate);
-    }
-  };
+  // ✅ DAY COMPLETED STATE
+  if (data.workEnded) {
+    setIsDayStarted(false);
+    setBtnText("DAY COMPLETED");
+    setBottomText("You have completed your work for today");
+  }
+}, [
+  myTodaysAttendance?.data?.workStarted,
+  myTodaysAttendance?.data?.workEnded,
+]);
 
-  checkDay();
-}, []);
 
 
+  // -----------
+
+console.log("myTodaysAttendance", myTodaysAttendance?.data);
 
   // Set greeting based on time
   useEffect(() => {
     const hour = new Date().getHours();
-    if (hour < 12) setGreeting("Good Morning, Super!");
-    else if (hour < 18) setGreeting("Good Afternoon, Super!");
-    else setGreeting("Good Evening, Super!");
+    if (hour < 12) setGreeting("Good Morning, "+ name);
+    else if (hour < 18) setGreeting("Good Afternoon, " + name);
+    else setGreeting("Good Evening, " + name);
   }, []);
 
 
@@ -228,72 +228,49 @@ useEffect(() => {
     }
   };
 
-  // Handle attendance button press
- const handleAttendance = async () => {
-   try {
-     const locationData = await getCurrentLocation();
 
-     if (!locationData) {
-       return;
-     }
-    //  console.log("Location data:", locationData);
+  const handleAttendance = async () => {
+    try {
+      const locationData = await getCurrentLocation();
+      if (!locationData) return;
 
-     // !IMPORTANT: Coordinates should be [longitude, latitude], not [latitude, longitude]
-     const result = await markAttendance({
-       type: isDayStarted ? "check-out" : "check-in",
-       location: {
-         coordinates: [locationData.longitude, locationData.latitude], 
-       },
-     }).unwrap();
+      await markAttendance({
+        type: isDayStarted ? "check-out" : "check-in",
+        location: {
+          coordinates: [locationData.longitude, locationData.latitude],
+        },
+      }).unwrap();
 
-    //  Mark attendance in local storage
-     let date = formatDate(new Date());
-     await AsyncStorage.setItem(date, "true");
-     console.log("Attendance result:", result);
+      ToastAndroid.show(
+        isDayStarted ? "Checked out successfully" : "Checked in successfully",
+        ToastAndroid.SHORT
+      );
 
-      // Attendance result: {"data": {"attendanceId": "69537d9026a8ecb6355884e9", "date": "2025-12-30T00:00:00.000Z", "endLocation": {"coordinates": [Array], "type": "Point"}, "endTime": "2025-12-30T07:28:51.240Z", "startLocation": {"coordinates": [Array], "type": "Point"}, "startTime": "2025-12-30T07:21:52.883Z", "workingHours": 0.12}, "message": "Check-out recorded successfully", "success": true}      
+      // 🔥 REFRESH backend state
+      refetch();
+    } catch (error: any) {
+      const errorMessage =
+        error?.data?.message || error?.message || "Failed to mark attendance";
+      ToastAndroid.show(errorMessage, ToastAndroid.SHORT);
+    }
+  };
 
 
-     
-     let dayStarted = await AsyncStorage.getItem(date);
 
-      if (dayStarted) {
-        setIsDayStarted(true);
-        setBtnText("END DAY");
-        setBottomText("Check-out for Attendance");
-      }
-     
-     // result is the entire response object
-     if (result.success) {
-       ToastAndroid.show(result.message, ToastAndroid.SHORT);
+  // -----------
+  
+  if (isLoadingMyTodaysAttendance || isFetching) {
+    return <AttendanceSkeleton />;
+  }
 
-       if (isDayStarted) {
-         setIsDayStarted(false);
-         setBtnText("START DAY");
-         setBottomText("Check-in for Attendance");
-         setShowSummary(true);
-         setAttendanceSummary({
-           attendanceId: result.data.attendanceId,
-           date: result.data.date,
-           startTime: result.data.startTime,
-           endTime: result.data.endTime,
-           startLocation: result.data.startLocation,
-           endLocation: result.data.endLocation,
-         });
-       }
-      
-     } else {
-       ToastAndroid.show(result.message || "Unknown error", ToastAndroid.SHORT);
-     }
-   } catch (error: any) {
-     console.error("Error marking attendance:", error);
+  if (isError) {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <Text>Failed to load attendance</Text>
+      </View>
+    );
+  }
 
-     // Handle error from unwrap()
-     const errorMessage =
-       error?.data?.message || error?.message || "Failed to mark attendance";
-     ToastAndroid.show(errorMessage, ToastAndroid.SHORT);
-   }
- };
 
 
 
@@ -338,26 +315,40 @@ useEffect(() => {
         <View style={styles.card}>
           <LinearGradient
             colors={
-              isDayStarted ? ["#FF6B6B", "#FF8E53"] : ["#FF416C", "#8A2BE2"]
+              myTodaysAttendance?.data?.workEnded
+                ? ["#22C55E", "#135029ff"] // ✅ completed (green)
+                : isDayStarted
+                ? ["#FF6B6B", "#FF8E53"] // ⛔ end day
+                : ["#FF416C", "#8A2BE2"] // ▶ start day
             }
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 0 }}
-            style={styles.btnWrapper}
+            style={[
+              styles.btnWrapper,
+              isButtonDisabled && styles.btnWrapperDisabled,
+            ]}
           >
             <TouchableOpacity
-              style={[styles.btn, isLoading && styles.btnDisabled]}
+              style={styles.btn}
               onPress={handleAttendance}
-              disabled={isLoading}
+              disabled={isButtonDisabled}
             >
               {isLoading ? (
                 <Ionicons name="refresh" size={20} color="white" />
               ) : (
                 <Ionicons
-                  name={isDayStarted ? "stop-outline" : "play-outline"}
+                  name={
+                    myTodaysAttendance?.data?.workEnded
+                      ? "checkmark-circle-outline"
+                      : isDayStarted
+                      ? "stop-outline"
+                      : "play-outline"
+                  }
                   size={22}
                   color="white"
                 />
               )}
+
               <Text style={styles.btnText}>
                 {isLoading ? "PROCESSING..." : btnText}
               </Text>
@@ -367,8 +358,13 @@ useEffect(() => {
           {/* Bottom Text */}
           <Text style={styles.bottomText}>{bottomText}</Text>
         </View>
-        {showSummary && (
-          <AttendanceSummaryCard user={name} attendance={attendanceSummary} />
+        {myTodaysAttendance?.data?.workStarted && (
+          <AttendanceSummaryCard
+            user={name}
+            attendance={myTodaysAttendance.data.attendance}
+            workingHours={myTodaysAttendance.data.workingHours}
+            workEnded={myTodaysAttendance.data.workEnded}
+          />
         )}
       </ScrollView>
     </View>
@@ -453,6 +449,10 @@ const styles = StyleSheet.create({
     elevation: 3,
     width: "100%",
   },
+  btnWrapperDisabled: {
+    opacity: 0.6,
+  },
+
   btnWrapper: {
     borderRadius: 10,
     width: "85%",
@@ -464,9 +464,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     borderRadius: 10,
   },
-  btnDisabled: {
-    opacity: 0.7,
-  },
+ 
   btnText: {
     color: "white",
     fontWeight: "bold",

@@ -1,4 +1,5 @@
 import {
+  RefreshControl,
   ScrollView,
   StyleSheet,
   Text,
@@ -55,6 +56,9 @@ export default function LeaveManagement() {
       <ScrollView
         style={[styles.container]}
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl refreshing={isFetching} onRefresh={refetch} />
+        }
       >
         {/* Header Section */}
         <View style={styles.header}>
