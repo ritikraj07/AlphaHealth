@@ -1,5 +1,12 @@
-
 # PharmaPrime — Employee Management App 🩺
+
+⚠️ **Proprietary Software — Not Open Source**
+
+© 2026 PharmaPrime — Ritik Raj. All Rights Reserved.
+
+Unauthorized use, copying, modification, distribution, or deployment
+of this codebase is strictly prohibited without written permission.
+
 
 > Centralized employee & field-force management for Admins and Employees — attendance, leaves, POB (Proof of Business) visits, doctor/chemist database, field productivity tracking and analytics.
 > React Native client + Node.js/Express backend + MongoDB. Geo-tracking, OTP/email notifications and role-based access included.
@@ -8,8 +15,8 @@
 
 ## Quick links
 
-* Live backend: [https://PharmaPrime.onrender.com/](https://PharmaPrime.onrender.com/)
-* API docs (Swagger): [https://PharmaPrime.onrender.com/api-docs/](https://PharmaPrime.onrender.com/api-docs/)
+* Live backend: [https://PharmaPrime.onrender.com/](https://alphahealth.onrender.com/)
+* API docs (Swagger): [https://PharmaPrime.onrender.com/api-docs/](https://alphahealth.onrender.com/api-docs/)
 * Figma (design): [https://www.figma.com/make/zowwkwF4sV8lmmgiaTXV74/Employee-Management-App?node-id=0-1&p=f&t=Ia5BHcXOXdklokdB-0](https://www.figma.com/make/zowwkwF4sV8lmmgiaTXV74/Employee-Management-App?node-id=0-1&p=f&t=Ia5BHcXOXdklokdB-0)
 * Repository: `ritikraj07/PharmaPrime` (this repo)
 
@@ -27,9 +34,8 @@
 8. [Security & validation notes](#security--validation-notes)
 9. [Logging, monitoring & OTP/email](#logging-monitoring--otpemail)
 10. [Testing & CI suggestions](#testing--ci-suggestions)
-11. [Roadmap & known limitations](#roadmap--known-limitations)
-12. [Contributing & contact](#contributing--contact)
-13. [License](#license)
+11. [contact](#contact)
+12. [License](#license)
 
 ---
 
@@ -164,7 +170,7 @@ LOG_LEVEL=info
 
 > **One README for root:** the repo contains `server` and `client` folders. Run them separately.
 
-### 1. Clone the repo
+### 1. Internal development setup
 
 ```bash
 git clone https://github.com/ritikraj07/PharmaPrime.git
@@ -182,7 +188,7 @@ npm run dev      # uses nodemon (see package.json: "dev": "nodemon index.js")
 npm start        # production start (node index.js)
 ```
 
-**Quick check**: Server listens on `PORT` from `.env`. API docs available at `/api-docs/` (e.g. [https://PharmaPrime.onrender.com/api-docs/](https://PharmaPrime.onrender.com/api-docs/))
+**Quick check**: Server listens on `PORT` from `.env`. API docs available at `/api-docs/` (e.g. [https://PharmaPrime.onrender.com/api-docs/](https://alphahealth.onrender.com/api-docs/))
 
 ### 3. Client (React Native / Expo)
 
@@ -256,39 +262,18 @@ PharmaPrime already includes several security measures (from packages in `packag
 * Add integration tests to cover authentication flows (register/login), POB creation, and leave approvals
 * CI: set up GitHub Actions to run `npm test` and linting on PRs. Optionally add a build step for Expo (EAS) or web preview.
 
----
+## Contact
 
-## Roadmap & known limitations
+This is a proprietary project maintained by **Ritik Raj**.
 
-**Planned / recommended improvements**
+Use, reuse, modification, or deployment of this codebase
+is **not permitted** without explicit written approval.
 
-* Add role-based dashboards for Manager and multi-HQ reporting
-* Pagination & filtering on list endpoints (large datasets)
-* Add rate limiting on auth/email endpoints
-* Add end-to-end tests and integration tests for critical flows
-* Dockerize server and client for consistent deployments
-* Implement refresh tokens & token revocation for JWT flows
+For business inquiries, partnerships, or licensing requests,
+please contact the author directly.
 
-**Current limitations**
-
-* Client currently uses a static UI with completed navigation & flows; further UX polishing and mobile testing required
-* Hardening and additional production-grade monitoring (Sentry) needed
 
 ---
-
-## Contributing & contact
-
-This project is maintained by **Ritik Raj**. If you want to contribute:
-
-1. Fork the repo
-2. Create a branch: `feature/<name>` or `fix/<issue>`
-3. Make changes, keep commits atomic & useful
-4. Open a PR and describe the change, motivation, and testing steps
-
-If you want me to add a CONTRIBUTING.md with a PR template, I can generate that too.
-
----
-
 ## Credits & design
 
 * Backend & frontend developer: **Ritik Raj**
@@ -298,7 +283,11 @@ If you want me to add a CONTRIBUTING.md with a PR template, I can generate that 
 
 ## License
 
-ISC © 2025 — **Ritik Raj**
+© 2026 PharmaPrime by Ritik Raj
+
+All rights reserved.
+
+
 
 ---
 
