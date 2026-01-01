@@ -44,6 +44,10 @@ const LeaveApprove = async (req, res) => {
     }
 }
 
+const GetMyLeave = async (req, res) => {
+    try{}catch(error){}
+}
+
 module.exports = {
     ApplyLeave
 }

@@ -31,8 +31,58 @@ const createDoctorChemist = async (req, res) => {
 }
 
 const getAllDoctorChemist = async (req, res) => {
-    res.send("Get All Doctor Chemist")
-}
+  try {
+    const { type, hq } = req.query;
+
+    // Build filter dynamically
+    const filter = {};
+    if (type) filter.type = type; // doctor | chemist
+    if (hq) filter.hq = hq;
+
+    // Fetch list
+    const data = await DoctorChemist.find(filter)
+      .populate("hq", "name")
+      .sort({ createdAt: -1 });
+
+    // Aggregate counts
+    const counts = await DoctorChemist.aggregate([
+      {
+        $group: {
+          _id: "$type",
+          count: { $sum: 1 }
+        }
+      }
+    ]);
+
+    // Format counts nicely
+    let doctorCount = 0;
+    let chemistCount = 0;
+
+    counts.forEach(item => {
+      if (item._id === "doctor") doctorCount = item.count;
+      if (item._id === "chemist") chemistCount = item.count;
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "Doctor & Chemist data fetched successfully",
+      extra: {
+        total: doctorCount + chemistCount,
+        doctors: doctorCount,
+        chemists: chemistCount
+      },
+      data
+    });
+
+  } catch (error) {
+    console.error("getAllDoctorChemist error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch doctor & chemist data",
+      error: error.message
+    });
+  }
+};
 
 const deleteDoctorChemist = async (req, res) => {
     res.send("Delete Doctor Chemist")

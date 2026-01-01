@@ -317,46 +317,51 @@ const GetAdminDashboard = async (req, res) => {
     });
 
     /* ================= HQ DISTRIBUTION ================= */
-    const hqDistribution = await Employee.aggregate([
-      {
-        $group: {
-          _id: "$hq",
-          employeeCount: { $sum: 1 }
-        }
-      },
-      {
-        $lookup: {
-          from: "headquarters",
-          localField: "_id",
-          foreignField: "_id",
-          as: "hq"
-        }
-      },
-      { $unwind: "$hq" },
-      {
-        $project: {
-          _id: 0,
-          hqId: "$hq._id",
-          name: "$hq.name",
-          employeeCount: 1
-        }
-      }
-    ]);
+   const hqDistribution = await Headquarter.aggregate([
+  {
+    $lookup: {
+      from: "employees",
+      localField: "_id",
+      foreignField: "hq",
+      as: "employees"
+    }
+  },
+  {
+    $addFields: {
+      employeeCount: { $size: "$employees" }
+    }
+  },
+  {
+    $project: {
+      _id: 0,
+      hqId: "$_id",
+      name: "$name",
+      employeeCount: 1
+    }
+  }
+]);
+const totalEmployees =  hqDistribution.reduce((sum, hq) => sum + hq.employeeCount, 0) || 1;
 
-    const totalEmployees = employeeSummary.total || 1;
-    const hqWithPercentage = hqDistribution.map(hq => ({
-      ...hq,
-      percentage: Math.round((hq.employeeCount / totalEmployees) * 100)
-    }));
+    const hqWithPercentage = hqDistribution.map(hq => ({  ...hq,
+  percentage: Math.round((hq.employeeCount / totalEmployees) * 100)
+}));
+
 
     /* ================= ATTENDANCE ================= */
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+   const startOfDay = new Date();
+startOfDay.setHours(0, 0, 0, 0);
 
-    const presentToday = await Attendance.countDocuments({
-      date: today,
-      status: "present"
-    });
+const endOfDay = new Date();
+endOfDay.setHours(23, 59, 59, 999);
+
+const presentToday = await Attendance.countDocuments({
+  date: {
+    $gte: startOfDay,
+    $lte: endOfDay
+  },
+  status: "present"
+});
+
 
     /* ================= FINAL RESPONSE ================= */
     res.json({
