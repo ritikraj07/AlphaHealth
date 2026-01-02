@@ -3,7 +3,10 @@ const DoctorChemist = require("../models/doctorChemist.model");
 const createDoctorChemist = async (req, res) => {
     try {
         const userId = req.userId;
-        const { name, type, specialization, location, hq, addedBy, email } = req.body; 
+      const { name, type, specialization, location, hq, addedBy, email } = req.body; 
+
+      
+
 
         const doctorChemist = await DoctorChemist.create({
             name,
@@ -21,7 +24,21 @@ const createDoctorChemist = async (req, res) => {
             data: doctorChemist
         });
     } catch (error) {
-        console.error("Error creating doctor/chemist:", error);
+        console.error("Create doctor/chemist error:", error);
+
+    
+         // Duplicate key error (MongoDB)
+  if (error?.code === 11000) {
+    const field = Object.keys(error.keyPattern || {})[0] || "field";
+
+    return res.status(409).json({
+      success: false,
+      message: `This ${field} already exists`,
+      field,
+    });
+  }
+
+
         res.status(500).json({
             success: false,
             message: "Error creating doctor chemist",
