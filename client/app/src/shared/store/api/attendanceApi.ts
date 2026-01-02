@@ -1,6 +1,5 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { apiSlice } from "./apiSlice";
-import { Config } from "@/app/src/config/constants";
+
 
 export interface MarkAttendanceResponse {
     success: boolean;

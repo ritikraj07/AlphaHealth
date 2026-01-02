@@ -11,7 +11,7 @@ import {
   ActivityIndicator,
   ToastAndroid,
 } from "react-native";
-import { useNavigation } from "@react-navigation/native";
+
 import {
   useAdminLoginMutation,
   useLoginMutation,
@@ -21,68 +21,36 @@ import { setAdmin } from "../shared/store/slices/adminSlice";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { setCredentials } from "../shared/store/slices/authSlice";
 import { Ionicons } from "@expo/vector-icons";
+import { useServerStatus } from "../shared/componets/hooks/useServerStatus.ts";
+import ServerConnectingOverlay from "../shared/componets/ServerConnectingOverlay";
 
 
 
 
 
 export default function SignIn() {
-  const navigation = useNavigation();
+  
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [serverStatus, setServerStatus] = useState<
-    "checking" | "online" | "offline"
-  >("checking");
-const [showPassword, setShowPassword] = useState(false);
+
+  const [showPassword, setShowPassword] = useState(false);
   const dispatch = useDispatch();
   const [adminLogin, isAdminLoginLoading] = useAdminLoginMutation();
   const [login, isLoginLoading] = useLoginMutation();
   
 
+const serverStatus = useServerStatus();
+const isServerOnline = serverStatus === "online";
 
 
-  // Test network connection
-  useEffect(() => {
-    const testServerConnection = async () => {
-      console.log("🧪 Testing server connection...");
 
-      const testUrls = [
-        "https://alphahealth.onrender.com/",
-        "http://10.0.2.2:3000", // Android emulator
-        "http://127.0.0.1:3000",
-      ];
 
-      for (const url of testUrls) {
-        try {
-          console.log(`🔄 Testing: ${url}`);
-          const response = await fetch(url);
-          const data = await response.text();
-          console.log(`✅ Server is running at: ${url}`);
-          console.log(`📄 Response:`, data.substring(0, 100)); // First 100 chars
-          setServerStatus("online");
-          return; // Stop testing if one works
-        } catch (error) {
-          console.log(`❌ Cannot reach: ${url}`, error);
-        } finally {
-          
-        }
-      }
-
-      setServerStatus("offline");
-      console.log("💡 Server connection tips:");
-      console.log("   - Make sure your Node.js server is running");
-      console.log("   - For physical device: use computer IP address");
-      console.log("   - For Android emulator: use 10.0.2.2");
-      console.log("   - For iOS simulator: use localhost");
-    };
-
-    testServerConnection();
-  }, []); // Empty dependency array - runs once on mount
 
   const handleEmployeeLogin = async () => {
     
     if (serverStatus === "offline") {
+      
       Alert.alert(
         "Server Offline",
         "Cannot connect to the server. Please make sure:\n\n• Server is running on port 3000\n• Correct URL is being used\n• Devices are on same network"
@@ -91,8 +59,7 @@ const [showPassword, setShowPassword] = useState(false);
     }
 
     if (!email || !password) {
-      
-      Alert.alert("Error", "Please enter both email and password");
+      ToastAndroid.show("Please enter both email and password", ToastAndroid.SHORT);
       return;
     }
 
@@ -235,6 +202,9 @@ const [showPassword, setShowPassword] = useState(false);
     }
   };
 
+ 
+
+
 
 
   return (
@@ -248,6 +218,9 @@ const [showPassword, setShowPassword] = useState(false);
         color="hotpink"
         animating={isLoading}
       />
+  
+      <ServerConnectingOverlay visible={!isServerOnline} />
+
       {/* Header */}
       <View style={{ alignItems: "center" }}>
         <Image
@@ -296,12 +269,16 @@ const [showPassword, setShowPassword] = useState(false);
         </View>
 
         <TouchableOpacity
-          style={styles.btm}
+          style={[styles.btm, !isServerOnline && styles.disabled]}
           onPress={handleEmployeeLogin}
-          // onPress={()=>navigation.navigate("Main" as never)}
           onLongPress={handleAdminLogin}
+          disabled={!isServerOnline || isLoading}
         >
-          <Text style={styles.btmText}>Sign In</Text>
+          {isLoading ? (
+            <ActivityIndicator color="#fff" />
+          ) : (
+            <Text style={styles.btmText}>Sign In</Text>
+          )}
         </TouchableOpacity>
       </View>
 
@@ -356,6 +333,9 @@ const styles = StyleSheet.create({
     shadowRadius: 3.84,
     elevation: 5,
   },
+  disabled: {
+  opacity: 0.6,
+},
   lable: {
     fontSize: 12,
     fontWeight: "bold",

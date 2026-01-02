@@ -29,7 +29,7 @@ export default function EmployeeDashboard() {
     });
   const name = data?.data?.name;
   const headQuater = data?.data?.hq?.name;
-
+console.log(data)
   
 
   if (isLoading) {

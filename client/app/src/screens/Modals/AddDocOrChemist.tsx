@@ -8,9 +8,12 @@ import {
   ScrollView,
   TouchableWithoutFeedback,
   Keyboard,
+  ToastAndroid,
 } from "react-native";
 import React, { useState } from "react";
 import { Ionicons, Feather } from "@expo/vector-icons";
+import { useCreateDoctorChemistMutation } from "../../shared/store/api/doctorChemistApi";
+import { useAppSelector } from "../../shared/store/hooks";
 
 
 // Define the props interface
@@ -43,13 +46,21 @@ export default function AddDoctorChemistModal({
   onAdd,
   headquarters,
 }: AddDoctorChemistModalProps) {
+
   const [name, setName] = useState<string>("");
-  const [type, setType] = useState<ProfessionalType>("doctor");
+  const [email, setEmail] = useState<string>("");
+  const [type, setType] = useState<"doctor" | "chemist">("doctor");
   const [specialization, setSpecialization] = useState<string>("");
   const [location, setLocation] = useState<string>("");
   const [hq, setHq] = useState<string>("");
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
-
+const [  createDoctorChemist,  {
+    isLoading: isLoadingCreateDocChem,
+    isError: isErrorCreateDocChem,
+    error: errorCreateDocChem,
+  },
+  ] = useCreateDoctorChemistMutation();
+  const {userId, role, token, name: userName} = useAppSelector((state) => state.auth);
   const professionalTypes: { id: ProfessionalType; label: string }[] = [
     { id: "doctor", label: "Doctor" },
     { id: "chemist", label: "Chemist" },
@@ -75,11 +86,20 @@ export default function AddDoctorChemistModal({
     const newErrors: { [key: string]: string } = {};
 
     if (!name.trim()) {
-      newErrors.name = "Name is required";
+      newErrors.name = "Name is required";    
     }
+
+    if (!email.trim()) {
+      newErrors.email = "Email is required";
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+      newErrors.email = "Please enter a valid email";
+    }
+
 
     if (!location.trim()) {
       newErrors.location = "Location is required";
+    } else if (!(location.length > 3)) {
+      newErrors.location = "Please enter a valid location";
     }
 
     if (!hq) {
@@ -96,24 +116,52 @@ export default function AddDoctorChemistModal({
   };
 
   // Handle form submission
-  const handleSubmit = () => {
+  const handleSubmit = async() => {
     if (!validateForm()) {
       return;
     }
+    
+    
 
-    const formData: DoctorChemistData = {
+     const CreatedBy = {
+       id: userId,
+       model: role === "admin" ? "Admin" : "Employee",
+       role: role,
+     };
+    const formData = {
       name: name.trim(),
       type,
-      specialization: type === "doctor" ? specialization.trim() : "",
+      specialization: type === "doctor" ? specialization: "other",
       location: location.trim(),
       hq,
+      addedBy: CreatedBy,
+      email: email.trim(),
     };
+    
 
-    // Call the parent component's function
-    onAdd(formData);
 
-    // Reset form
-    resetForm();
+    // console.log("Form Data:", formData);
+   
+
+    try {
+      const response = await createDoctorChemist(formData).unwrap();
+
+      if (response.success) {
+        ToastAndroid.show(response?.message, ToastAndroid.SHORT);
+
+        handleClose();
+      } else {
+        ToastAndroid.show(response?.message, ToastAndroid.SHORT);
+      }
+    } catch (error: any) {
+      console.error("Error creating doctor/chemist:", error);
+      const msg =
+        error?.data?.message || error?.data?.message || "Something went wrong";
+      ToastAndroid.show(msg, ToastAndroid.SHORT);
+    }
+   
+
+    
   };
 
   // Reset form
@@ -124,6 +172,7 @@ export default function AddDoctorChemistModal({
     setLocation("");
     setHq("");
     setErrors({});
+    setEmail("");
   };
 
   // Handle modal close
@@ -138,6 +187,7 @@ export default function AddDoctorChemistModal({
     // Clear specialization when switching to chemist
     if (newType === "chemist") {
       setSpecialization("");
+      setEmail("");
       if (errors.specialization) {
         setErrors({ ...errors, specialization: "" });
       }
@@ -218,6 +268,27 @@ export default function AddDoctorChemistModal({
                 />
                 {errors.name ? (
                   <Text style={styles.errorText}>{errors.name}</Text>
+                ) : null}
+              </View>
+
+              {/* email Field */}
+
+              <View>
+                <Text style={styles.sectionTitle}>
+                  Email <Text style={styles.required}>*</Text>
+                </Text>
+                <TextInput
+                  style={[styles.textInput, errors.email && styles.inputError]}
+                  placeholder={`Enter ${type} email`}
+                  placeholderTextColor="#999"
+                  value={email}
+                  onChangeText={(text) => {
+                    setEmail(text);
+                    if (errors.email) setErrors({ ...errors, email: "" });
+                  }}
+                />
+                {errors.email ? (
+                  <Text style={styles.errorText}>{errors.email}</Text>
                 ) : null}
               </View>
 

@@ -42,6 +42,7 @@ export interface EmployeesResponse {
 export interface CreateEmployeeResponse {
   success: boolean;
   employee: Employee;
+  message: string;
 }
 
 export interface CreateEmployeeRequest {

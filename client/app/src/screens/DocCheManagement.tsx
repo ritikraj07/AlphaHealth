@@ -6,6 +6,7 @@ import {
   ScrollView,
   Alert,
   ToastAndroid,
+  RefreshControl,
 } from "react-native";
 
 import {
@@ -19,35 +20,57 @@ import AddDoctorChemistModal from "./Modals/AddDocOrChemist";
 import { useState } from "react";
 import { useGetHeadQuartersQuery } from "../shared/store/api/hqApi";
 import DocCheSkeleton from "../shared/componets/skeletons/DocCheSkeleton";
-import { RefreshControl } from "react-native-gesture-handler";
+
+import { useGetDoctorChemistDashboardQuery } from "../shared/store/api/doctorChemistApi";
 
 
 export default function DocCheManagement() {
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const {data: HQ, isLoading,isError ,error, refetch, isFetching } = useGetHeadQuartersQuery({});
-
-   // Mock headquarters data - you would get this from your API
+  const {
+    data: HQ,
+    isLoading,
+    isError,
+    error,
+    refetch,
+    isFetching,
+  } = useGetHeadQuartersQuery({});
+  const {
+    data: docChemData,
+    isLoading: isLoadingDocChem,
+    isError: isErrorDocChem,
+    error: errorDocChem,
+    refetch: refetchDocChem,
+    isFetching: isFetchingDocChem,
+  } = useGetDoctorChemistDashboardQuery();
+  // Mock headquarters data - you would get this from your API
   const headquarters = HQ?.data ?? [];
 
-
-   const handleAddProfessional = (data: any) => {
-    //  console.log("New professional:", data);
-     // Here you would typically make an API call to save the professional
-     ToastAndroid.show("Professional added successfully", ToastAndroid.SHORT);
-     setIsModalVisible(false);
-  };
   
-  if (isLoading) {
-    return <DocCheSkeleton />
+
+  const handleAddProfessional = (data: any) => {
+    //  console.log("New professional:", data);
+    // Here you would typically make an API call to save the professional
+    ToastAndroid.show("Professional added successfully", ToastAndroid.SHORT);
+    setIsModalVisible(false);
+  };
+
+  if (isLoading || isLoadingDocChem) {
+    return <DocCheSkeleton />;
   }
+  
+
+  const { total = 0, doctors = 0, chemists = 0 } = docChemData?.extra ?? {};
+  const list = docChemData?.data || [];
+
+
 
   return (
     <ScrollView
       style={[styles.container, { backgroundColor: "rgba(255, 255, 255, 1)" }]}
       showsVerticalScrollIndicator={false}
       refreshControl={
-                <RefreshControl refreshing={isFetching} onRefresh={refetch} />
-              }
+        <RefreshControl refreshing={isFetching} onRefresh={refetch} />
+      }
     >
       <AddDoctorChemistModal
         visible={isModalVisible}
@@ -76,9 +99,7 @@ export default function DocCheManagement() {
             onPress={() => setIsModalVisible(true)}
             style={styles.applyButton}
           >
-            <Text style={[styles.applyButtonText]}>
-              Add Doctor / Chemist
-            </Text>
+            <Text style={[styles.applyButtonText]}>Add Doctor / Chemist</Text>
             {/* <Text style={styles.applyButtonText}>Add Doctor</Text> */}
           </TouchableOpacity>
           {/* <TouchableOpacity
@@ -100,7 +121,7 @@ export default function DocCheManagement() {
             <Text style={styles.leaveName}>Total Doctors</Text>
             <FontAwesome6 name="user-doctor" size={24} color="grey" />
           </View>
-          <Text style={styles.leaveCount}>1</Text>
+          <Text style={styles.leaveCount}>{doctors}</Text>
           <Text style={styles.leaveDescription}>In North HQ</Text>
         </View>
 
@@ -110,7 +131,7 @@ export default function DocCheManagement() {
             <Text style={styles.leaveName}>Total Chemists</Text>
             <Feather name="shopping-cart" size={24} color="grey" />
           </View>
-          <Text style={styles.leaveCount}>2</Text>
+          <Text style={styles.leaveCount}>{chemists}</Text>
           <Text style={styles.leaveDescription}>In North HQ</Text>
         </View>
 
@@ -120,7 +141,7 @@ export default function DocCheManagement() {
             <Text style={styles.leaveName}>High Potential</Text>
             <Feather name="star" size={24} color="goldenrod" />
           </View>
-          <Text style={styles.leaveCount}>1</Text>
+          <Text style={styles.leaveCount}>0</Text>
           <Text style={styles.leaveDescription}>Priority targets</Text>
         </View>
 
@@ -130,7 +151,7 @@ export default function DocCheManagement() {
             <Text style={styles.leaveName}>Avg Frequency</Text>
             <AntDesign name="rise" size={24} color="green" />
           </View>
-          <Text style={styles.leaveCount}>4.0</Text>
+          <Text style={styles.leaveCount}>0.0</Text>
           <Text style={styles.leaveDescription}>Visits per month</Text>
         </View>
       </View>

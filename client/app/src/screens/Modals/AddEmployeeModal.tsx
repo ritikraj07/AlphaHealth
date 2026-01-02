@@ -15,6 +15,8 @@ import React, { useState } from "react";
 import { Ionicons, Feather } from "@expo/vector-icons";
 import { useGetHeadQuartersQuery } from "../../shared/store/api/hqApi";
 import { useCreateEmployeeMutation } from "../../shared/store/api/employeeApi";
+import { FetchBaseQueryError } from "@reduxjs/toolkit/query";
+
 
 
 // Define the props interface
@@ -68,7 +70,7 @@ export default function AddEmployeeModal({
 
     if (!email.trim()) {
       newErrors.email = "Email is required";
-    } else if (!/\S+@\S+\.\S+/.test(email)) {
+    } else if (!/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(email)) {
       newErrors.email = "Please enter a valid email";
     }
 
@@ -119,7 +121,7 @@ export default function AddEmployeeModal({
        console.log("New employee:", employeeData);
      // Add n API call to save the employee later when ReduxRTK is implemented
      
-       try { 
+       try {
          let response = await createEmployee({
            name: employeeData.name,
            email: employeeData.email,
@@ -133,16 +135,27 @@ export default function AddEmployeeModal({
          if (response.success) {
            ToastAndroid.show(response?.message, ToastAndroid.SHORT);
            handleClose();
-                  
          } else {
            ToastAndroid.show(response?.message, ToastAndroid.SHORT);
          }
-  
-         
        } catch (error) {
-         ToastAndroid.show(error?.data?.message, ToastAndroid.SHORT);
-        //  console.error("Error adding employee:", error);
-      }
+         let errorMessage = "Something went wrong";
+
+         if ((error as FetchBaseQueryError)?.data) {
+           const apiError = error as FetchBaseQueryError;
+
+           const data = apiError.data as any;
+
+           errorMessage =
+             data?.message || data?.errors?.[0]?.message || "Request failed";
+         } else if (error instanceof Error) {
+           errorMessage = error.message;
+         }
+
+         ToastAndroid.show(errorMessage, ToastAndroid.SHORT);
+         console.error("Error adding employee:", error);
+       }
+
         
      };
 
