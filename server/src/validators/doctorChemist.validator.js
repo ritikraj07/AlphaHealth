@@ -8,7 +8,7 @@ const validateCreateDoctorChemist = [
         .withMessage('Name is required')
         .isLength({ min: 2, max: 50 })
         .withMessage('Name must be between 2 and 50 characters')
-        .matches(/^[a-zA-Z\s]*$/)
+        .matches(/^[a-zA-Z\s.]+$/)
         .withMessage('Name can only contain letters and spaces'),
     
     body('email')
@@ -26,14 +26,20 @@ const validateCreateDoctorChemist = [
         .notEmpty()
         .withMessage("Location is required")
         .isLength({ min: 3, max: 100 })
-        .withMessage("Location must be between 10 and 100 characters")
-        .matches(/^[a-zA-Z\s]*$/)
-        .withMessage("Location can only contain letters and spaces"),
+        .withMessage("Location must be between 3 and 100 characters")
+        .matches(/^[^<>$%{}]+$/)
+        .withMessage("Invalid characters in location"),
+
     
     body("specialization")
-        .optional()
-        .isLength({ min: 2, max: 50 })
-        .withMessage("Specialization must be between 2 and 50 characters"),
+        
+  .if(body("type").equals("doctor"))
+  .trim()
+  .notEmpty()
+  .withMessage("Specialization is required for doctors")
+  .isLength({ min: 2, max: 50 })
+  .withMessage("Specialization must be between 2 and 50 characters"),
+
 
     body("hq")
         .isMongoId()
