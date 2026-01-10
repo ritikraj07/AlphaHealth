@@ -10,6 +10,7 @@ import {
   Keyboard,
   Platform,
   ToastAndroid,
+  Switch
 } from "react-native";
 import React, { useState } from "react";
 import { Ionicons, Feather } from "@expo/vector-icons";
@@ -27,13 +28,15 @@ type DateField = "start" | "end";
 
 export default function LeaveModal({ visible, onClose }: LeaveModalProps) {
  
-  const [leaveType, setLeaveType] = useState<string>("casual");
+  const [leaveType, setLeaveType] = useState<string>("earned");
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
   const [reason, setReason] = useState<string>("");
   const [showDatePicker, setShowDatePicker] = useState<boolean>(false);
   const [currentDateField, setCurrentDateField] = useState<DateField>("start");
   const [tempDate, setTempDate] = useState<Date>(new Date());
+  const [isHalfDay, setIsHalfDay] = useState<boolean>(false);
+  const [halfType, setHalfType] = useState<string>("");
   const [applyLeave] = useApplyLeaveMutation();
   
  
@@ -71,8 +74,11 @@ export default function LeaveModal({ visible, onClose }: LeaveModalProps) {
     if (field === "start") {
       setTempDate(startDate || new Date());
     } else {
+     
       setTempDate(endDate || getMinEndDate());
     }
+
+    
 
     setShowDatePicker(true);
   };
@@ -91,6 +97,7 @@ export default function LeaveModal({ visible, onClose }: LeaveModalProps) {
       } else {
         setEndDate(selectedDate);
       }
+      
     }
   };
 
@@ -101,12 +108,12 @@ export default function LeaveModal({ visible, onClose }: LeaveModalProps) {
       return false;
     }
 
-    if (!endDate) {
+    if (!endDate && !isHalfDay) {
       alert("Please select an end date");
       return false;
     }
 
-    if (endDate < startDate) {
+    if ( endDate && endDate < startDate) {
       alert("End date cannot be before start date");
       return false;
     }
@@ -127,34 +134,42 @@ export default function LeaveModal({ visible, onClose }: LeaveModalProps) {
 
   // Clear form
   const clearForm = () => {
-    setLeaveType("casual");
+    setLeaveType("");
     setStartDate(null);
     setEndDate(null);
     setReason("");
   };
 
- const handleSubmit = async () => {
+  const handleSubmit = async () => {
+    const formatForBackend = (date: Date | null): string => {
+       if (!date) return "";
+       return date.toISOString();
+       
+     };
    if (!validateDates()) {
      return;
-   }
+    }
+    if (!leaveType) {
+      ToastAndroid.show("Please select a leave type", ToastAndroid.SHORT);
+      return;
+    }
 
-   if (!reason.trim()) {
-     alert("Please enter a reason for leave");
+    if (!reason.trim()) {
+     ToastAndroid.show("Please enter a reason for leave", ToastAndroid.SHORT);
+     
      return;
    }
+    
+
+    if (isHalfDay && !halfType) {
+      alert("Please select a half-day type");
+      return;
+      
+    }
 
    try {
      // Format dates for backend - MUST be ISO string or YYYY-MM-DD
-     const formatForBackend = (date: Date | null): string => {
-       if (!date) return "";
-       // Option 1: ISO string (recommended)
-       return date.toISOString();
-       // Option 2: YYYY-MM-DD format
-       // const year = date.getFullYear();
-       // const month = (date.getMonth() + 1).toString().padStart(2, "0");
-       // const day = date.getDate().toString().padStart(2, "0");
-       // return `${year}-${month}-${day}`;
-     };
+    
 
      // Ensure leaveType matches backend enum
      const validLeaveType = leaveType as
@@ -169,13 +184,20 @@ export default function LeaveModal({ visible, onClose }: LeaveModalProps) {
     //    type: validLeaveType,
     //    startDate: formatForBackend(startDate),
     //    endDate: formatForBackend(endDate),
+    //    isHalfDay,
+    //    halfType,
     //    reason,
-    //  });
+    //   });
+     
+
+     
 
      const response = await applyLeave({
        type: validLeaveType,
        startDate: formatForBackend(startDate),
-       endDate: formatForBackend(endDate),
+       endDate: isHalfDay ? formatForBackend(startDate) : formatForBackend(endDate),
+       isHalfDay,
+       halfType,
        reason,
      }).unwrap();
 
@@ -197,9 +219,44 @@ export default function LeaveModal({ visible, onClose }: LeaveModalProps) {
      }
 
      ToastAndroid.show(errorMessage, ToastAndroid.LONG);
-   } finally {
-     onClose();
    }
+ };
+
+ const LeaveType = (type: { id: string; label: string }) => {
+   const now = new Date();
+   const cutoff = new Date();
+   cutoff.setHours(9, 0, 0, 0);
+
+   const disable = now > cutoff && (type.id === "sick" || type.id === "casual");
+   function onPressLeaveTpype() {
+     if ((type.id === "casual" || type.id === "sick") && now > cutoff) {
+       ToastAndroid.show(`${type.id == "casual" ? "Casual" : "Sick"} leave are not available after 9 am`,ToastAndroid.SHORT);
+       return;
+      }
+      setLeaveType(type.id);
+   }
+
+   return (
+     <TouchableOpacity
+       key={type.id}
+       style={[
+         styles.leaveTypeButton,
+         leaveType === type.id && styles.leaveTypeButtonSelected,
+         disable && { opacity: 0.4 },
+       ]}
+       onPress={onPressLeaveTpype}
+       disabled={disable}
+     >
+       <Text
+         style={[
+           styles.leaveTypeText,
+           leaveType === type.id && styles.leaveTypeTextSelected,
+         ]}
+       >
+         {type.label}
+       </Text>
+     </TouchableOpacity>
+   );
  };
 
   return (
@@ -224,7 +281,7 @@ export default function LeaveModal({ visible, onClose }: LeaveModalProps) {
               Fill in the details for your leave application
             </Text>
 
-            <ScrollView             
+            <ScrollView
               showsVerticalScrollIndicator={false}
               contentContainerStyle={styles.scrollContent}
             >
@@ -232,26 +289,46 @@ export default function LeaveModal({ visible, onClose }: LeaveModalProps) {
               <View style={styles.section}>
                 <Text style={styles.sectionTitle}>Type</Text>
                 <View style={styles.leaveTypeContainer}>
-                  {leaveTypes.map((type) => (
-                    <TouchableOpacity
-                      key={type.id}
-                      style={[
-                        styles.leaveTypeButton,
-                        leaveType === type.id && styles.leaveTypeButtonSelected,
-                      ]}
-                      onPress={() => setLeaveType(type.id)}
-                    >
-                      <Text
-                        style={[
-                          styles.leaveTypeText,
-                          leaveType === type.id && styles.leaveTypeTextSelected,
-                        ]}
-                      >
-                        {type.label}
-                      </Text>
-                    </TouchableOpacity>
-                  ))}
+                  {leaveTypes.map((type) => LeaveType(type))}
                 </View>
+              </View>
+
+              {/* Half Day Toggle */}
+              <View style={styles.section}>
+                <View style={styles.row}>
+                  <Text style={styles.sectionTitle}>Half Day</Text>
+                  <Switch value={isHalfDay} onValueChange={setIsHalfDay} />
+                </View>
+
+                {isHalfDay && (
+                  <View style={styles.halfInfo}>
+                    <Text style={styles.halfDesc}>Select time slot:</Text>
+
+                    <View style={styles.halfRow}>
+                      <TouchableOpacity
+                        style={[
+                          styles.halfOption,
+                          halfType === "first" && styles.halfSelected,
+                        ]}
+                        onPress={() => setHalfType("first")}
+                      >
+                        <Text>First Half</Text>
+                        <Text style={styles.halfTime}>09:00 - 13:00</Text>
+                      </TouchableOpacity>
+
+                      <TouchableOpacity
+                        style={[
+                          styles.halfOption,
+                          halfType === "second" && styles.halfSelected,
+                        ]}
+                        onPress={() => setHalfType("second")}
+                      >
+                        <Text>Second Half</Text>
+                        <Text style={styles.halfTime}>13:00 - 17:00</Text>
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                )}
               </View>
 
               {/* Start Date */}
@@ -272,7 +349,7 @@ export default function LeaveModal({ visible, onClose }: LeaveModalProps) {
               </View>
 
               {/* End Date */}
-              <View style={styles.section}>
+             { !isHalfDay  && <View style={styles.section}>
                 <Text style={styles.sectionTitle}>End Date</Text>
                 <TouchableOpacity
                   style={[styles.dateInput, !startDate && styles.disabledInput]}
@@ -299,7 +376,7 @@ export default function LeaveModal({ visible, onClose }: LeaveModalProps) {
                     : "Select start date first"}
                 </Text>
               </View>
-
+}
               {/* Reason */}
               <View style={styles.section}>
                 <Text style={styles.sectionTitle}>Reason</Text>
@@ -393,7 +470,7 @@ const styles = StyleSheet.create({
     color: "#666",
     marginBottom: 20,
   },
- 
+
   scrollContent: {
     flexGrow: 1,
   },
@@ -503,5 +580,63 @@ const styles = StyleSheet.create({
     color: "#999",
     fontSize: 14,
     fontStyle: "italic",
+  },
+  halfDayContainer: {
+    flexDirection: "row",
+    marginTop: 8,
+    gap: 10,
+  },
+  halfDayOption: {
+    flex: 1,
+    paddingVertical: 10,
+    borderWidth: 1,
+    borderRadius: 6,
+    alignItems: "center",
+  },
+  halfDaySelected: {
+    backgroundColor: "#4B7BEC22",
+    borderColor: "#4B7BEC",
+  },
+  row: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 1,
+  },
+  halfInfo: {
+    marginTop: 10,
+    paddingLeft: 2,
+  },
+
+  halfDesc: {
+    fontSize: 13,
+    color: "#666",
+    marginBottom: 6,
+  },
+
+  halfRow: {
+    flexDirection: "row",
+    gap: 10,
+  },
+
+  halfOption: {
+    flex: 1,
+    borderWidth: 1,
+    borderColor: "#aaa",
+    borderRadius: 6,
+    paddingVertical: 8,
+    paddingHorizontal: 6,
+    alignItems: "center",
+  },
+
+  halfSelected: {
+    backgroundColor: "#4B7BEC22",
+    borderColor: "#4B7BEC",
+  },
+
+  halfTime: {
+    fontSize: 11,
+    color: "#666",
+    marginTop: 2,
   },
 });

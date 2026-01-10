@@ -39,6 +39,8 @@ export interface ApplyLeaveRequest {
   endDate: string;
   reason: string;
   type: string | 'sick' | 'casual' | 'earned' | 'public' | 'maternity' | 'paternity';
+  isHalfDay: boolean;
+  halfType: string;
 }
 
 export interface UpdateLeaveStatusRequest {
