@@ -1,6 +1,6 @@
 {
   "name": "alpha-health",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "server of managing employee of AlphaHealth",
   "main": "index.js",
   "type": "commonjs",

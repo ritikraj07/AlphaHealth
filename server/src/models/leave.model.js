@@ -76,7 +76,16 @@ const leaveSchema = new mongoose.Schema({
         type: String,
         required: true
     },
-    
+    isHalfDay: {
+        type: Boolean,
+        default: false
+    },
+    halfType: {
+        type: String,
+        enum: ["first", "second"],
+        default: "first"
+    },
+
     /**
      * Current status of the leave application
      * @type {string}
