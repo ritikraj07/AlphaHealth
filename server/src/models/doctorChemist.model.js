@@ -82,7 +82,61 @@ const doctorChemistSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Headquarter",
     },
-    
+
+    /**
+     * Potential field
+     * @type {string}
+     * @enum ["medium ", "low", "high"]
+     * @default "high"
+     * @description Potential level for the doctor or chemist
+     */
+
+    potential: {
+      type: string,
+      default: "high",
+      enum: ["medium ", "low", "high"]
+    },
+
+    /**
+     * Frequency field
+     * @type {number}
+     * @default 0
+     * @description Frequency level for the doctor or chemist
+     */
+
+    frequency: {
+      type: number,
+      default: 0
+    },
+
+    /***
+     * isApproved field
+     * @type {boolean}
+     * @default false
+     */
+    isApproved: {
+      type: Boolean,
+      default: false
+    },
+
+    approvedBy: {
+      id: { 
+        type: mongoose.Schema.Types.ObjectId, 
+        required: true, 
+        refPath: 'approvedBy.model' 
+      },
+      role: { 
+        type: String, 
+        required: true 
+      },
+      model: { 
+        type: String, 
+        required: true, 
+        enum: ['Admin', 'Employee'],
+        
+      },
+      default: null
+    },
     /**
      * User who created this record
      * @type {ObjectId}
