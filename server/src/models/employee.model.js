@@ -156,8 +156,50 @@ const employeeSchema = new mongoose.Schema({
             values: ['Employee', 'Admin'],
             message: "Manager model must be either 'Employee' or 'Admin'"
         },
-        default: 'Employee'
-    }
+        default: 'Admin'
+    },
+
+    /**
+     * 
+     */
+
+    phone: {
+        type: String,
+        required: [true, "Phone number is required"],
+        index: true
+    },
+    /**
+     * If Designation of the employee is manager
+     * @required Every manager must have a designation
+     */
+   designation: {
+        type: String,
+        trim: true,
+        lowercase: true,
+        index: true,
+        enum: ["training", "territory", "area", "senior", "employee"],
+        validate: {
+            validator: function(v) {
+            if (this.role === "manager" && !v) return false;
+            return true;
+            },
+            message: "Designation is required for managers"
+       },
+        default: "employee"
+    },
+   
+   /**
+    * 
+    */
+
+employmentStatus: {
+    type: String,
+    enum: ["active", "inactive", "left"],
+    default: "active",
+    index: true
+},
+
+
 }, {
     // Schema Options
     timestamps: true, // Adds createdAt and updatedAt automatically
