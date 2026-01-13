@@ -32,13 +32,12 @@ const validateCreateDoctorChemist = [
 
     
     body("specialization")
-        
-  .if(body("type").equals("doctor"))
-  .trim()
-  .notEmpty()
-  .withMessage("Specialization is required for doctors")
-  .isLength({ min: 2, max: 50 })
-  .withMessage("Specialization must be between 2 and 50 characters"),
+        .if(body("type").equals("doctor"))
+        .trim()
+        .notEmpty()
+        .withMessage("Specialization is required for doctors")
+        .isLength({ min: 2, max: 50 })
+        .withMessage("Specialization must be between 2 and 50 characters"),
 
 
     body("hq")
@@ -48,6 +47,60 @@ const validateCreateDoctorChemist = [
     body("type")
         .isIn(["doctor", "chemist"])
         .withMessage("Invalid type"),
+    body("phone")
+        .trim()
+        .notEmpty()
+        .withMessage("Phone number is required")
+        .isNumeric()
+        .withMessage("Phone number must be numeric")
+        .isLength({ min: 10, max: 10 })
+        .withMessage("Phone number must be between 10 and 15 digits")
+        .matches(/^\d+$/)
+        .withMessage("Phone number can only contain digits"),
+    
+    body('potential')
+        .trim()
+        .notEmpty()
+        .withMessage('Potential is required')
+        .isIn(['medium', 'low', 'high'])
+        .withMessage('Potential must be "medium", "low", or "high"'),
+    
+    body('frequency')
+        .optional()
+        .isInt({ min: 0 })
+        .withMessage('Frequency must be a non-negative number'),
+    
+    body('isApproved')
+        .optional()
+                .isBoolean()
+                .withMessage('isApproved must be a boolean'),
+            body('addedBy.id')
+        .isMongoId()
+        .withMessage('Invalid addedBy ID'),
+
+            body('addedBy.role')
+            .isIn(['Admin', 'Employee'])
+            .withMessage('Invalid addedBy role'),
+
+            body('addedBy.model')
+            .isIn(['Admin', 'Employee'])
+            .withMessage('Invalid addedBy model'),
+            body('approvedBy.id')
+            .optional() // Only if it's present
+            .isMongoId()
+            .withMessage('Invalid approvedBy ID'),
+
+            body('approvedBy.role')
+            .optional()
+            .isIn(['Admin', 'Employee'])
+            .withMessage('Invalid approvedBy role'),
+
+            body('approvedBy.model')
+            .optional()
+            .isIn(['Admin', 'Employee'])
+            .withMessage('Invalid approvedBy model'),
+
+    
     
     // Check for validation errors
     (req, res, next) => {
