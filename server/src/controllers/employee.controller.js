@@ -426,7 +426,7 @@ const loginEmpoloyee = async (req, res) => {
                 message: "Invalid email or password",
             });
         }
-        const isActive = employee.isActive;
+        const isActive = employee.employeeStatus === 'active';
         if (!isActive) {
             return res.status(401).json({
                 success: false,
