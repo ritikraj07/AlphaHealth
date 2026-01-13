@@ -26,7 +26,7 @@ const { createToken } = require("../validators/auth.validator");
 const createEmployee = async (req, res) => {
     try {
         // Check if employee already exists
-        const { name, email, password, role, hq, manager = req.userId, managerModel = 'Employee' } = req.body;
+        const { name, email, password, role, hq, manager = req.userId, managerModel = 'Employee', designation, phone } = req.body;
 
         // Validate required fields
         if (!name || !email || !password || !role || !hq || !manager) {
@@ -68,7 +68,9 @@ const createEmployee = async (req, res) => {
             role: role.toLowerCase(),
             hq,
             manager,
-            managerModel
+            managerModel,
+            designation,
+            phone
         });
         
         await employee.save();
@@ -298,118 +300,71 @@ const getEmployeeById = async (req, res) => {
  * @returns {Promise<ApiResponse>} Updated employee data
  */
 const updateEmployee = async (req, res) => {
-    try {
-        const { id } = req.params;
-        const updates = req.body;
+  try {
+    const { id } = req.params;
+    const updates = { ...req.body };
 
-        // Remove restricted fields
-        delete updates.password;
-        delete updates.email; // Email updates should be separate process
+    // 🔒 Block fields that should never update through this route
+    delete updates.password;
+    delete updates.email;
+    delete updates.phone; // <-- phone number cannot be updated
 
-        // Hash password if provided in separate field
-        if (updates.newPassword) {
-            updates.password = await hashPassword(updates.newPassword);
-            delete updates.newPassword;
-        }
-
-        const employee = await Employee.findByIdAndUpdate(
-            id,
-            { $set: updates },
-            { 
-                new: true, 
-                runValidators: true,
-                context: 'query'
-            }
-        ).select('-password');
-
-        if (!employee) {
-            return res.status(404).send({
-                success: false,
-                message: "Employee not found"
-            });
-        }
-
-        return res.status(200).send({
-            success: true,
-            message: "Employee updated successfully",
-            data: employee
-        });
-
-    } catch (error) {
-        console.error("Update employee error:", error);
-        
-        if (error.name === 'ValidationError') {
-            const errors = Object.values(error.errors).map(err => err.message);
-            return res.status(400).send({
-                success: false,
-                message: "Validation failed",
-                errors: errors
-            });
-        }
-
-        if (error.name === 'CastError') {
-            return res.status(400).send({
-                success: false,
-                message: "Invalid employee ID format"
-            });
-        }
-
-        return res.status(500).send({ 
-            success: false,
-            message: "Internal server error while updating employee",
-            error: process.env.NODE_ENV === 'development' ? error.message : undefined
-        });
+    // 🔐 Handle password updates through `newPassword`
+    if (updates.newPassword) {
+      updates.password = await hashPassword(updates.newPassword);
+      delete updates.newPassword;
     }
+
+    const employee = await Employee.findByIdAndUpdate(
+      id,
+      { $set: updates },
+      {
+        new: true,
+        runValidators: true,
+        context: "query"
+      }
+    ).select("-password");
+
+    if (!employee) {
+      return res.status(404).json({
+        success: false,
+        message: "Employee not found"
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Employee updated successfully",
+      data: employee
+    });
+
+  } catch (error) {
+    console.error("Update employee error:", error);
+
+    if (error.name === "ValidationError") {
+      return res.status(400).json({
+        success: false,
+        message: "Validation failed",
+        errors: Object.values(error.errors).map(err => err.message)
+      });
+    }
+
+    if (error.name === "CastError") {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid employee ID format"
+      });
+    }
+
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error while updating employee"
+    });
+  }
 };
 
-/**
- * Deletes an employee (soft delete)
- * 
- * @route DELETE /api/employees/:id
- * @access Private (Admin)
- * 
- * @param {Object} req - Express request object
- * @param {string} req.params.id - Employee ID
- * 
- * @param {Object} res - Express response object
- * 
- * @returns {Promise<ApiResponse>} Success message
- */
-const deleteEmployee = async (req, res) => {
-    try {
-        const { id } = req.params;
 
-        const employee = await Employee.findByIdAndDelete(id);
 
-        if (!employee) {
-            return res.status(404).send({
-                success: false,
-                message: "Employee not found"
-            });
-        }
-
-        return res.status(200).send({
-            success: true,
-            message: "Employee deleted successfully"
-        });
-
-    } catch (error) {
-        console.error("Delete employee error:", error);
-        
-        if (error.name === 'CastError') {
-            return res.status(400).send({
-                success: false,
-                message: "Invalid employee ID format"
-            });
-        }
-
-        return res.status(500).send({ 
-            success: false,
-            message: "Internal server error while deleting employee",
-            error: process.env.NODE_ENV === 'development' ? error.message : undefined
-        });
-    }
-};
 
 /**
  * Gets team members for a specific manager
@@ -471,6 +426,13 @@ const loginEmpoloyee = async (req, res) => {
                 message: "Invalid email or password",
             });
         }
+        const isActive = employee.isActive;
+        if (!isActive) {
+            return res.status(401).json({
+                success: false,
+                message: "Your account has been deactivated",
+            });
+        }
         const token = createToken(employee._id);
         res.json({
             success: true,
@@ -494,9 +456,10 @@ const loginEmpoloyee = async (req, res) => {
  }
 
 
-module.exports = { createEmployee, getEmployee,   getEmployeeById,
+module.exports = {
+    createEmployee,
+    getEmployee, getEmployeeById,
     updateEmployee,
-    deleteEmployee,
     getManagerTeam,
     loginEmpoloyee
 };
