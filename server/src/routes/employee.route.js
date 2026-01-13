@@ -1,5 +1,5 @@
 const {Router} = require('express');
-const { createEmployee, getEmployee, getEmployeeById, deleteEmployee, updateEmployee, getManagerTeam, loginEmpoloyee } = require('../controllers/employee.controller');
+const { createEmployee, getEmployee, getEmployeeById, updateEmployee, getManagerTeam, loginEmpoloyee } = require('../controllers/employee.controller');
 const { validateCreateEmployee } = require('../middlewares');
 const { verifyToken } = require('../validators/auth.validator');
 const router = Router();
@@ -15,9 +15,9 @@ router.get("/managerteam/:managerId", getManagerTeam)
 router.get('/:id',verifyToken, getEmployeeById)
 router.get('/',verifyToken, getEmployee)
 /********************************* PATCH RREQUESTS ****************************************/
-router.patch('/', updateEmployee)
+router.patch('/:id', verifyToken, updateEmployee)
 /********************************* DELETE RREQUESTS ****************************************/
-router.delete('/', deleteEmployee)
+
 /********************************* PUT RREQUESTS ****************************************/
 
 module.exports = router;
