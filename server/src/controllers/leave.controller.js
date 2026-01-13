@@ -1,3 +1,4 @@
+const Employee = require("../models/employee.model");
 const Leave = require("../models/leave.model");
 
 
@@ -9,7 +10,7 @@ const ApplyLeave = async(req, res) => {
         // endDate = new Date(finalEndDate);
 
 
-        console.log({ type, startDate, endDate, reason, isHalfDay, halfType } )
+        // console.log({ type, startDate, endDate, reason, isHalfDay, halfType } )
 
          // ----- VALIDATIONS -----
             // 1. Required fields
@@ -114,18 +115,132 @@ const LeaveApprove = async (req, res) => {
      * who can approve leave
      * admin can approve
      * and that employee manager
+     * !!! right now assuming admin
      */
     try {
-        const {} = req.body;
+        
+        const { leaveId, status, approvedBy, userId } = req.body;
+          
+        
+        if (!leaveId || !status) {
+            return res.status(400).json({
+            success: false,
+            message: "leaveId and status are required",
+            });
+        }
+
+        if (!["approved", "rejected"].includes(status)) {
+            return res.status(400).json({
+            success: false,
+            message: "Invalid status value",
+            });
+        }
+
+        // Step 1: Fetch leave
+        const leave = await Leave.findById(leaveId);
+        if (!leave) {
+        return res.status(404).json({
+            success: false,
+            message: "Leave not found",
+        });
+        }
+
+        // Step 2: Prevent re-approval
+        if (leave.status !== "pending") {
+        return res.status(400).json({
+            success: false,
+            message: `Leave already ${leave.status}`,
+        });
+            
+        }
+
+        if(leave.approvedBy){
+            return res.status(400).json({
+                success: false,
+                message: "Leave already approved",
+            });
+        }
+
+        if (approvedBy === 'Admin') { }
+        else if (approvedBy === 'Employee') {
+             const employee = await Employee.findById(userId);
+
+            if (!employee) {
+                return res.status(404).json({ success: false, message: "Manager not found" });
+            }
+
+            // Manager condition: employee.manager == approverId
+            if (String(employee.manager) !== String(userId)) {
+                return res.status(403).json({
+                success: false,
+                message: "Not authorized - only employee's manager can approve",
+                });
+            }
+        }else {
+            return res.status(403).json({
+                success: false,
+                message: "Not authorized to approve leave",
+            });
+            }
+        
+
+        // Step 3: Update leave status
+        leave.status = status;
+        leave.approvedBy = approvedBy;
+        await leave.save();
+
+        // Step 4: Send notification to employee
+        res.status(200).send({
+            success: true,
+            message: "Leave status updated successfully",
+            data: leave,
+        });
+
+
+
+
+        
     } catch (error) {
         
+        console.error("Leave Approve Error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error while approving leave",
+    });
+  
     }
 }
 
-const GetMyLeave = async (req, res) => {
-    try{}catch(error){}
-}
+const GetLeaveDetails = async (req, res) => {
+  try {
+    const userId = req.prams.id;
+    const { status } = req.query; // e.g. /leave/me?status=pending
+
+    let filter = { employee: userId };
+    if (status) filter.status = status;
+
+    const leaves = await Leave.find(filter)
+      .sort({ createdAt: -1 });
+
+    return res.status(200).json({
+      success: true,
+      message: "Leave history fetched successfully",
+      count: leaves.length,
+      data: leaves,
+    });
+
+  } catch (error) {
+    console.error("Get My Leave Error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error while fetching leave history",
+    });
+  }
+};
+
 
 module.exports = {
-    ApplyLeave
+    ApplyLeave,
+    LeaveApprove,
+    GetLeaveDetails
 }
