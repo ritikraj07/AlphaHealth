@@ -102,32 +102,19 @@ const leaveSchema = new mongoose.Schema({
         default: "pending" 
     },
     
-    /**
-     * Timestamp when leave application was submitted
-     * @type {Date}
-     * @default Date.now
-     * @description Auto-generated timestamp of leave application submission
-     * @example "2024-01-10T14:30:00.000Z"
-     */
-    appliedOn: { 
-        type: Date, 
-        default: Date.now 
-    },
-    
+
     /**
      * Administrator or Manager who approved/rejected the leave
      * @type {ObjectId}
      * @description Reference to the approving authority
      * @note Current schema has logical issue: "Employee" || "Admin" is JavaScript syntax, 
      *       not valid Mongoose syntax. Should use refPath for dynamic references.
-     * @example "507f1f77bcf86cd799439012" (Admin ID)
-     * @example "507f1f77bcf86cd799439013" (Employee/Manager ID)
      */
-    approvedBy: { 
-        type: mongoose.Schema.Types.ObjectId, 
-        refPath: "approvedBy.model",
-         model: { type: String, enum: ['Employee', 'Admin'] }
+    approvedBy: {
+        id: { type: mongoose.Schema.Types.ObjectId, required: false, refPath: "approvedBy.model" },
+        model: { type: String, enum: ["Employee", "Admin"], required: false }
     }
+
 }, {
     /**
      * Schema Options
