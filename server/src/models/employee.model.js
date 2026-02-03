@@ -331,6 +331,10 @@ employeeSchema.pre('save', async function(next) {
     next();
 });
 
+employeeSchema.pre('save', async function(next) {
+    
+})
+
 // =============================================================================
 // INDEXES
 // =============================================================================
@@ -349,6 +353,7 @@ employeeSchema.index({ manager: 1, role: 1 });      // Manager's team by role
 employeeSchema.index({ hq: 1, manager: 1 });        // Organizational hierarchy
 employeeSchema.index({ manager: 1, managerModel: 1 }); // Polymorphic reference queries
 employeeSchema.index({ hq: 1, manager: 1, managerModel: 1 }); // Complex org queries
+employeeSchema.index({ hqId: 1 });
 
 // Leave tracking indexes for reporting
 employeeSchema.index({ 

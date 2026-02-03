@@ -138,6 +138,8 @@ const leaveSchema = new mongoose.Schema({
  * @method calculateLeaveDuration - Compute number of leave days
  * @method findLeavesByDateRange - Find leaves within specific date range
  */
+leaveSchema.index({ employeeId: 1, createdAt: -1 });
+
 const Leave = mongoose.model("Leave", leaveSchema);
 
 module.exports = Leave;

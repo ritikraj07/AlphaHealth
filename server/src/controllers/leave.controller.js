@@ -110,106 +110,110 @@ const ApplyLeave = async(req, res) => {
 }
 }
 
-const LeaveApprove = async (req, res) => {  
-    /***
-     * who can approve leave
-     * admin can approve
-     * and that employee manager
-     * !!! right now assuming admin
-     */
-    try {
-        
-        const { leaveId, status, approvedBy, userId } = req.body;
-          
-        
-        if (!leaveId || !status) {
-            return res.status(400).json({
-            success: false,
-            message: "leaveId and status are required",
-            });
-        }
+const LeaveApprove = async (req, res) => {
+  try {
+    const { leaveId, status, approvedBy, userId } = req.body;
 
-        if (!["approved", "rejected"].includes(status)) {
-            return res.status(400).json({
-            success: false,
-            message: "Invalid status value",
-            });
-        }
+    if (!leaveId || !status || !approvedBy?.model || !approvedBy?.id) {
+      return res.status(400).json({
+        success: false,
+        message: "leaveId, status and approvedBy are required",
+      });
+    }
 
-        // Step 1: Fetch leave
-        const leave = await Leave.findById(leaveId);
-        if (!leave) {
+    if (!["approved", "rejected"].includes(status)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid status value",
+      });
+    }
+
+    // 1️⃣ Fetch leave with employee
+    const leave = await Leave.findById(leaveId).populate("employee");
+    if (!leave) {
+      return res.status(404).json({
+        success: false,
+        message: "Leave not found",
+      });
+    }
+
+    // 2️⃣ Prevent re-approval
+    if (leave.status !== "pending") {
+      return res.status(400).json({
+        success: false,
+        message: `Leave already ${leave.status}`,
+      });
+    }
+
+    // 3️⃣ Authorization check
+    if (approvedBy.model === "Admin") {
+      // Admin can approve anything
+    } else if (approvedBy.model === "Employee") {
+      const manager = await Employee.findById(userId);
+
+      if (!manager) {
         return res.status(404).json({
-            success: false,
-            message: "Leave not found",
+          success: false,
+          message: "Manager not found",
         });
-        }
+      }
 
-        // Step 2: Prevent re-approval
-        if (leave.status !== "pending") {
-        return res.status(400).json({
-            success: false,
-            message: `Leave already ${leave.status}`,
+      // Check if approver is the employee's manager
+      if (
+        String(leave.employee.manager) !== String(manager._id) ||
+        leave.employee.managerModel !== "Employee"
+      ) {
+        return res.status(403).json({
+          success: false,
+          message: "Not authorized to approve this leave",
         });
-            
-        }
+      }
+    } else {
+      return res.status(403).json({
+        success: false,
+        message: "Invalid approver type",
+      });
+    }
 
-        if(leave.approvedBy){
-            return res.status(400).json({
-                success: false,
-                message: "Leave already approved",
-            });
-        }
+    // 4️⃣ Update leave
+    leave.status = status;
+    leave.approvedBy = {
+      id: approvedBy.id,
+      model: approvedBy.model,
+    };
 
-        if (approvedBy === 'Admin') { }
-        else if (approvedBy === 'Employee') {
-             const employee = await Employee.findById(userId);
+    await leave.save();
 
-            if (!employee) {
-                return res.status(404).json({ success: false, message: "Manager not found" });
-            }
+    // 5️⃣ Update employee leave count (only if approved)
+    if (status === "approved") {
+      const days = leave.isHalfDay
+        ? 0.5
+        : Math.ceil(
+            (leave.endDate - leave.startDate) / (1000 * 60 * 60 * 24) + 1,
+          );
 
-            // Manager condition: employee.manager == approverId
-            if (String(employee.manager) !== String(userId)) {
-                return res.status(403).json({
-                success: false,
-                message: "Not authorized - only employee's manager can approve",
-                });
-            }
-        }else {
-            return res.status(403).json({
-                success: false,
-                message: "Not authorized to approve leave",
-            });
-            }
-        
+      await Employee.findByIdAndUpdate(leave.employee._id, {
+        $inc: {
+          [`leavesTaken.${leave.type}`]: days,
+        },
+      });
+      }
+      
 
-        // Step 3: Update leave status
-        leave.status = status;
-        leave.approvedBy = approvedBy;
-        await leave.save();
-
-        // Step 4: Send notification to employee
-        res.status(200).send({
-            success: true,
-            message: "Leave status updated successfully",
-            data: leave,
-        });
-
-
-
-
-        
-    } catch (error) {
-        
-        console.error("Leave Approve Error:", error);
+    return res.status(200).json({
+      success: true,
+      message: `Leave ${status} successfully`,
+      data: leave,
+    });
+  } catch (error) {
+    console.error("[LEAVE_APPROVE_ERROR]", error);
     return res.status(500).json({
       success: false,
       message: "Internal server error while approving leave",
     });
-  
-    }
-}
+  }
+};
+
 
 const GetLeaveDetails = async (req, res) => {
   try {
@@ -238,9 +242,88 @@ const GetLeaveDetails = async (req, res) => {
   }
 };
 
+const GetAppliedLeaves = async (req, res) => {
+  try {
+    const { status, type, hq, name, role, page = 1, limit = 10 } = req.query;
+
+    const pageNumber = Math.max(parseInt(page, 10), 1);
+    const limitNumber = Math.max(parseInt(limit, 10), 1);
+    const skip = (pageNumber - 1) * limitNumber;
+
+    // ===============================
+    // Leave-level filter
+    // ===============================
+    const leaveFilter = {};
+    if (status) leaveFilter.status = status;
+    if (type) leaveFilter.type = type;
+
+    // ===============================
+    // Employee-level filter (for populate match)
+    // ===============================
+    const employeeMatch = {};
+
+    if (hq) employeeMatch.hq = hq;
+    if (role) employeeMatch.role = role;
+
+    if (name) {
+      employeeMatch.name = {
+        $regex: name,
+        $options: "i", // case-insensitive
+      };
+    }
+
+    // ===============================
+    // Query
+    // ===============================
+    const [leaves, total] = await Promise.all([
+      Leave.find(leaveFilter)
+        .populate({
+          path: "employee",
+          select: "name role designation hq",
+          match: employeeMatch,
+          populate: {
+            path: "hq",
+            select: "name region",
+          },
+        })
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limitNumber)
+        .lean(),
+
+      Leave.countDocuments(leaveFilter),
+    ]);
+
+    // Remove records where populate failed due to match
+    const filteredLeaves = leaves.filter((l) => l.employee);
+
+    return res.status(200).json({
+      success: true,
+      message: "Leaves fetched successfully",
+      pagination: {
+        total,
+        page: pageNumber,
+        limit: limitNumber,
+        pages: Math.ceil(total / limitNumber),
+      },
+      count: filteredLeaves.length,
+      data: filteredLeaves,
+    });
+  } catch (err) {
+    console.error("[GET_APPLIED_LEAVES_ERROR]", err);
+
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch leave records",
+    });
+  }
+};
+
+
 
 module.exports = {
-    ApplyLeave,
-    LeaveApprove,
-    GetLeaveDetails
-}
+  ApplyLeave,
+  LeaveApprove,
+  GetLeaveDetails,
+  GetAppliedLeaves,
+};

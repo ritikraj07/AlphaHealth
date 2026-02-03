@@ -1,6 +1,11 @@
 const {Router} = require('express');
 const { verifyToken } = require('../validators/auth.validator');
-const { ApplyLeave, GetLeaveDetails, LeaveApprove } = require('../controllers/leave.controller');
+const {
+  ApplyLeave,
+  GetLeaveDetails,
+  LeaveApprove,
+  GetAppliedLeaves,
+} = require("../controllers/leave.controller");
 const router = Router();
 
 
@@ -9,8 +14,9 @@ const router = Router();
 router.post("/", verifyToken, ApplyLeave);
 
 /********************************* GET RREQUESTS ****************************************/
-
+router.get("/", verifyToken, GetAppliedLeaves);
 router.get("/:id", verifyToken, GetLeaveDetails);
+
 
 /********************************* PATCH RREQUESTS ****************************************/
 
