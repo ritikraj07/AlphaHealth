@@ -14,6 +14,7 @@ import { View } from "react-native";
 import AdminDashboard from "../screens/Dashboards/AdminDashboard";
 import EmployeeDashboard from "../screens/Dashboards/EmployeeDashboard";
 import { useAppSelector } from "../shared/store/hooks";
+import EmployeesScreen from "../screens/EmployeesScreen";
 
 
 const Tab = createBottomTabNavigator();
@@ -35,7 +36,7 @@ const BottomTabs = () => {
       <Navbar />
       <Tab.Navigator
         screenOptions={{
-          tabBarActiveTintColor: "#e91e62", // Blue active color
+          tabBarActiveTintColor: "#e91e62", 
           tabBarInactiveTintColor: "#8E8E93", // Gray inactive color
           headerShown: false,
 
@@ -55,10 +56,9 @@ const BottomTabs = () => {
                   shadowColor: "#000",
                   shadowOpacity: 0.15,
                   shadowRadius: 12,
-                shadowOffset: { width: 0, height: 6 },
-                position: "absolute",
-                bottom: 0,
-                  
+                  shadowOffset: { width: 0, height: 6 },
+                  position: "absolute",
+                  bottom: 0,
                 }
               : {
                   height: 80,
@@ -149,7 +149,7 @@ const BottomTabs = () => {
             ),
           }}
         />
-        <Tab.Screen
+        {/* <Tab.Screen
           name="Reports"
           component={ReportsAnalytics}
           options={{
@@ -161,7 +161,23 @@ const BottomTabs = () => {
               />
             ),
           }}
-        />
+        /> */}
+
+        {role === "admin" && (
+          <Tab.Screen
+            name="Employees"
+            component={EmployeesScreen}
+            options={{
+              tabBarIcon: ({ color, size, focused }) => (
+                <Ionicons
+                  name={focused ? "people" : "people-outline"}
+                  size={size}
+                  color={color}
+                />
+              ),
+            }}
+          />
+        )}
       </Tab.Navigator>
     </View>
   );
