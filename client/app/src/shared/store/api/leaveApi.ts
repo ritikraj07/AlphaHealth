@@ -20,19 +20,49 @@ export interface Leave {
 // ! Leaves
 export interface LeavesResponse {
   success: boolean;
-  leaves: Leave[];
+  leaves: Leaves[];
   total: number;
   page: number;
   totalPages: number;
+  pagination?: number;
+  message: string;
+  data: Leaves[];
 }
 
+type HQ = {
+  _id: string;
+  name: string;
+  region: string;
+};
+
+type Employee = {
+  _id: string;
+  name: string;
+  role: string;
+  designation: string | null;
+  hq: HQ;
+};
+
+export type Leaves = {
+  _id: string;
+  employee: Employee;
+  type: string;
+  startDate: string;
+  endDate: string;
+  reason: string;
+  isHalfDay: boolean;
+  halfType: "first" | "second" | null;
+  status: "pending" | "approved" | "rejected";
+  appliedOn: string;
+};
+
 // ! Leave
-export interface LeaveResponse {
+export type LeaveResponse = {
   success: boolean;
-  leave: Leave;
   message: string;
-  data: Leave;
-}
+  data: any; // you can replace with Leave type later
+};
+
 
 export interface ApplyLeaveRequest {
   startDate: string;
@@ -54,6 +84,10 @@ export type GetLeavesArgs = {
   limit?: number;
   status?: string;
   employeeId?: string;
+  type?: string;
+  hq?: string;
+  name?: string;
+  role?: string;
 };
 
 export type GetMyLeavesArgs = {
@@ -63,10 +97,15 @@ export type GetMyLeavesArgs = {
 };
 
 export type UpdateLeaveStatusArgs = {
-  id: string;
-  status: 'approved' | 'rejected';
-  adminNotes?: string;
+  leaveId: string;
+  status: "approved" | "rejected";
+  approvedBy: {
+    id: string;
+    model: "Admin" | "Employee";
+  };
+  userId: string; // approver user id
 };
+
 
 export type DeleteLeaveArgs = {
   id: string;
@@ -76,107 +115,128 @@ export const leaveApi = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     // Get all leaves (for admins)
     getLeaves: builder.query<LeavesResponse, GetLeavesArgs>({
-      query: ({ page = 1, limit = 10, status = '', employeeId = '' }) => {
-        const params = new URLSearchParams({
-          page: page.toString(),
-          limit: limit.toString(),
-        });
-        
-        if (status) params.append('status', status);
-        if (employeeId) params.append('employeeId', employeeId);
-        
-        return `/leaves?${params.toString()}`;
+      query: ({ page = 1, limit = 10, status, type, hq, name, role }) => {
+        const params = new URLSearchParams();
+
+        params.append("page", page.toString());
+        params.append("limit", limit.toString());
+
+        if (status) params.append("status", status);
+        if (type) params.append("type", type);
+        if (hq) params.append("hq", hq);
+        if (name) params.append("name", name);
+        if (role) params.append("role", role);
+
+        return {
+          url: `/leaves`,
+          params,
+        };
       },
-      providesTags: (result) =>
-        result
-          ? [
-              ...result.leaves.map(({ _id }) => ({ type: 'Leave' as const, id: _id })),
-              { type: 'Leave', id: 'LIST' },
-            ]
-          : [{ type: 'Leave', id: 'LIST' }],
+
+      
+  providesTags: (result) =>
+    result?.data
+      ? [
+          ...result.data.map((leave) => ({
+            type: "Leave" as const,
+            id: leave._id,
+          })),
+          { type: "Leave", id: "LIST" },
+        ]
+      : [{ type: "Leave", id: "LIST" }],
+
+
     }),
-    
+
     // Get current user's leaves
     getMyLeaves: builder.query<LeavesResponse, GetMyLeavesArgs>({
-      query: ({ page = 1, limit = 10, status = '' } = {}) => {
+      query: ({ page = 1, limit = 10, status = "" } = {}) => {
         const params = new URLSearchParams({
           page: page.toString(),
           limit: limit.toString(),
         });
-        
-        if (status) params.append('status', status);
-        
+
+        if (status) params.append("status", status);
+
         return `/leaves/my?${params.toString()}`;
       },
       providesTags: (result) =>
         result
           ? [
-              ...result.leaves.map(({ _id }) => ({ type: 'Leave' as const, id: _id })),
-              { type: 'Leave', id: 'MY_LIST' },
+              ...result.leaves.map(({ _id }) => ({
+                type: "Leave" as const,
+                id: _id,
+              })),
+              { type: "Leave", id: "MY_LIST" },
             ]
-          : [{ type: 'Leave', id: 'MY_LIST' }],
+          : [{ type: "Leave", id: "MY_LIST" }],
     }),
-    
+
     // Apply for leave
     applyLeave: builder.mutation<LeaveResponse, ApplyLeaveRequest>({
       query: (leaveData) => ({
-        url: '/leaves',
-        method: 'POST',
+        url: "/leaves",
+        method: "POST",
         body: leaveData,
       }),
-      invalidatesTags: [{ type: 'Leave', id: 'MY_LIST' }],
+      invalidatesTags: [{ type: "Leave", id: "MY_LIST" }],
     }),
-    
+
     // Update leave status (admin only)
     updateLeaveStatus: builder.mutation<LeaveResponse, UpdateLeaveStatusArgs>({
-      query: ({ id, status, adminNotes }) => ({
-        url: `/leaves/${id}/status`,
-        method: 'PATCH',
-        body: { status, adminNotes },
+      query: (body) => ({
+        url: "/leaves",
+        method: "PATCH",
+        body,
       }),
-      invalidatesTags: (result, error, { id }) => [
-        { type: 'Leave', id },
-        { type: 'Leave', id: 'LIST' },
-        { type: 'Leave', id: 'MY_LIST' },
+      invalidatesTags: (result, error, arg) => [
+        { type: "Leave", id: arg.leaveId },
+        { type: "Leave", id: "LIST" },
       ],
     }),
-    
+
     // Delete leave
-    deleteLeave: builder.mutation<{ success: boolean; message: string }, DeleteLeaveArgs>({
+    deleteLeave: builder.mutation<
+      { success: boolean; message: string },
+      DeleteLeaveArgs
+    >({
       query: ({ id }) => ({
         url: `/leaves/${id}`,
-        method: 'DELETE',
+        method: "DELETE",
       }),
       invalidatesTags: (result, error, { id }) => [
-        { type: 'Leave', id },
-        { type: 'Leave', id: 'MY_LIST' },
+        { type: "Leave", id },
+        { type: "Leave", id: "MY_LIST" },
       ],
     }),
 
     // Get leave by ID
     getLeave: builder.query<LeaveResponse, { id: string }>({
       query: ({ id }) => `/leaves/${id}`,
-      providesTags: (result, error, { id }) => [{ type: 'Leave', id }],
+      providesTags: (result, error, { id }) => [{ type: "Leave", id }],
     }),
 
     // Get leave statistics
-    getLeaveStats: builder.query<{
-      success: boolean;
-      stats: {
-        total: number;
-        pending: number;
-        approved: number;
-        rejected: number;
-        available: {
-          sick: number;
-          casual: number;
-          earned: number;
-          public: number;
+    getLeaveStats: builder.query<
+      {
+        success: boolean;
+        stats: {
+          total: number;
+          pending: number;
+          approved: number;
+          rejected: number;
+          available: {
+            sick: number;
+            casual: number;
+            earned: number;
+            public: number;
+          };
         };
-      };
-    }, void>({
-      query: () => '/leaves/stats',
-      providesTags: ['Leave'],
+      },
+      void
+    >({
+      query: () => "/leaves/stats",
+      providesTags: ["Leave"],
     }),
   }),
 });
@@ -188,5 +248,4 @@ export const {
   useGetLeaveStatsQuery,
   useApplyLeaveMutation,
   useUpdateLeaveStatusMutation,
-  useDeleteLeaveMutation,
 } = leaveApi;
