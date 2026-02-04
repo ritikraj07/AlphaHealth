@@ -29,7 +29,7 @@ export default function EmployeeDashboard() {
     });
   const name = data?.data?.name;
   const headQuater = data?.data?.hq?.name;
-console.log(data)
+// console.log(data)
   
 
   if (isLoading) {
@@ -85,6 +85,52 @@ console.log(data)
           </View>
         </View>
 
+
+        {/* Report section */}
+
+
+          <View style={styles.gridContainer}>
+                {/* Days Worked */}
+                <View style={styles.leaveCard}>
+                  <View style={styles.header}>
+                    <Text style={styles.leaveName}>Days Worked</Text>
+                    <Feather name="calendar" size={24} color="grey" />
+                  </View>
+                  <Text style={styles.leaveCount}>0</Text>
+                  <Text style={styles.leaveDescription}>0% of working days</Text>
+                </View>
+        
+                {/* Calls Completed */}
+                <View style={styles.leaveCard}>
+                  <View style={styles.header}>
+                    <Text style={styles.leaveName}>Calls Completed</Text>
+                    <Feather name="users" size={24} color="lightblue" />
+                  </View>
+                  <Text style={styles.leaveCount}>0</Text>
+                  <Text style={styles.leaveDescription}>Avg: 0.0 per day</Text>
+                </View>
+        
+                {/* Earned Leave */}
+                <View style={styles.leaveCard}>
+                  <View style={styles.header}>
+                    <Text style={styles.leaveName}>POB Value</Text>
+                    <Feather name="dollar-sign" size={24} color="green" />
+                  </View>
+                  <Text style={styles.leaveCount}>₹ 0</Text>
+                  <Text style={styles.leaveDescription}>0 orders</Text>
+                </View>
+        
+                {/* Coverage */}
+                <View style={styles.leaveCard}>
+                  <View style={styles.header}>
+                    <Text style={styles.leaveName}>Coverage</Text>
+                    <Ionicons name="filter-circle-outline" size={24} color="blue" />
+                  </View>
+                  <Text style={styles.leaveCount}>0%</Text>
+                  <Text style={styles.leaveDescription}>Doctor coverage rate</Text>
+                </View>
+              </View>
+
         {/* Call Performance */}
         <View style={styles.card}>
           <View style={styles.cardHeader}>
@@ -134,6 +180,64 @@ console.log(data)
             0 total visits to 1 doctors
           </Text>
         </View>
+
+
+        
+          {/* Doctor Coverage Analysis card */}
+        
+              <View style={[styles.leaveCard, { width: "100%" }]}>
+                <View style={[styles.cardHeader]}>
+                  <Ionicons name="filter-circle-outline" size={24} color="black" />
+                  <Text style={[styles.title, { fontSize: 20 }]}>
+                    Doctor Coverage Analysis
+                  </Text>
+                </View>
+                <Text style={styles.subtitle}>
+                  Coverage vs target frequency for each doctor
+                </Text>
+        
+                <View
+                  style={{
+                    flexDirection: "row",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                  }}
+                >
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      justifyContent: "flex-start",
+                      alignItems: "center",
+                    }}
+                  >
+                    <Text style={{ fontWeight: "700", marginRight: 10 }}>
+                      Dr. Smith
+                    </Text>
+                    <Text
+                      style={{
+                        backgroundColor: "deepskyblue",
+                        paddingHorizontal: 2,
+                        color: "white",
+                        borderRadius: 5,
+                      }}
+                    >
+                      high
+                    </Text>
+                  </View>
+                  <Text>0/4 calls</Text>
+                </View>
+        
+                <View
+                  style={{
+                    width: "100%",
+                    height: 5,
+                    backgroundColor: "pink",
+                    marginVertical: 10,
+                    borderRadius: 5,
+                  }}
+                ></View>
+                <Text>0% coverage</Text>
+              </View>
 
         {/* Sales and POBs Section */}
         <View style={styles.card}>
@@ -348,15 +452,15 @@ const styles = StyleSheet.create({
     padding: 16,
     marginVertical: 8,
     borderWidth: 0.5,
-    borderColor: "grey",
-    // shadowColor: "#000",
-    // shadowOffset: {
-    //   width: 0,
-    //   height: 2,
-    // },
-    // shadowOpacity: 0.1,
-    // shadowRadius: 3,
-    // elevation: 3,
+    borderColor: "#e0e0e0",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 3,
   },
   cardHeader: {
     flexDirection: "row",
@@ -561,5 +665,91 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "500",
     color: "#000",
+  },
+
+  header: {
+    paddingTop: 5,
+    paddingBottom: 5,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 20,
+  },
+
+  subtitle: {
+    fontSize: 14,
+    color: "#666",
+    marginBottom: 25,
+    lineHeight: 22,
+  },
+  applyButton: {
+    backgroundColor: "#e91e62",
+    paddingVertical: 14,
+    paddingHorizontal: 24,
+    borderRadius: 10,
+    alignItems: "center",
+    alignSelf: "flex-start",
+    shadowColor: "#e91e62",
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 6,
+  },
+  applyButtonText: {
+    color: "white",
+    fontSize: 16,
+    fontWeight: "600",
+  },
+  balanceSection: {
+    marginBottom: 30,
+    flexDirection: "row",
+  },
+
+  gridContainer: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "space-between",
+  },
+  leaveCard: {
+    borderColor: "#e0e0e0",
+    borderWidth: 0.5,
+    borderRadius: 12,
+    width: "48%",
+    marginBottom: 16,
+    padding: 16,
+    backgroundColor: "white",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 3,
+  },
+
+  leaveName: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#1a1a1a",
+    flex: 1,
+  },
+  leaveCount: {
+    fontSize: 24,
+    fontWeight: "bold",
+    color: "black",
+    marginBottom: 4,
+  },
+  leaveDescription: {
+    fontSize: 12,
+    color: "grey",
+  },
+  keyPoints: {
+    fontSize: 14,
+    fontWeight: "300",
+    marginLeft: 4,
   },
 });

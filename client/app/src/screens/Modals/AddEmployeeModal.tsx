@@ -14,8 +14,9 @@ import {
 import React, { useState } from "react";
 import { Ionicons, Feather } from "@expo/vector-icons";
 import { useGetHeadQuartersQuery } from "../../shared/store/api/hqApi";
-import { useCreateEmployeeMutation } from "../../shared/store/api/employeeApi";
+import { useCreateEmployeeMutation, useGetManagersQuery } from "../../shared/store/api/employeeApi";
 import { FetchBaseQueryError } from "@reduxjs/toolkit/query";
+import { Dropdown } from "react-native-element-dropdown";
 
 
 
@@ -35,6 +36,9 @@ interface EmployeeData {
   password: string;
   role: "employee" | "manager";
   hq: string; // id of headquarter
+  manager: string;
+  managerModel: string;
+  phoneNo: string;
 }
 
 type RoleType = "employee" | "manager";
@@ -50,8 +54,22 @@ export default function AddEmployeeModal({
   const [name, setName] = useState<string>("");
   const [role, setRole] = useState<RoleType>("employee");
   const [email, setEmail] = useState<string>("");
+  const [phoneNo, setPhoneNo] = useState<string>("");
   const [headquarter, setHeadquarter] = useState<string>("");
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
+
+  // Manager
+  const [managerType, setManagerType] = useState<string>("");
+  const [selectedManager, setSelectedManager] = useState<string>("");
+  const { data: managersData } = useGetManagersQuery("");
+
+  const managerTypes = [
+    { label: "Training", value: "Training" },
+    { label: "Territory", value: "Territory" },
+    { label: "Area", value: "Area" },
+    { label: "Senior", value: "Senior" },
+  ];
+
 
   const roles: { id: RoleType; label: string }[] = [
     { id: "employee", label: "Employee" },
@@ -97,6 +115,9 @@ export default function AddEmployeeModal({
       email: email.trim(),
       hq: headquarter,
       password: DEFAULT_PASSWORD,
+      phoneNo: phoneNo,
+      manager: "",
+      managerModel: ""
     };
 
     handleAddEmployee(employeeData);
@@ -130,6 +151,7 @@ export default function AddEmployeeModal({
            hq: employeeData.hq,
            manager: managerId,
            managerModel: managerModel,
+           phoneNo: employeeData.phoneNo
          }).unwrap();
          console.log("Response:", response);
          if (response.success) {
@@ -236,6 +258,61 @@ export default function AddEmployeeModal({
                 </View>
               </View>
 
+              {/* Manager Selection if role is employee */}
+              {role === "employee" && (
+                <View style={styles.section}>
+                  <Text style={styles.sectionTitle}>
+                    Manager <Text style={styles.required}>*</Text>
+                  </Text>
+
+                  {/* <Dropdown
+                    data={
+                      managersData?.map((mgr) => ({
+                        label: mgr.name,
+                        value: mgr._id,
+                      })) ?? []
+                    }
+                    search
+                    searchPlaceholder="Search manager..."
+                    labelField="label"
+                    valueField="value"
+                    placeholder="Select Manager"
+                    value={selectedManager}
+                    onChange={(item) => setSelectedManager(item.value)}
+                    style={styles.dropdown}
+                  /> */}
+
+                  {errors.manager && (
+                    <Text style={styles.errorText}>{errors.manager}</Text>
+                  )}
+                </View>
+              )}
+
+              {/*  */}
+              {role === "manager" && (
+                <View style={styles.section}>
+                  <Text style={styles.sectionTitle}>
+                    Manager Type <Text style={styles.required}>*</Text>
+                  </Text>
+
+                  <Dropdown
+                    data={managerTypes}
+                    search
+                    searchPlaceholder="Search manager type..."
+                    labelField="label"
+                    valueField="value"
+                    placeholder="Select Manager Type"
+                    value={managerType}
+                    onChange={(item) => setManagerType(item.value)}
+                    style={styles.dropdown}
+                  />
+
+                  {errors.managerType && (
+                    <Text style={styles.errorText}>{errors.managerType}</Text>
+                  )}
+                </View>
+              )}
+
               {/* Email Field */}
               <View style={styles.section}>
                 <Text style={styles.sectionTitle}>
@@ -258,45 +335,58 @@ export default function AddEmployeeModal({
                 ) : null}
               </View>
 
+              {/* Phone Field */}
+              <View style={styles.section}>
+                <Text style={styles.sectionTitle}>
+                  Phone No. <Text style={styles.required}>*</Text>
+                </Text>
+                <TextInput
+                  style={[
+                    styles.textInput,
+                    errors.phoneNo && styles.inputError,
+                  ]}
+                  placeholder="Enter phone number"
+                  placeholderTextColor="#999"
+                  keyboardType="phone-pad"
+                  autoCapitalize="none"
+                  value={phoneNo}
+                  onChangeText={(text) => {
+                    setPhoneNo(text);
+                    if (errors.phoneNo) setErrors({ ...errors, phoneNo: "" });
+                  }}
+                />
+                {errors.email ? (
+                  <Text style={styles.errorText}>{errors.email}</Text>
+                ) : null}
+              </View>
+
               {/* Headquarter Selection */}
+             
               <View style={styles.section}>
                 <Text style={styles.sectionTitle}>
                   Headquarter <Text style={styles.required}>*</Text>
                 </Text>
-                <View style={styles.headquarterContainer}>
-                  {isLoading ? (
-                    <ActivityIndicator size="small" color="#007AFF" />
-                  ) : (
-                    HQ?.data.map((hq: any) => (
-                      <TouchableOpacity
-                        key={hq._id}
-                        style={[
-                          styles.headquarterButton,
-                          headquarter === hq._id &&
-                            styles.headquarterButtonSelected,
-                        ]}
-                        onPress={() => {
-                          setHeadquarter(hq._id);
-                          if (errors.headquarter)
-                            setErrors({ ...errors, headquarter: "" });
-                        }}
-                      >
-                        <Text
-                          style={[
-                            styles.headquarterText,
-                            headquarter === hq._id &&
-                              styles.headquarterTextSelected,
-                          ]}
-                        >
-                          {hq.name}
-                        </Text>
-                      </TouchableOpacity>
-                    ))
-                  )}
-                </View>
-                {errors.headquarter ? (
+
+                <Dropdown
+                  data={
+                    HQ?.data?.map((hq: { name: any; _id: any; }) => ({
+                      label: hq.name,
+                      value: hq._id,
+                    })) ?? []
+                  }
+                  search
+                  searchPlaceholder="Search HQ..."
+                  labelField="label"
+                  valueField="value"
+                  placeholder="Select Headquarter"
+                  value={headquarter}
+                  onChange={(item) => setHeadquarter(item.value)}
+                  style={styles.dropdown}
+                />
+
+                {errors.headquarter && (
                   <Text style={styles.errorText}>{errors.headquarter}</Text>
-                ) : null}
+                )}
               </View>
 
               {/* Action Buttons */}
@@ -477,5 +567,14 @@ const styles = StyleSheet.create({
     color: "#666",
     fontSize: 16,
     fontWeight: "600",
+  },
+  dropdown: {
+    borderWidth: 1,
+    borderColor: "#ddd",
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    backgroundColor: "#f8f8f8",
+    minHeight: 48,
   },
 });
