@@ -1,7 +1,8 @@
 import { StyleSheet, Text, TouchableOpacity, View, ScrollView } from 'react-native'
 import { Ionicons, Feather, EvilIcons } from "@expo/vector-icons";
 import { RefreshControl } from 'react-native-gesture-handler';
-
+import {useState} from 'react'
+import CreatePOBModal from './Modals/CreatePOBModal';
 
 // Doctors Component
 const DoctorsCard = () => {
@@ -55,13 +56,15 @@ const HospitalsCard = () => {
  * @returns {JSX.Element}
  */
 export default function POB() {
+  const [createPOBModalVisible, setCreatePOBModalVisible] = useState(false);
   return (
     <ScrollView style={[styles.container]}
       showsVerticalScrollIndicator={false}
       refreshControl={
               <RefreshControl refreshing={false} onRefresh={() => {}} />
             }
-     >
+    >
+      <CreatePOBModal visible={createPOBModalVisible} onClose={() => setCreatePOBModalVisible(false)} />
       {/* Header Section */}
       <View style={styles.header}>
         <View style={styles.headerContent} >
@@ -70,7 +73,7 @@ export default function POB() {
         </View>
         
         {/* Apply Leave Button */}
-        <TouchableOpacity style={styles.applyButton}>
+        <TouchableOpacity style={styles.applyButton} onPress={() => setCreatePOBModalVisible(true)} >
           <Text style={styles.applyButtonText}>Create POB</Text>
         </TouchableOpacity>
       </View>

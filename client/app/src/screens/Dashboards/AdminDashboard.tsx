@@ -16,6 +16,7 @@ import {
   FontAwesome6,
   AntDesign,
   Ionicons,
+  Fontisto,
 } from "@expo/vector-icons";
 import AddEmployeeModal from "../Modals/AddEmployeeModal";
 import { useCreateEmployeeMutation } from "../../shared/store/api/employeeApi";
@@ -30,7 +31,9 @@ import { useGetAdminDashboardQuery } from "../../shared/store/api/adminApi";
 import AdminDashboardSkeleton from "../../shared/componets/skeletons/AdminDashboardSkeleton";
 import AddHeadQuarterModal from "../Modals/AddHeadQuarterModal";
 import { useAppSelector } from "../../shared/store/hooks";
-
+import * as DocumentPicker from "expo-document-picker";
+import AddEmployeeFromExcelModal from "../Modals/AddEmpFromExcel";
+import AddDoctorChemistFromExcleModal from "../Modals/AddDocCheExcle";
 
 type Props = {
   title: string;
@@ -125,7 +128,25 @@ export default function AdminDashboard(): JSX.Element {
         iconFrom: "FontAwesome6",
         icon: "hand",
       },
-    ];
+  ];
+  
+  async function pickExcelFile() {
+    try {
+         const res = await DocumentPicker.getDocumentAsync({
+           type: [
+             "application/vnd.ms-excel",
+             "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+           ],
+         });
+
+         console.log(res);
+    } catch (error) {
+       console.log("Error from pickExcle file ", error)
+    }
+  }
+
+
+  
   
    if (dashboardLoading) {
      return <AdminDashboardSkeleton />;
@@ -293,6 +314,30 @@ export default function AdminDashboard(): JSX.Element {
                 onPress={() => {}}
               />
             </View>
+
+            {/* Add Employee from Excel */}
+            {/* <AddEmployeeFromExcelModal /> */}
+
+            {/* Add Doctor Chemist from Excel */}
+            {/* <AddDoctorChemistFromExcleModal /> */}
+
+            {/* Applied Leave */}
+
+            <TouchableOpacity
+              style={[
+                styles.actionBtn,
+                {
+                  alignItems: "center",
+                  justifyContent: "center",
+                  flexDirection: "row",
+                  gap: 10,
+                },
+              ]}
+              onPress={() => navigation.navigate("LeaveAppliedScreen")}
+            >
+              <Ionicons name="calendar-outline" size={24} color="#fff" />
+              <Text style={styles.actionText}>{"Leave Application"}</Text>
+            </TouchableOpacity>
           </View>
         </View>
 
