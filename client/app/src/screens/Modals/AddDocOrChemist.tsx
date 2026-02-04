@@ -14,7 +14,7 @@ import React, { useState } from "react";
 import { Ionicons, Feather } from "@expo/vector-icons";
 import { useCreateDoctorChemistMutation } from "../../shared/store/api/doctorChemistApi";
 import { useAppSelector } from "../../shared/store/hooks";
-
+import { Dropdown } from "react-native-element-dropdown";
 
 // Define the props interface
 interface AddDoctorChemistModalProps {
@@ -54,6 +54,7 @@ export default function AddDoctorChemistModal({
   const [location, setLocation] = useState<string>("");
   const [hq, setHq] = useState<string>("");
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
+  const [phoneNo, setPhoneNo] = useState<string>("");
 const [  createDoctorChemist,  {
     isLoading: isLoadingCreateDocChem,
     isError: isErrorCreateDocChem,
@@ -67,19 +68,43 @@ const [  createDoctorChemist,  {
   ];
 
   // Specializations for doctors (you can expand this list)
-  const specializations = [
-    "Cardiology",
-    "Dermatology",
-    "Neurology",
-    "Pediatrics",
-    "Orthopedics",
-    "Gynecology",
-    "General Medicine",
-    "Dentistry",
-    "Psychiatry",
-    "Oncology",
-    "Other",
-  ];
+ const specializations = [
+   { label: "Cardiology", value: "Cardiology" },
+   { label: "Dermatology", value: "Dermatology" },
+   { label: "Neurology", value: "Neurology" },
+   { label: "Pediatrics", value: "Pediatrics" },
+   { label: "Orthopedics", value: "Orthopedics" },
+   { label: "Gynecology", value: "Gynecology" },
+   { label: "General Medicine", value: "General Medicine" },
+   { label: "Dentistry", value: "Dentistry" },
+   { label: "Psychiatry", value: "Psychiatry" },
+   { label: "Oncology", value: "Oncology" },
+   { label: "ENT (Otolaryngology)", value: "ENT" },
+   { label: "Gastroenterology", value: "Gastroenterology" },
+   { label: "Urology", value: "Urology" },
+   { label: "Nephrology", value: "Nephrology" },
+   { label: "Endocrinology", value: "Endocrinology" },
+   { label: "Rheumatology", value: "Rheumatology" },
+   { label: "Pulmonology", value: "Pulmonology" },
+   { label: "Hematology", value: "Hematology" },
+   { label: "Radiology", value: "Radiology" },
+   { label: "Pathology", value: "Pathology" },
+   { label: "Plastic Surgery", value: "Plastic Surgery" },
+   { label: "Vascular Surgery", value: "Vascular Surgery" },
+   { label: "Neurosurgery", value: "Neurosurgery" },
+   { label: "Cardiothoracic Surgery", value: "Cardiothoracic Surgery" },
+   { label: "Critical Care", value: "Critical Care" },
+   { label: "Infectious Diseases", value: "Infectious Diseases" },
+   { label: "Sports Medicine", value: "Sports Medicine" },
+   { label: "Pain Medicine", value: "Pain Medicine" },
+   { label: "Emergency Medicine", value: "Emergency Medicine" },
+   { label: "Anesthesiology", value: "Anesthesiology" },
+   { label: "Nuclear Medicine", value: "Nuclear Medicine" },
+   { label: "Palliative Care", value: "Palliative Care" },
+   { label: "Other", value: "Other" },
+ ];
+
+
 
   // Validate form
   const validateForm = (): boolean => {
@@ -101,7 +126,7 @@ const [  createDoctorChemist,  {
     } else if (!(location.length > 3)) {
       newErrors.location = "Please enter a valid location";
     }
-
+    
     if (!hq) {
       newErrors.hq = "Headquarter is required";
     }
@@ -136,7 +161,11 @@ const [  createDoctorChemist,  {
       hq,
       addedBy: CreatedBy,
       email: email.trim(),
+      phoneNo: phoneNo
     };
+
+    console.log("Form Data:", formData);
+    // return;
     
 
 
@@ -251,6 +280,23 @@ const [  createDoctorChemist,  {
                 </View>
               </View>
 
+              {/* specialization */}
+              {type == "doctor" && (
+                <Dropdown
+                  data={specializations}
+                  search
+                  searchPlaceholder="Search Specialization type..."
+                  labelField="label"
+                  valueField="value"
+                  placeholder="Select Specialization Type"
+                  value={specialization}
+                  onChange={(item) => setSpecialization(item.value)}
+                  style={[styles.dropdown, styles.section]}
+                  inputSearchStyle={styles.dropdownInput}
+                  selectedTextStyle={styles.dropdownSelectedText}
+                />
+              )}
+
               {/* Name Field */}
               <View style={styles.section}>
                 <Text style={styles.sectionTitle}>
@@ -273,7 +319,7 @@ const [  createDoctorChemist,  {
 
               {/* email Field */}
 
-              <View>
+              <View style={styles.section}>
                 <Text style={styles.sectionTitle}>
                   Email <Text style={styles.required}>*</Text>
                 </Text>
@@ -292,52 +338,27 @@ const [  createDoctorChemist,  {
                 ) : null}
               </View>
 
-              {/* Specialization Field (Only for Doctors) */}
-              {type === "doctor" && (
-                <View style={styles.section}>
-                  <Text style={styles.sectionTitle}>
-                    Specialization <Text style={styles.required}>*</Text>
-                  </Text>
-                  <ScrollView
-                    horizontal
-                    showsHorizontalScrollIndicator={false}
-                    style={styles.specializationScroll}
-                  >
-                    <View style={styles.specializationContainer}>
-                      {specializations.map((spec) => (
-                        <TouchableOpacity
-                          key={spec}
-                          style={[
-                            styles.specializationButton,
-                            specialization === spec &&
-                              styles.specializationButtonSelected,
-                          ]}
-                          onPress={() => {
-                            setSpecialization(spec);
-                            if (errors.specialization)
-                              setErrors({ ...errors, specialization: "" });
-                          }}
-                        >
-                          <Text
-                            style={[
-                              styles.specializationText,
-                              specialization === spec &&
-                                styles.specializationTextSelected,
-                            ]}
-                          >
-                            {spec}
-                          </Text>
-                        </TouchableOpacity>
-                      ))}
-                    </View>
-                  </ScrollView>
-                  {errors.specialization ? (
-                    <Text style={styles.errorText}>
-                      {errors.specialization}
-                    </Text>
-                  ) : null}
-                </View>
-              )}
+              {/* phone  */}
+
+              <View style={styles.section}>
+                <Text style={styles.sectionTitle}>
+                  Phone <Text style={styles.required}>*</Text>
+                </Text>
+                <TextInput
+                  style={[styles.textInput, errors.phone && styles.inputError]}
+                  placeholder={`Enter ${type} phone`}
+                  placeholderTextColor="#999"
+                  value={phoneNo}
+                  onChangeText={(text) => {
+                    setPhoneNo(text);
+                    if (errors.phone) setErrors({ ...errors, phone: "" });
+                  }}
+                  keyboardType="phone-pad"
+                />
+                {errors.phone ? (
+                  <Text style={styles.errorText}>{errors.phone}</Text>
+                ) : null}
+              </View>
 
               {/* Location Field */}
               <View style={styles.section}>
@@ -363,37 +384,36 @@ const [  createDoctorChemist,  {
               </View>
 
               {/* Headquarter Selection */}
+
               <View style={styles.section}>
                 <Text style={styles.sectionTitle}>
                   Headquarter <Text style={styles.required}>*</Text>
                 </Text>
-                <View style={styles.hqContainer}>
-                  {headquarters.map((hqItem) => (
-                    <TouchableOpacity
-                      key={hqItem._id}
-                      style={[
-                        styles.hqButton,
-                        hq === hqItem._id && styles.hqButtonSelected,
-                      ]}
-                      onPress={() => {
-                        setHq(hqItem._id);
-                        if (errors.hq) setErrors({ ...errors, hq: "" });
-                      }}
-                    >
-                      <Text
-                        style={[
-                          styles.hqText,
-                          hq === hqItem._id && styles.hqTextSelected,
-                        ]}
-                      >
-                        {hqItem.name}
-                      </Text>
-                    </TouchableOpacity>
-                  ))}
-                </View>
-                {errors.hq ? (
-                  <Text style={styles.errorText}>{errors.hq}</Text>
-                ) : null}
+
+                <Dropdown
+                  data={
+                    headquarters?.map((hq: { name: any; _id: any }) => ({
+                      label: hq.name,
+                      value: hq._id,
+                    })) ?? []
+                  }
+                  search
+                  searchPlaceholder="Search HQ..."
+                  labelField="label"
+                  valueField="value"
+                  placeholder="Select Headquarter"
+                  value={hq}
+                  onChange={(item) => {
+                    if (errors.hq) setErrors({ ...errors, hq: "" });
+                    console.log(item);
+                    setHq(item.value);
+                  }}
+                  style={styles.dropdown}
+                />
+
+                {errors.headquarter && (
+                  <Text style={styles.errorText}>{errors.headquarter}</Text>
+                )}
               </View>
 
               {/* Action Buttons */}
@@ -592,5 +612,24 @@ const styles = StyleSheet.create({
     color: "#666",
     fontSize: 16,
     fontWeight: "600",
+  },
+  dropdown: {
+    borderWidth: 1,
+    borderColor: "#bbb",
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    backgroundColor: "#f8f8f8", // solid white for clarity
+    minHeight: 48,
+  },
+
+  dropdownInput: {
+    fontSize: 16,
+    color: "#333", // dark for search input
+  },
+
+  dropdownSelectedText: {
+    fontSize: 16,
+    color: "#222", // dark readable text
   },
 });

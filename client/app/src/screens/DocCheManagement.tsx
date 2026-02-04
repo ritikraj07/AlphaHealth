@@ -87,7 +87,7 @@ export default function DocCheManagement() {
           </Text>
         </View>
 
-        {/* Apply Leave Button */}
+        {/* Add Professional Button */}
         <View
           style={{
             flex: 1,
@@ -116,24 +116,24 @@ export default function DocCheManagement() {
 
       <View style={styles.gridContainer}>
         {/* Sick Leave */}
-        <View style={styles.leaveCard}>
+        {/* <View style={styles.leaveCard}>
           <View style={styles.header}>
             <Text style={styles.leaveName}>Total Doctors</Text>
             <FontAwesome6 name="user-doctor" size={24} color="grey" />
           </View>
           <Text style={styles.leaveCount}>{doctors}</Text>
           <Text style={styles.leaveDescription}>In North HQ</Text>
-        </View>
+        </View> */}
 
-        {/* Casual Leave */}
-        <View style={styles.leaveCard}>
+        {/* Total Chemis */}
+        {/* <View style={styles.leaveCard}>
           <View style={styles.header}>
             <Text style={styles.leaveName}>Total Chemists</Text>
             <Feather name="shopping-cart" size={24} color="grey" />
           </View>
           <Text style={styles.leaveCount}>{chemists}</Text>
           <Text style={styles.leaveDescription}>In North HQ</Text>
-        </View>
+        </View> */}
 
         {/* Earned Leave */}
         <View style={styles.leaveCard}>
