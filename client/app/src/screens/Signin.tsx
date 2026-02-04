@@ -212,12 +212,12 @@ const isServerOnline = serverStatus === "online";
       style={styles.container}
       contentContainerStyle={styles.contentContainer}
     >
-      <ActivityIndicator
+      {/* <ActivityIndicator
         size="large"
         style={{}}
         color="hotpink"
         animating={isLoading}
-      />
+      /> */}
   
       <ServerConnectingOverlay visible={!isServerOnline} />
 
