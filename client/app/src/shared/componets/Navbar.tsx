@@ -18,6 +18,7 @@ export default function Navbar() {
   const navigation = useNavigation();
   const dispatch = useDispatch();
   const { name, role } = useAppSelector((state) => state.auth);
+  
 
   const handleBtm = async () => {
     if (role === "admin") {
