@@ -20,7 +20,8 @@ export interface Employee {
   };
   manager: string;
   leavesTaken: leavesTaken;
-  managerModel: string;
+  managerModel?: string;
+  phoneNo: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -33,10 +34,18 @@ export interface EmployeeResponse{
 
 export interface EmployeesResponse {
   success: boolean;
-  employees: Employee[];
-  total: number;
-  page: number;
-  totalPages: number;
+  message: string;
+  data: {
+    employees: Employee[];
+    pagination: {
+      currentPage: number;
+      pageSize: number;
+      totalEmployees: number;
+      totalPages: number;
+      hasNextPage: boolean;
+      hasPrevPage: boolean;
+    }
+  };
 }
 
 export interface CreateEmployeeResponse {
@@ -52,7 +61,8 @@ export interface CreateEmployeeRequest {
   role: 'employee' | 'manager';
   hq: string;
   manager: string;
-  managerModel: string
+  managerModel: string;
+  phoneNo: string;
 }
 
 
@@ -71,51 +81,97 @@ export type GetEmployeeArgs = {
 };
 
 
+export interface UpdateEmployeeRequest {
+  name?: string;
+  email?: string;
+  phone?: string;
+  employmentStatus?: string;
+  hq?: string;
+  manager?: string | null;
+  managerModel?: string | null;
+  role?: string;
+  designation?: string | null;
+}
+
+
 
 
 export const employeeApi = apiSlice.injectEndpoints({
+  overrideExisting: true,
   endpoints: (builder) => ({
     // Get all employees with pagination and search
     getEmployees: builder.query<EmployeesResponse, GetEmployeesArgs>({
-      query: ({ page = 1, limit = 10, search = '', department = '', status = '' }) => ({
-        url: `/employees?page=${page}&limit=${limit}&search=${search}&department=${department}&status=${status}`,
+      query: () => ({
+        url: `/employee`,
+        method: "GET",
       }),
-      providesTags: (result) =>
-        result
-          ? [
-              ...result.employees.map(({ _id }) => ({ type: 'Employee' as const, id: _id })),
-              { type: 'Employee', id: 'LIST' },
-            ]
-          : [{ type: 'Employee', id: 'LIST' }],
     }),
 
     // Get employee by ID
-   getMyDetail: builder.query<EmployeeResponse, GetEmployeeArgs>({
-     query: ({ id }) => ({
-       url: `/employee/${id}`,
-       method: 'GET',
+    getMyDetail: builder.query<EmployeeResponse, GetEmployeeArgs>({
+      query: ({ id }) => ({
+        url: `/employee/${id}`,
+        method: "GET",
+      }),
+      providesTags: ["AdminDashboard", { type: "Employee", id: "LIST" }],
+    }),
+
+    //  get managers
+    getManagers: builder.query<any, any>({
+      query: () => ({
+        url: `/employee?role=manager`,
+        method: "GET",
       }),
     }),
 
+    //  add employee from excel
+    addEmployeeFromExcel: builder.mutation({
+      query: (file) => {
+        const formData = new FormData();
+        formData.append("file", {
+          uri: file.uri,
+          type:
+            file.type ||
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+          name: file.name || "data.xlsx",
+        } as any);
 
-    
+        return {
+          url: "/upload-excel",
+          method: "POST",
+          body: formData,
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        };
+      },
+    }),
 
     // Create new employee
-    createEmployee: builder.mutation<CreateEmployeeResponse, CreateEmployeeRequest>({
+    createEmployee: builder.mutation<
+      CreateEmployeeResponse,
+      CreateEmployeeRequest
+    >({
       query: (employeeData) => ({
-        url: '/employee',
-        method: 'POST',
+        url: "/employee",
+        method: "POST",
         body: employeeData,
       }),
-      invalidatesTags: ['AdminDashboard',{ type: 'Employee', id: 'LIST' },],
+      invalidatesTags: ["AdminDashboard", { type: "Employee", id: "LIST" }],
     }),
 
-   
-
-   
-
-    
- 
+    // Update employee
+    updateEmployee: builder.mutation<
+      CreateEmployeeResponse,
+      { id: string; payload: UpdateEmployeeRequest }
+    >({
+      query: ({ id, payload }) => ({
+        url: `/employee/${id}`,
+        method: "PATCH",
+        body: payload,
+      }),
+      invalidatesTags: ["AdminDashboard", { type: "Employee", id: "LIST" }],
+    }),
   }),
 });
 
@@ -124,7 +180,10 @@ export const {
   
   useCreateEmployeeMutation,
   useGetEmployeesQuery,
-  useGetMyDetailQuery
+  useGetMyDetailQuery,
+  useGetManagersQuery,
+  useUpdateEmployeeMutation,
+  
   
   
 } = employeeApi;
