@@ -2,7 +2,7 @@ const {Router} = require('express');
 const { verifyToken } = require('../validators/auth.validator');
 const {
   ApplyLeave,
-  GetLeaveDetails,
+  GetLeaveDetailsByEmployeeId,
   LeaveApprove,
   GetAppliedLeaves,
 } = require("../controllers/leave.controller");
@@ -15,7 +15,7 @@ router.post("/", verifyToken, ApplyLeave);
 
 /********************************* GET RREQUESTS ****************************************/
 router.get("/", verifyToken, GetAppliedLeaves);
-router.get("/:id", verifyToken, GetLeaveDetails);
+router.get("/employee/:id", verifyToken, GetLeaveDetailsByEmployeeId);
 
 
 /********************************* PATCH RREQUESTS ****************************************/

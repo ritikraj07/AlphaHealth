@@ -215,16 +215,25 @@ const LeaveApprove = async (req, res) => {
 };
 
 
-const GetLeaveDetails = async (req, res) => {
+const GetLeaveDetailsByEmployeeId = async (req, res) => {
   try {
-    const userId = req.prams.id;
-    const { status } = req.query; // e.g. /leave/me?status=pending
+    const { id } = req.params;
+    const { status } = req.query;
 
-    let filter = { employee: userId };
+    if (!id) {
+      return res.status(400).json({
+        success: false,
+        message: "Employee id is required",
+      });
+    }
+
+    const filter = { employee: id };
     if (status) filter.status = status;
 
     const leaves = await Leave.find(filter)
-      .sort({ createdAt: -1 });
+      .select("-__v -createdAt -updatedAt -employee")
+      .sort({ createdAt: -1 })
+      .lean();
 
     return res.status(200).json({
       success: true,
@@ -232,15 +241,15 @@ const GetLeaveDetails = async (req, res) => {
       count: leaves.length,
       data: leaves,
     });
-
   } catch (error) {
-    console.error("Get My Leave Error:", error);
+    console.error("[GET_LEAVE_BY_EMPLOYEE_ID_ERROR]", error);
     return res.status(500).json({
       success: false,
       message: "Internal server error while fetching leave history",
     });
   }
 };
+
 
 const GetAppliedLeaves = async (req, res) => {
   try {
@@ -324,6 +333,6 @@ const GetAppliedLeaves = async (req, res) => {
 module.exports = {
   ApplyLeave,
   LeaveApprove,
-  GetLeaveDetails,
+  GetLeaveDetailsByEmployeeId,
   GetAppliedLeaves,
 };
