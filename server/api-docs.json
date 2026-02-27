@@ -502,7 +502,7 @@
         }
       }
     },
-    "/leaves/{id}": {
+    "/leaves/employee/{id}": {
       "get": {
         "description": "",
         "parameters": [
@@ -526,6 +526,9 @@
         "responses": {
           "200": {
             "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
           },
           "401": {
             "description": "Unauthorized"

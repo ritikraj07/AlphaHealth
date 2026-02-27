@@ -11,7 +11,7 @@ router.post('/',validateCreateDoctorChemist,verifyToken, createDoctorChemist)
 
 /********************************* GET RREQUESTS ****************************************/
 
-router.get('/all', verifyToken ,getAllDoctorChemist)
+router.get('/', verifyToken ,getAllDoctorChemist)
 
 /********************************* PATCH RREQUESTS ****************************************/
 router.patch('/approve', verifyToken, approveDoctorChemist);

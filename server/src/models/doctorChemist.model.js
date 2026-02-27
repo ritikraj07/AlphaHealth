@@ -10,7 +10,7 @@ const doctorChemistSchema = new mongoose.Schema(
     email: {
       type: String,
       unique: false, // change to true if business rule allows
-      sparse: true
+      sparse: true,
     },
 
     type: {
@@ -48,7 +48,7 @@ const doctorChemistSchema = new mongoose.Schema(
 
     isApproved: {
       type: Boolean,
-      default: false
+      default: false,
     },
 
     approvedBy: {
@@ -62,7 +62,7 @@ const doctorChemistSchema = new mongoose.Schema(
       model: {
         type: String,
         enum: ["Admin", "Employee"],
-      }
+      },
     },
 
     addedBy: {
@@ -81,8 +81,15 @@ const doctorChemistSchema = new mongoose.Schema(
         required: true,
       },
     },
+    phone: {
+      type: String,
+      required: true,
+      maxlength: 10,
+      minlength: 10,
+      unique: true
+    },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 // Ensure approvedBy fields only exist if approved

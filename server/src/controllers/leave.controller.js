@@ -231,7 +231,7 @@ const GetLeaveDetailsByEmployeeId = async (req, res) => {
     if (status) filter.status = status;
 
     const leaves = await Leave.find(filter)
-      .select("-__v -createdAt -updatedAt -employee")
+      .select("-__v -updatedAt -employee")
       .sort({ createdAt: -1 })
       .lean();
 
