@@ -1,12 +1,19 @@
-const {Router} = require('express');
-const router = Router();
+const express = require("express");
+const router = express.Router();
+const { verifyToken } = require("../validators/auth.validator");
+const {
+  createPOB,
+  getMyPOB,
+  getTeamPOB,
+  deletePOB,
+} = require("../controllers/pob.controller");
 
+router.post("/", verifyToken, createPOB);
 
-/********************************* POST RREQUESTS ****************************************/
+router.get("/my", verifyToken, getMyPOB);
 
-/********************************* GET RREQUESTS ****************************************/
+router.get("/team", verifyToken, getTeamPOB);
 
-/********************************* PATCH RREQUESTS ****************************************/
-/********************************* DELETE RREQUESTS ****************************************/
-/********************************* PUT RREQUESTS ****************************************/
+router.delete("/:id", verifyToken, deletePOB);
+
 module.exports = router;
