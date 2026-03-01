@@ -19,8 +19,13 @@ const planSchema = new Schema(
     // Employee who created the plan
     employee: {
       type: Schema.Types.ObjectId,
-      ref: "Employee",
       required: true,
+      refPath: "employeeModel",
+    },
+    employeeModel: {
+      type: String,
+      required: true,
+      enum: ["Employee", "Admin"],
     },
 
     // Doctor or Chemist to be visited
@@ -44,6 +49,11 @@ const planSchema = new Schema(
       },
     ],
 
+    isJointPlan: {
+      type: Boolean,
+      default: false,
+    },
+
     // If visit is planned jointly
     jointEmployees: [
       {
@@ -64,12 +74,19 @@ const planSchema = new Schema(
     remark: {
       type: String,
     },
+    isActive: {
+      type: Boolean,
+      default: true,
+    },
   },
   {
     timestamps: true,
   },
 );
 
+// Same employee planning same doctor twice on same date.
+
+planSchema.index({ employee: 1, doctorChemist: 1, date: 1 }, { unique: true });
 
 
 const Plan = model("Plan", planSchema);
