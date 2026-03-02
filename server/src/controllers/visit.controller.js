@@ -8,6 +8,27 @@ const createVisit = async (req, res) => {
   try {
     const { doctorChemist, plan, remark, jointEmployees } = req.body;
 
+    if (!doctorChemist) {
+      return res.status(400).json({ message: "Missing doctor/chemist" });
+    }
+
+    if (req.body.plan) {
+      const exists = await Visit.findOne({ plan: req.body.plan });
+      if (exists) {
+        return res.status(400).json({
+          success: false,
+          message: "Visit already created for this plan",
+        });
+      }
+    }
+
+
+    if (req.body.plan) {
+      await Plan.findByIdAndUpdate(req.body.plan, {
+        status: "visited",
+      });
+    }
+
     const visit = await Visit.create({
       employee: req.userId,
       doctorChemist,
