@@ -2,7 +2,9 @@ import { StyleSheet, Text, TouchableOpacity, View, ScrollView } from 'react-nati
 import { Ionicons, Feather, EvilIcons } from "@expo/vector-icons";
 import { RefreshControl } from 'react-native-gesture-handler';
 import {useState} from 'react'
-import CreatePOBModal from './Modals/CreatePOBModal';
+
+import { useNavigation } from '@react-navigation/native';
+import { NavProp } from '../navigators';
 
 // Doctors Component
 const DoctorsCard = () => {
@@ -51,12 +53,10 @@ const HospitalsCard = () => {
 
 
 
-/**
- * Manage purchase orders from doctors, chemists, and hospitals
- * @returns {JSX.Element}
- */
+
 export default function POB() {
   const [createPOBModalVisible, setCreatePOBModalVisible] = useState(false);
+  const navigation = useNavigation <NavProp> ();
   return (
     <ScrollView style={[styles.container]}
       showsVerticalScrollIndicator={false}
@@ -64,7 +64,7 @@ export default function POB() {
               <RefreshControl refreshing={false} onRefresh={() => {}} />
             }
     >
-      <CreatePOBModal visible={createPOBModalVisible} onClose={() => setCreatePOBModalVisible(false)} />
+      
       {/* Header Section */}
       <View style={styles.header}>
         <View style={styles.headerContent} >
@@ -73,7 +73,7 @@ export default function POB() {
         </View>
         
         {/* Apply Leave Button */}
-        <TouchableOpacity style={styles.applyButton} onPress={() => setCreatePOBModalVisible(true)} >
+        <TouchableOpacity style={styles.applyButton} onPress={() => navigation.navigate("CreatePOBScreen")} >
           <Text style={styles.applyButtonText}>Create POB</Text>
         </TouchableOpacity>
       </View>
