@@ -6,7 +6,7 @@ const moment = require("moment");
 
 const createPlan = async (req, res) => {
   try {
-    const { doctorChemist, date, productFocus, jointEmployees, remark, employeeModel } =
+    const { doctorChemist, date, productFocus, jointEmployees, remark, employeeModel, isJointPlan } =
       req.body;
 
     const plan = await Plan.create({
@@ -17,6 +17,7 @@ const createPlan = async (req, res) => {
       jointEmployees,
       remark,
       employeeModel,
+      isJointPlan
     });
 
     res.status(201).json({
