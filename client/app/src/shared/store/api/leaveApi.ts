@@ -53,7 +53,7 @@ export type Leaves = {
   isHalfDay: boolean;
   halfType: "first" | "second" | null;
   status: "pending" | "approved" | "rejected";
-  appliedOn: string;
+  createdAt: string;
 };
 
 // ! Leave
@@ -94,6 +94,7 @@ export type GetMyLeavesArgs = {
   page?: number;
   limit?: number;
   status?: string;
+  employeeId?: string;
 };
 
 export type UpdateLeaveStatusArgs = {
@@ -112,6 +113,7 @@ export type DeleteLeaveArgs = {
 };
 
 export const leaveApi = apiSlice.injectEndpoints({
+  overrideExisting: true,
   endpoints: (builder) => ({
     // Get all leaves (for admins)
     getLeaves: builder.query<LeavesResponse, GetLeavesArgs>({
@@ -150,27 +152,31 @@ export const leaveApi = apiSlice.injectEndpoints({
 
     // Get current user's leaves
     getMyLeaves: builder.query<LeavesResponse, GetMyLeavesArgs>({
-      query: ({ page = 1, limit = 10, status = "" } = {}) => {
-        const params = new URLSearchParams({
-          page: page.toString(),
-          limit: limit.toString(),
-        });
+  query: ({ employeeId, page = 1, limit = 10, status }) => {
+    const params = new URLSearchParams();
 
-        if (status) params.append("status", status);
+    params.append("page", page.toString());
+    params.append("limit", limit.toString());
 
-        return `/leaves/my?${params.toString()}`;
-      },
-      providesTags: (result) =>
-        result
-          ? [
-              ...result.leaves.map(({ _id }) => ({
-                type: "Leave" as const,
-                id: _id,
-              })),
-              { type: "Leave", id: "MY_LIST" },
-            ]
-          : [{ type: "Leave", id: "MY_LIST" }],
-    }),
+    if (status) params.append("status", status);
+
+    return {
+      url: `/leaves/employee/${employeeId}`,
+      params,
+    };
+  },
+
+  providesTags: (result) =>
+    result
+      ? [
+          ...result.data.map(({ _id }) => ({
+            type: "Leave" as const,
+            id: _id,
+          })),
+          { type: "Leave", id: "MY_LIST" },
+        ]
+      : [{ type: "Leave", id: "MY_LIST" }],
+}),
 
     // Apply for leave
     applyLeave: builder.mutation<LeaveResponse, ApplyLeaveRequest>({

@@ -21,7 +21,7 @@ export interface Employee {
   manager: string;
   leavesTaken: leavesTaken;
   managerModel?: string;
-  phoneNo: number;
+  phone: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -58,11 +58,11 @@ export interface CreateEmployeeRequest {
   name: string;
   email: string;
   password: string;
-  role: 'employee' | 'manager';
+  role: "employee" | "manager";
   hq: string;
   manager: string;
   managerModel: string;
-  phoneNo: string;
+  phone: string;
 }
 
 

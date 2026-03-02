@@ -1,4 +1,4 @@
-import { apiSlice } from './apiSlice';
+import { apiSlice } from "./apiSlice";
 
 export interface CreateDoctorChemistRequest {
   name: string;
@@ -28,43 +28,82 @@ export interface DoctorChemist {
     model: string;
   };
   createdAt: string;
-    updatedAt: string;
-    
+  updatedAt: string;
+  potential: string;
+  frequency: number;
+  isApproved: boolean;
+  approvedBy: {
+    id: string;
+    role: string;
+    model: string;
+  };
 }
 
 export interface ApiResponse<T> {
   success: boolean;
   message: string;
-    data: T, extra: {
-        total: number;
-        chemists: number;
-        doctors: number;
+  data: T;
+  extra: {
+    total: number;
+    chemists: number;
+    doctors: number;
   };
 }
 
-
-
 export const doctorChemistApi = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
-
     // 🔹 Dashboard list
-    getDoctorChemistDashboard: builder.query<ApiResponse<DoctorChemist[]>,void>({
-        query: () => "/doctorChemists/all",
-        providesTags: ["DoctorChemist"],
+    getDoctorChemistDashboard: builder.query<
+      ApiResponse<DoctorChemist[]>,
+      {
+        type?: string;
+        potential?: string;
+        isApproved?: boolean;
+        search?: string;
+        page?: number;
+      }
+    >({
+      query: (params) => ({
+        url: "/doctorChemists",
+        params,
+      }),
+      providesTags: ["DoctorChemist"],
     }),
 
     // 🔹 Create doctor / chemist
-    createDoctorChemist: builder.mutation<ApiResponse<DoctorChemist>,CreateDoctorChemistRequest>({
+    createDoctorChemist: builder.mutation<
+      ApiResponse<DoctorChemist>,
+      CreateDoctorChemistRequest
+    >({
       query: (body) => ({
         url: "/doctorChemists",
         method: "POST",
         body,
-        }),
-        invalidatesTags: ["DoctorChemist"],
+      }),
+      invalidatesTags: ["DoctorChemist"],
     }),
+
+
+    // approve doctor / chemist
+
+    approveDoctorChemist: builder.mutation<
+      ApiResponse<DoctorChemist>,
+      { doctorChemistId: string }
+    >({
+      query: (body) => ({
+        url: `/doctorChemists/approve`,
+        method: "PATCH",
+        body,
+      }),
+      invalidatesTags: ["DoctorChemist"],
+    })
+
 
   }),
 });
 
-
-export const { useGetDoctorChemistDashboardQuery, useCreateDoctorChemistMutation } = doctorChemistApi;
+export const {
+  useGetDoctorChemistDashboardQuery,
+  useCreateDoctorChemistMutation,
+  useApproveDoctorChemistMutation
+} = doctorChemistApi;
