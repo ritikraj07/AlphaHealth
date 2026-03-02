@@ -16,6 +16,8 @@ import { useCreateDoctorChemistMutation } from "../../shared/store/api/doctorChe
 import { useAppSelector } from "../../shared/store/hooks";
 import { Dropdown } from "react-native-element-dropdown";
 
+
+
 // Define the props interface
 interface AddDoctorChemistModalProps {
   visible: boolean;
@@ -46,7 +48,6 @@ export default function AddDoctorChemistModal({
   onAdd,
   headquarters,
 }: AddDoctorChemistModalProps) {
-
   const [name, setName] = useState<string>("");
   const [email, setEmail] = useState<string>("");
   const [type, setType] = useState<"doctor" | "chemist">("doctor");
@@ -55,63 +56,86 @@ export default function AddDoctorChemistModal({
   const [hq, setHq] = useState<string>("");
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [phoneNo, setPhoneNo] = useState<string>("");
-const [  createDoctorChemist,  {
-    isLoading: isLoadingCreateDocChem,
-    isError: isErrorCreateDocChem,
-    error: errorCreateDocChem,
-  },
+  const [frequencyOfVisit, setFrequencyOfVisit] = useState<string>("");
+  const [potential, setPotential] = useState<string>("medium");
+
+  const [
+    createDoctorChemist,
+    {
+      isLoading: isLoadingCreateDocChem,
+      isError: isErrorCreateDocChem,
+      error: errorCreateDocChem,
+    },
   ] = useCreateDoctorChemistMutation();
-  const {userId, role, token, name: userName} = useAppSelector((state) => state.auth);
+  const {
+    userId,
+    role,
+    token,
+    name: userName,
+  } = useAppSelector((state) => state.auth);
   const professionalTypes: { id: ProfessionalType; label: string }[] = [
     { id: "doctor", label: "Doctor" },
     { id: "chemist", label: "Chemist" },
   ];
 
   // Specializations for doctors (you can expand this list)
- const specializations = [
-   { label: "Cardiology", value: "Cardiology" },
-   { label: "Dermatology", value: "Dermatology" },
-   { label: "Neurology", value: "Neurology" },
-   { label: "Pediatrics", value: "Pediatrics" },
-   { label: "Orthopedics", value: "Orthopedics" },
-   { label: "Gynecology", value: "Gynecology" },
-   { label: "General Medicine", value: "General Medicine" },
-   { label: "Dentistry", value: "Dentistry" },
-   { label: "Psychiatry", value: "Psychiatry" },
-   { label: "Oncology", value: "Oncology" },
-   { label: "ENT (Otolaryngology)", value: "ENT" },
-   { label: "Gastroenterology", value: "Gastroenterology" },
-   { label: "Urology", value: "Urology" },
-   { label: "Nephrology", value: "Nephrology" },
-   { label: "Endocrinology", value: "Endocrinology" },
-   { label: "Rheumatology", value: "Rheumatology" },
-   { label: "Pulmonology", value: "Pulmonology" },
-   { label: "Hematology", value: "Hematology" },
-   { label: "Radiology", value: "Radiology" },
-   { label: "Pathology", value: "Pathology" },
-   { label: "Plastic Surgery", value: "Plastic Surgery" },
-   { label: "Vascular Surgery", value: "Vascular Surgery" },
-   { label: "Neurosurgery", value: "Neurosurgery" },
-   { label: "Cardiothoracic Surgery", value: "Cardiothoracic Surgery" },
-   { label: "Critical Care", value: "Critical Care" },
-   { label: "Infectious Diseases", value: "Infectious Diseases" },
-   { label: "Sports Medicine", value: "Sports Medicine" },
-   { label: "Pain Medicine", value: "Pain Medicine" },
-   { label: "Emergency Medicine", value: "Emergency Medicine" },
-   { label: "Anesthesiology", value: "Anesthesiology" },
-   { label: "Nuclear Medicine", value: "Nuclear Medicine" },
-   { label: "Palliative Care", value: "Palliative Care" },
-   { label: "Other", value: "Other" },
- ];
+  const specializations = [
+    { label: "Cardiology", value: "Cardiology" },
+    { label: "Dermatology", value: "Dermatology" },
+    { label: "Neurology", value: "Neurology" },
+    { label: "Pediatrics", value: "Pediatrics" },
+    { label: "Orthopedics", value: "Orthopedics" },
+    { label: "Gynecology", value: "Gynecology" },
+    { label: "General Medicine", value: "General Medicine" },
+    { label: "Dentistry", value: "Dentistry" },
+    { label: "Psychiatry", value: "Psychiatry" },
+    { label: "Oncology", value: "Oncology" },
+    { label: "ENT (Otolaryngology)", value: "ENT" },
+    { label: "Gastroenterology", value: "Gastroenterology" },
+    { label: "Urology", value: "Urology" },
+    { label: "Nephrology", value: "Nephrology" },
+    { label: "Endocrinology", value: "Endocrinology" },
+    { label: "Rheumatology", value: "Rheumatology" },
+    { label: "Pulmonology", value: "Pulmonology" },
+    { label: "Hematology", value: "Hematology" },
+    { label: "Radiology", value: "Radiology" },
+    { label: "Pathology", value: "Pathology" },
+    { label: "Plastic Surgery", value: "Plastic Surgery" },
+    { label: "Vascular Surgery", value: "Vascular Surgery" },
+    { label: "Neurosurgery", value: "Neurosurgery" },
+    { label: "Cardiothoracic Surgery", value: "Cardiothoracic Surgery" },
+    { label: "Critical Care", value: "Critical Care" },
+    { label: "Infectious Diseases", value: "Infectious Diseases" },
+    { label: "Sports Medicine", value: "Sports Medicine" },
+    { label: "Pain Medicine", value: "Pain Medicine" },
+    { label: "Emergency Medicine", value: "Emergency Medicine" },
+    { label: "Anesthesiology", value: "Anesthesiology" },
+    { label: "Nuclear Medicine", value: "Nuclear Medicine" },
+    { label: "Palliative Care", value: "Palliative Care" },
+    { label: "Other", value: "Other" },
+  ];
 
+  const potentialOptions = [
+    { label: "High", value: "high" },
+    { label: "Medium", value: "medium" },
+    { label: "Low", value: "low" },
+  ]
 
 
   // Validate form
   const validateForm = (): boolean => {
     const newErrors: { [key: string]: string } = {};
 
+    if (!type) {
+      newErrors.type = "Type is required";
+    }
+    
+    
+
+    
+
     if (!name.trim()) {
-      newErrors.name = "Name is required";    
+      newErrors.name = "Name is required";
     }
 
     if (!email.trim()) {
@@ -120,13 +144,14 @@ const [  createDoctorChemist,  {
       newErrors.email = "Please enter a valid email";
     }
 
+    console.log("142");
 
     if (!location.trim()) {
       newErrors.location = "Location is required";
     } else if (!(location.length > 3)) {
       newErrors.location = "Please enter a valid location";
     }
-    
+
     if (!hq) {
       newErrors.hq = "Headquarter is required";
     }
@@ -136,44 +161,63 @@ const [  createDoctorChemist,  {
       newErrors.specialization = "Specialization is required for doctors";
     }
 
+    console.log("159");
+    if (!phoneNo) {
+      newErrors.phoneNo = "Phone number is required";
+    }
+
+    if (!frequencyOfVisit) {
+      newErrors.frequencyOfVisit = "Frequency of visit is required";
+    }
+    console.log("167");
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   // Handle form submission
-  const handleSubmit = async() => {
+  const handleSubmit = async () => {
+    console.log("Form submitted");
+    console.log("validateForm()", validateForm());
     if (!validateForm()) {
+      ToastAndroid.show("Please fill in all required fields", ToastAndroid.SHORT);
       return;
     }
-    
-    
 
-     const CreatedBy = {
-       id: userId,
-       model: role === "admin" ? "Admin" : "Employee",
-       role: role,
-     };
+    console.log("form validated");
+
+
+    const CreatedBy = {
+      id: userId,
+      model: role === "admin" ? "Admin" : "Employee",
+      role: role,
+    };
+    const ApprovedBy = {
+      id: userId,
+      model: "Admin",
+      role: role,
+    }
     const formData = {
       name: name.trim(),
       type,
-      specialization: type === "doctor" ? specialization: "other",
+      specialization: type === "doctor" ? specialization : "other",
       location: location.trim(),
       hq,
       addedBy: CreatedBy,
       email: email.trim(),
-      phoneNo: phoneNo
+      phone: phoneNo,
+      frequencyOfVisit: frequencyOfVisit,
+      approvedBy: role === "admin" ? ApprovedBy : {},
+      potential,
     };
 
+
+
     console.log("Form Data:", formData);
-    // return;
-    
-
-
-    // console.log("Form Data:", formData);
-   
 
     try {
       const response = await createDoctorChemist(formData).unwrap();
+      console.log("Response:", response);
 
       if (response.success) {
         ToastAndroid.show(response?.message, ToastAndroid.SHORT);
@@ -188,9 +232,6 @@ const [  createDoctorChemist,  {
         error?.data?.message || error?.data?.message || "Something went wrong";
       ToastAndroid.show(msg, ToastAndroid.SHORT);
     }
-   
-
-    
   };
 
   // Reset form
@@ -281,6 +322,9 @@ const [  createDoctorChemist,  {
               </View>
 
               {/* specialization */}
+              {errors.specialization ? (
+                <Text style={styles.errorText}>{errors.specialization}</Text>
+              ) : null}
               {type == "doctor" && (
                 <Dropdown
                   data={specializations}
@@ -349,6 +393,7 @@ const [  createDoctorChemist,  {
                   placeholder={`Enter ${type} phone`}
                   placeholderTextColor="#999"
                   value={phoneNo}
+                  maxLength={10}
                   onChangeText={(text) => {
                     setPhoneNo(text);
                     if (errors.phone) setErrors({ ...errors, phone: "" });
@@ -358,6 +403,72 @@ const [  createDoctorChemist,  {
                 {errors.phone ? (
                   <Text style={styles.errorText}>{errors.phone}</Text>
                 ) : null}
+              </View>
+
+              {/* frequency of visit */}
+
+              <View style={styles.section}>
+                <Text style={styles.sectionTitle}>
+                  Frequency of Visit <Text style={styles.required}>*</Text>
+                </Text>
+                <TextInput
+                  style={[styles.textInput, errors.phone && styles.inputError]}
+                  placeholder={`Enter Frequency of visit`}
+                  placeholderTextColor="#999"
+                  value={frequencyOfVisit}
+                  onChangeText={(text) => {
+                    const cleaned = text.replace(/[^0-9]/g, "");
+                    setFrequencyOfVisit(cleaned);
+
+                    const num = Number(cleaned);
+
+                    if (cleaned && num <= 0) {
+                      setErrors({
+                        ...errors,
+                        frequencyOfVisit: "Must be greater than 0",
+                      });
+                    } else {
+                      setErrors({ ...errors, frequencyOfVisit: "" });
+                    }
+                  }}
+                  keyboardType="numeric"
+                />
+                {errors.frequencyOfVisit ? (
+                  <Text style={styles.errorText}>
+                    {errors.frequencyOfVisit}
+                  </Text>
+                ) : null}
+              </View>
+
+              {/* Potential */}
+
+              <View style={styles.section}>
+                <Text style={styles.sectionTitle}>
+                  Potential <Text style={styles.required}>*</Text>
+                </Text>
+                <View style={styles.potentialContainer}>
+                  {potentialOptions.map((option) => (
+                    <TouchableOpacity
+                      key={option.label}
+                      style={[
+                        styles.potentialButton,
+                        potential === option.value &&
+                          styles.potentialButtonSelected,
+                      ]}
+                      onPress={() => setPotential(option.value)}
+                    >
+                      <Text
+                        style={[
+                          styles.potentialText,
+                          potential === option.value &&
+                            styles.potentialTextSelected,
+                        ]}
+                      >
+                        {option.label}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
               </View>
 
               {/* Location Field */}
@@ -631,5 +742,38 @@ const styles = StyleSheet.create({
   dropdownSelectedText: {
     fontSize: 16,
     color: "#222", // dark readable text
+  },
+
+  potentialContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
+  potentialButton: {
+    borderRadius: 8,
+    paddingVertical: 16,
+    alignItems: "center",
+    marginBottom: 12,
+    width: "30%",
+    borderBlockColor: "#007AFF",
+    borderWidth: 1,
+  },
+  potentialButtonSelected: {
+    backgroundColor: "#007AFF",
+    borderRadius: 8,
+    paddingVertical: 16,
+    alignItems: "center",
+    marginBottom: 12,
+    width: "30%",
+    flexDirection: "row",
+    justifyContent: "center",
+    borderWidth: 0
+  },
+  potentialText: {
+    color: "black",
+    fontSize: 16,
+    fontWeight: "600",
+  },
+  potentialTextSelected: {
+    color: "white",
   },
 });

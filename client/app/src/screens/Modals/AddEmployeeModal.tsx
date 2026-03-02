@@ -38,7 +38,7 @@ interface EmployeeData {
   hq: string; // id of headquarter
   manager: string;
   managerModel: string;
-  phoneNo: string;
+  phone: string;
 }
 
 type RoleType = "employee" | "manager";
@@ -54,7 +54,7 @@ export default function AddEmployeeModal({
   const [name, setName] = useState<string>("");
   const [role, setRole] = useState<RoleType>("employee");
   const [email, setEmail] = useState<string>("");
-  const [phoneNo, setPhoneNo] = useState<string>("");
+  const [phone, setPhoneNo] = useState<string>("");
   const [headquarter, setHeadquarter] = useState<string>("");
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
@@ -115,9 +115,9 @@ export default function AddEmployeeModal({
       email: email.trim(),
       hq: headquarter,
       password: DEFAULT_PASSWORD,
-      phoneNo: phoneNo,
+      phone: phone,
       manager: "",
-      managerModel: ""
+      managerModel: "",
     };
 
     handleAddEmployee(employeeData);
@@ -151,7 +151,7 @@ export default function AddEmployeeModal({
            hq: employeeData.hq,
            manager: managerId,
            managerModel: managerModel,
-           phoneNo: employeeData.phoneNo
+           phone: employeeData.phone,
          }).unwrap();
          console.log("Response:", response);
          if (response.success) {
@@ -341,18 +341,15 @@ export default function AddEmployeeModal({
                   Phone No. <Text style={styles.required}>*</Text>
                 </Text>
                 <TextInput
-                  style={[
-                    styles.textInput,
-                    errors.phoneNo && styles.inputError,
-                  ]}
+                  style={[styles.textInput, errors.phone && styles.inputError]}
                   placeholder="Enter phone number"
                   placeholderTextColor="#999"
                   keyboardType="phone-pad"
                   autoCapitalize="none"
-                  value={phoneNo}
+                  value={phone}
                   onChangeText={(text) => {
                     setPhoneNo(text);
-                    if (errors.phoneNo) setErrors({ ...errors, phoneNo: "" });
+                    if (errors.phone) setErrors({ ...errors, phone: "" });
                   }}
                 />
                 {errors.email ? (
@@ -361,7 +358,7 @@ export default function AddEmployeeModal({
               </View>
 
               {/* Headquarter Selection */}
-             
+
               <View style={styles.section}>
                 <Text style={styles.sectionTitle}>
                   Headquarter <Text style={styles.required}>*</Text>
@@ -369,7 +366,7 @@ export default function AddEmployeeModal({
 
                 <Dropdown
                   data={
-                    HQ?.data?.map((hq: { name: any; _id: any; }) => ({
+                    HQ?.data?.map((hq: { name: any; _id: any }) => ({
                       label: hq.name,
                       value: hq._id,
                     })) ?? []
