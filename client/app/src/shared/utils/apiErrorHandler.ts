@@ -5,7 +5,7 @@ type ErrorAction = {
   logout: boolean;
 };
 
-export const handleApiError = (error: any): ErrorAction => {
+export const handleApiError = (error?: any): ErrorAction => {
   // Default fallback
   const result: ErrorAction = {
     message: "Something went wrong. Please try again.",
