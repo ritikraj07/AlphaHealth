@@ -17,56 +17,129 @@ import store from "./app/src/shared/store";
 import { NavigationContainer } from "@react-navigation/native";
 import { useServerStatus } from "./app/src/shared/componets/hooks/useServerStatus.ts";
 import ServerConnectingOverlay from "./app/src/shared/componets/ServerConnectingOverlay";
+import StartupScreen from "./app/StartupScreen";
 SplashScreen.preventAutoHideAsync();
 
 export default function Index() {
   const [ready, setReady] = useState(false);
+  const [bootStep, setBootStep] = useState("Initializing...");
 
   useEffect(() => {
+    let timeout: NodeJS.Timeout;
+
     async function prepareApp() {
       try {
-        // 🔹 Hydrate auth
+        setBootStep("Loading credentials...");
         const token = await AsyncStorage.getItem("token");
         const role = await AsyncStorage.getItem("role");
         const userId = await AsyncStorage.getItem("userId");
         const name = await AsyncStorage.getItem("name");
 
         if (token && role && userId) {
+          setBootStep("Hydrating session...");
           store.dispatch(
             setCredentials({
               token,
               role,
               _id: userId,
               name,
-            })
+            }),
           );
         }
 
-        // Optional minimum splash duration (UX polish)
-        await new Promise((resolve) => setTimeout(resolve, 1500));
+        setBootStep("Finalizing startup...");
+        await new Promise((resolve) => setTimeout(resolve, 800));
       } catch (e) {
-        // We might want to provide this error information to an error reporting service
-        ToastAndroid.show("Something went wrong", ToastAndroid.SHORT);
-        console.log("Startup error", e);
+        setBootStep("Startup failed");
+        console.log("❌ Startup error", e);
       } finally {
+        clearTimeout(timeout);
         setReady(true);
         await SplashScreen.hideAsync();
       }
     }
 
+    // 🔴 SAFETY NET (critical)
+    timeout = setTimeout(() => {
+      console.log("⚠️ Startup timeout hit");
+      setBootStep("Startup timeout (forced ready)");
+      setReady(true);
+      SplashScreen.hideAsync();
+    }, 8000);
+
     prepareApp();
+
+    return () => clearTimeout(timeout);
   }, []);
+
+  useEffect(() => {
+    if (ready) {
+      console.log("✅ App boot completed");
+    }
+  }, [ready]);
+
+
+
+  
+
+  // useEffect(() => {
+  //   async function prepareApp() {
+  //     try {
+  //       // 🔹 Hydrate auth
+  //       const token = await AsyncStorage.getItem("token");
+  //       const role = await AsyncStorage.getItem("role");
+  //       const userId = await AsyncStorage.getItem("userId");
+  //       const name = await AsyncStorage.getItem("name");
+
+  //       if (token && role && userId) {
+  //         store.dispatch(
+  //           setCredentials({
+  //             token,
+  //             role,
+  //             _id: userId,
+  //             name,
+  //           })
+  //         );
+  //       }
+
+  //       // Optional minimum splash duration (UX polish)
+  //       await new Promise((resolve) => setTimeout(resolve, 1500));
+  //     } catch (e) {
+  //       // We might want to provide this error information to an error reporting service
+  //       ToastAndroid.show("Something went wrong", ToastAndroid.SHORT);
+  //       console.log("Startup error", e);
+  //     } finally {
+  //       setReady(true);
+  //       await SplashScreen.hideAsync();
+  //     }
+  //   }
+
+  //   prepareApp();
+  // }, []);
 
   const serverStatus = useServerStatus();
   const isServerOnline = serverStatus === "online";
 
-  if (!ready) {
-    return null;
-  }
+  console.log("🚀 Server status:", isServerOnline);
+  console.log("🚀 isReady:", ready);
 
-  if (!isServerOnline) {
-    return <ServerConnectingOverlay visible={isServerOnline} />;
-  }
+  // if (!ready) {
+  //   // We haven't finished checking for the token yet
+  //   console.log("🚀 App is not ready yet");
+  //   return <StartupScreen step={bootStep} />;
+  // }
+
+//   if (serverStatus === "checking") {
+//   return <StartupScreen step="Checking server..." />;
+// }
+
+
+  // if (!isServerOnline) {
+  //   return <ServerConnectingOverlay visible={isServerOnline} />;
+  // }
+
+
+  
 
   return (
     <Provider store={store}>
@@ -80,9 +153,15 @@ export default function Index() {
               paddingBottom: -100,
             }}
           >
-            <NavigationContainer>
-              <Navigation />
-            </NavigationContainer>
+            {!ready ? (
+              <StartupScreen step={bootStep} />
+            ) : !isServerOnline ? (
+              <ServerConnectingOverlay visible={!isServerOnline} />
+            ) : (
+              <NavigationContainer>
+                <Navigation />
+              </NavigationContainer>
+            )}
           </SafeAreaView>
         </SafeAreaProvider>
       </GestureHandlerRootView>
