@@ -35,8 +35,19 @@ const baseQueryWithLogging = async (args: any, api: any, extraOptions: any) => {
 };
 
 export const apiSlice = createApi({
-  reducerPath: 'api',
+  reducerPath: "api",
   baseQuery: baseQueryWithLogging, // Use the logging version
-  tagTypes: ['DoctorChemist','Employee', 'Leave', 'Dashboard', 'HQ', 'AdminDashboard'],
+  tagTypes: [
+    "DoctorChemist",
+    "Employee",
+    "Leave",
+    "Dashboard",
+    "HQ",
+    "AdminDashboard",
+    "Products",
+    "Plan",
+    "POB",
+    "Visits",
+  ],
   endpoints: () => ({}),
 });
