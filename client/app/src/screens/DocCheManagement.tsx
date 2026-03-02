@@ -1,3 +1,4 @@
+import React, { useEffect, useRef, useState } from "react";
 import {
   StyleSheet,
   Text,
@@ -7,24 +8,29 @@ import {
   Alert,
   ToastAndroid,
   RefreshControl,
+  Animated,
 } from "react-native";
 
 import {
-  Ionicons,
+  Zocial,
   Feather,
-  EvilIcons,
-  FontAwesome6,
+  FontAwesome5,
+  MaterialIcons,
   AntDesign,
 } from "@expo/vector-icons";
 import AddDoctorChemistModal from "./Modals/AddDocOrChemist";
-import { useState } from "react";
+
 import { useGetHeadQuartersQuery } from "../shared/store/api/hqApi";
 import DocCheSkeleton from "../shared/componets/skeletons/DocCheSkeleton";
 
 import { useGetDoctorChemistDashboardQuery } from "../shared/store/api/doctorChemistApi";
-
+import { useNavigation } from "@react-navigation/native";
+import { NavProp } from "../navigators";
+import { useAppSelector } from "../shared/store/hooks";
+import PlanCards from "../shared/componets/PlanCard";
 
 export default function DocCheManagement() {
+  
   const [isModalVisible, setIsModalVisible] = useState(false);
   const {
     data: HQ,
@@ -41,11 +47,10 @@ export default function DocCheManagement() {
     error: errorDocChem,
     refetch: refetchDocChem,
     isFetching: isFetchingDocChem,
-  } = useGetDoctorChemistDashboardQuery();
+  } = useGetDoctorChemistDashboardQuery({});
+  
   // Mock headquarters data - you would get this from your API
   const headquarters = HQ?.data ?? [];
-
-  
 
   const handleAddProfessional = (data: any) => {
     //  console.log("New professional:", data);
@@ -57,109 +62,189 @@ export default function DocCheManagement() {
   if (isLoading || isLoadingDocChem) {
     return <DocCheSkeleton />;
   }
-  
 
   const { total = 0, doctors = 0, chemists = 0 } = docChemData?.extra ?? {};
   const list = docChemData?.data || [];
 
-
+  console.log(
+    "\n\n 🚀 ~ file: DocCheManagement.tsx:40 ~ DocCheManagement ~ docChemData \n \n",
+    // docChemData,
+  );
 
   return (
-    <ScrollView
-      style={[styles.container, { backgroundColor: "rgba(255, 255, 255, 1)" }]}
-      showsVerticalScrollIndicator={false}
-      refreshControl={
-        <RefreshControl refreshing={isFetching} onRefresh={refetch} />
-      }
-    >
-      <AddDoctorChemistModal
-        visible={isModalVisible}
-        onClose={() => setIsModalVisible(false)}
-        onAdd={handleAddProfessional}
-        headquarters={headquarters}
-      />
-      {/* Header Section */}
-      <View style={styles.header}>
-        <View style={styles.headerContent}>
-          <Text style={styles.title}>Doctor & Chemist Management</Text>
-          <Text style={styles.subtitle}>
-            View and manage doctors and chemists in your network
-          </Text>
-        </View>
+    <View style={{ flex: 1 }}>
+      <ScrollView
+        style={[
+          styles.container,
+          { backgroundColor: "rgba(255, 255, 255, 1)" },
+        ]}
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl refreshing={isFetching} onRefresh={refetch} />
+        }
+      >
+        <AddDoctorChemistModal
+          visible={isModalVisible}
+          onClose={() => setIsModalVisible(false)}
+          onAdd={handleAddProfessional}
+          headquarters={headquarters}
+        />
+        {/* Header Section */}
+        <View style={styles.header}>
+          <View style={styles.headerContent}>
+            <Text style={styles.title}>Doctor & Chemist Management</Text>
+            <Text style={styles.subtitle}>
+              View and manage doctors and chemists in your network
+            </Text>
+          </View>
 
-        {/* Add Professional Button */}
-        <View
-          style={{
-            flex: 1,
-            flexDirection: "column",
-            justifyContent: "space-evenly",
-          }}
-        >
-          <TouchableOpacity
-            onPress={() => setIsModalVisible(true)}
-            style={styles.applyButton}
+          {/* Add Professional Button */}
+          <View
+            style={{
+              flex: 1,
+              flexDirection: "column",
+              justifyContent: "space-evenly",
+            }}
           >
-            <Text style={[styles.applyButtonText]}>Add Doctor / Chemist</Text>
-            {/* <Text style={styles.applyButtonText}>Add Doctor</Text> */}
-          </TouchableOpacity>
-          {/* <TouchableOpacity
+            <TouchableOpacity
+              onPress={() => setIsModalVisible(true)}
+              style={styles.applyButton}
+            >
+              <Text style={[styles.applyButtonText]}>Add Doctor / Chemist</Text>
+              {/* <Text style={styles.applyButtonText}>Add Doctor</Text> */}
+            </TouchableOpacity>
+            {/* <TouchableOpacity
             style={[styles.applyButton, { backgroundColor: "white" }]}
           >
             <Text style={[styles.applyButtonText, { color: "black" }]}>
               Add Chemist
             </Text>
           </TouchableOpacity> */}
+          </View>
         </View>
+
+        {/* Leave Balance Cards */}
+
+        <View style={styles.gridContainer}>
+          {/* High Potential */}
+          <View style={styles.leaveCard}>
+            <View style={styles.header}>
+              <Text style={styles.leaveName}>High Potential</Text>
+              <Feather name="star" size={24} color="goldenrod" />
+            </View>
+            <Text style={styles.leaveCount}>0</Text>
+            <Text style={styles.leaveDescription}>Priority targets</Text>
+          </View>
+
+          {/* Avg Frequency */}
+          <View style={styles.leaveCard}>
+            <View style={styles.header}>
+              <Text style={styles.leaveName}>Avg Frequency</Text>
+              <AntDesign name="rise" size={24} color="green" />
+            </View>
+            <Text style={styles.leaveCount}>0.0</Text>
+            <Text style={styles.leaveDescription}>Visits per month</Text>
+          </View>
+        </View>
+
+        {/* Plan Cards */}
+        <PlanCards />
+      </ScrollView>
+      <View style={styles.animatedBox}>
+        <VisitButton />
+        <AddPlanButton />
       </View>
-
-      {/* Leave Balance Cards */}
-
-      <View style={styles.gridContainer}>
-        {/* Sick Leave */}
-        {/* <View style={styles.leaveCard}>
-          <View style={styles.header}>
-            <Text style={styles.leaveName}>Total Doctors</Text>
-            <FontAwesome6 name="user-doctor" size={24} color="grey" />
-          </View>
-          <Text style={styles.leaveCount}>{doctors}</Text>
-          <Text style={styles.leaveDescription}>In North HQ</Text>
-        </View> */}
-
-        {/* Total Chemis */}
-        {/* <View style={styles.leaveCard}>
-          <View style={styles.header}>
-            <Text style={styles.leaveName}>Total Chemists</Text>
-            <Feather name="shopping-cart" size={24} color="grey" />
-          </View>
-          <Text style={styles.leaveCount}>{chemists}</Text>
-          <Text style={styles.leaveDescription}>In North HQ</Text>
-        </View> */}
-
-        {/* Earned Leave */}
-        <View style={styles.leaveCard}>
-          <View style={styles.header}>
-            <Text style={styles.leaveName}>High Potential</Text>
-            <Feather name="star" size={24} color="goldenrod" />
-          </View>
-          <Text style={styles.leaveCount}>0</Text>
-          <Text style={styles.leaveDescription}>Priority targets</Text>
-        </View>
-
-        {/* Public Holidays */}
-        <View style={styles.leaveCard}>
-          <View style={styles.header}>
-            <Text style={styles.leaveName}>Avg Frequency</Text>
-            <AntDesign name="rise" size={24} color="green" />
-          </View>
-          <Text style={styles.leaveCount}>0.0</Text>
-          <Text style={styles.leaveDescription}>Visits per month</Text>
-        </View>
-      </View>
-
-      {/* ---------- */}
-    </ScrollView>
+    </View>
   );
 }
+
+
+
+const VisitButton = () => {
+  const navigation = useNavigation<NavProp>();
+  const widthAnim = useRef(new Animated.Value(180)).current;
+  const [hideText, setHideText] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      Animated.timing(widthAnim, {
+        toValue: 60,
+        duration: 800,
+        useNativeDriver: false,
+      }).start(() => {
+        setHideText(true); // remove text after animation
+      });
+    }, 4000);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  return (
+    <Animated.View style={[AnimatedBtms.container, { width: widthAnim }]}>
+      <TouchableOpacity
+        style={[AnimatedBtms.button, { backgroundColor: "#f74e81" }]}
+        onPress={() => {
+          navigation.navigate("CreateVisitScreen");
+        }}
+      >
+        <FontAwesome5 name="walking" size={24} color="white" />
+        {!hideText && (
+          <Text
+            style={AnimatedBtms.text}
+            numberOfLines={1}
+            ellipsizeMode="clip"
+          >
+            Visit
+          </Text>
+        )}
+      </TouchableOpacity>
+    </Animated.View>
+  );
+};
+
+const AddPlanButton = () => {
+  
+  const navigation = useNavigation<NavProp>();
+  const widthAnim = useRef(new Animated.Value(180)).current;
+  const [hideText, setHideText] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      Animated.timing(widthAnim, {
+        toValue: 60,
+        duration: 800,
+        useNativeDriver: false,
+      }).start(() => {
+        setHideText(true); // remove text after animation
+      });
+    }, 4000);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  return (
+    <Animated.View style={[AnimatedBtms.container, { width: widthAnim }]}>
+      <TouchableOpacity
+        style={AnimatedBtms.button}
+        onPress={() => {
+          navigation.navigate("CreatePlanScreen");
+        }}
+      >
+        <Zocial name="plancast" size={24} color="white" />
+        {!hideText && (
+          <Text
+            style={AnimatedBtms.text}
+            numberOfLines={1}
+            ellipsizeMode="clip"
+          >
+            Add Task
+          </Text>
+        )}
+      </TouchableOpacity>
+    </Animated.View>
+  );
+};
+
 
 const styles = StyleSheet.create({
   container: {
@@ -244,5 +329,46 @@ const styles = StyleSheet.create({
   leaveDescription: {
     fontSize: 12,
     color: "grey",
+  },
+  animatedBox: {
+    // position: "relative",
+    // backgroundColor: "#e91e62",
+    // justifyContent: "center",
+    // alignItems: "center",
+    position: "absolute",
+    bottom: 1,
+    right: 1,
+  },
+});
+
+
+const AnimatedBtms = StyleSheet.create({
+  container: {
+    // position: "absolute",
+    // position: "relative",
+    bottom: 120,
+    right: 20,
+    height: 55,
+    borderRadius: 15,
+    overflow: "hidden", // IMPORTANT
+    elevation: 8,
+    marginBottom:10
+  },
+
+  button: {
+    flex: 1,
+    backgroundColor: "#2563EB",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 16,
+    gap: 8,
+  },
+
+  text: {
+    color: "#fff",
+    fontSize: 15,
+    fontWeight: "600",
+    flexShrink: 1, // prevents pushing
   },
 });

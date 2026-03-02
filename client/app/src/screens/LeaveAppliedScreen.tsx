@@ -189,6 +189,7 @@ const AppliedLeavesScreen: React.FC = () => {
       }
     };
 
+    console.log(item);
 
     
 

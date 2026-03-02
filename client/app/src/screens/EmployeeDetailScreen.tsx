@@ -7,42 +7,36 @@ import {
   ScrollView,
 } from "react-native";
 import EditEmployeeModal from "./Modals/EditEmployeeModal";
+import { useGetMyDetailQuery } from "../shared/store/api/employeeApi";
 
 
 export default function EmployeeDetailScreen({ route }: {route: any}) {
   const { employee, id } = route.params;
   const [editVisible, setEditVisible] = useState(false);
+  const {data: employeeDetail} = useGetMyDetailQuery({ id: employee?._id || id});
 
-  // console.log(employee)
+  const employeeData = employeeDetail?.data || employee;
+  
 
-  if (id) {
-    return (
-      <View>
-        <Text> You can get employee details here from id setup later</Text>
-      </View>
-    );
-  }
   const totalLeaves =
-    employee.leavesTaken.sick +
-    employee.leavesTaken.casual +
-    employee.leavesTaken.earned +
-    employee.leavesTaken.public;
+    employeeData.leavesTaken.sick +
+    employeeData.leavesTaken.casual +
+    employeeData.leavesTaken.earned +
+    employeeData.leavesTaken.public;
 
-  // return (<View>
-  //   <Text>wait</Text>
-  // </View>)
+
   return (
     <ScrollView style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
         <View style={styles.avatar}>
-          <Text style={styles.avatarText}>{employee.name.charAt(0)}</Text>
+          <Text style={styles.avatarText}>{employeeData.name.charAt(0)}</Text>
         </View>
 
-        <Text style={styles.name}>{employee.name}</Text>
-        <Text style={styles.role}>{employee.role.toUpperCase()}</Text>
-        <Text style={styles.email}>{employee?.email}</Text>
-        <Text style={styles.phone}>{employee?.phone}</Text>
+        <Text style={styles.name}>{employeeData?.name}</Text>
+        <Text style={styles.role}>{employeeData?.role.toUpperCase()}</Text>
+        <Text style={styles.email}>{employeeData?.email}</Text>
+        <Text style={styles.phone}>{employeeData?.phone}</Text>
 
         <TouchableOpacity
           style={styles.editBtn}
@@ -60,8 +54,10 @@ export default function EmployeeDetailScreen({ route }: {route: any}) {
 
         <Text style={styles.label}>Manager:</Text>
         <Text style={styles.value}>
-          {employee.manager.name}
-          {/* ({employee.manager.model}) */}
+          {/* {employee.manager?.name} */}
+          {employee?.managerModel === "Admin"
+            ? "Admin"
+            : employeeData.manager?.name}
         </Text>
       </View>
 
@@ -69,10 +65,10 @@ export default function EmployeeDetailScreen({ route }: {route: any}) {
       <View style={styles.card}>
         <Text style={styles.cardTitle}>Leaves Summary</Text>
         <View style={styles.leaveRow}>
-          <Text>Sick: {employee.leavesTaken.sick}</Text>
-          <Text>Casual: {employee.leavesTaken.casual}</Text>
-          <Text>Earned: {employee.leavesTaken.earned}</Text>
-          <Text>Public: {employee.leavesTaken.public}</Text>
+          <Text>Sick: {employeeData.leavesTaken.sick}</Text>
+          <Text>Casual: {employeeData.leavesTaken.casual}</Text>
+          <Text>Earned: {employeeData.leavesTaken.earned}</Text>
+          <Text>Public: {employeeData.leavesTaken.public}</Text>
         </View>
         <Text style={styles.totalLeaves}>Total: {totalLeaves}</Text>
       </View>
@@ -80,7 +76,7 @@ export default function EmployeeDetailScreen({ route }: {route: any}) {
       {/* Edit Modal */}
       <EditEmployeeModal
         visible={editVisible}
-        employee={employee}
+        employee={employeeData}
         onClose={() => setEditVisible(false)}
       />
     </ScrollView>

@@ -44,7 +44,7 @@ export default function EmployeesScreen() {
     <TouchableOpacity
       style={styles.card}
       onPress={() =>
-        navigation.navigate("EmployeeDetailScreen", { employee: item as any })
+        navigation.navigate("EmployeeDetailScreen", { employee: item as any, id: item._id })
 
       }
     >
