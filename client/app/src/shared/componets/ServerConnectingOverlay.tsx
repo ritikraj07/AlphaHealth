@@ -7,11 +7,15 @@ import {
   ActivityIndicator,
   Image,
 } from "react-native";
+import GlobalError from "./common/GlobalError";
+import { handleApiError } from "../utils/apiErrorHandler";
+import { Linking } from "react-native";
+import { serverSupport } from "../supports/support";
 
 export default function ServerConnectingOverlay({ visible,}: {  visible: boolean;}) {
   const scaleAnim = useRef(new Animated.Value(1)).current;
   const floatAnim = useRef(new Animated.Value(0)).current;
-
+  console.log("🔗 ServerConnectingOverlay visible:", visible);
   useEffect(() => {
     if (!visible) return;
 
@@ -48,7 +52,25 @@ export default function ServerConnectingOverlay({ visible,}: {  visible: boolean
     ).start();
   }, [visible]);
 
-  if (!visible) return null;
+  if (!visible) {
+    const error = {
+      status: 500
+    }
+    const { message, showRetry, showSupport, logout } = handleApiError(error);
+    return  <GlobalError
+              title="Failed to load Dashboard"
+              message={message}
+              showRetry={showRetry}
+              showSupport={showSupport}
+              onRetry={() => {
+                
+              }}
+              onSupport={() => {
+                serverSupport();
+                console.log("Open support screen / email etc");
+              }}
+            />
+  }
 
   return (
     <View style={styles.overlay}>
