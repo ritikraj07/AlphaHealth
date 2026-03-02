@@ -16,8 +16,19 @@ import EmployeeDashboard from "../screens/Dashboards/EmployeeDashboard";
 import { useAppSelector } from "../shared/store/hooks";
 import EmployeesScreen from "../screens/EmployeesScreen";
 
+export type TabParamList = {
+  Attendance: undefined;
+  Leave: undefined;
+  Doctor: undefined;
+  POB: undefined;
+  ReportsAnalytics: undefined;
+  SignIn: undefined;
+  Dashboard: undefined;
+  Employees: undefined;
+};
 
-const Tab = createBottomTabNavigator();
+
+const Tab = createBottomTabNavigator<TabParamList>();
 
 /**
  * Bottom navigation tabs for the application

@@ -4,6 +4,10 @@ import EmployeeDrawer from "../shared/componets/EmployeeDrawer";
 import BottomTabs from "./BottomTab";
 import { Dimensions } from "react-native";
 
+export type DrawerParamList = {
+  Home: undefined;
+};
+
 
 const Drawer = createDrawerNavigator();
 
@@ -27,3 +31,4 @@ export default function DrawerNavigator() {
     </Drawer.Navigator>
   );
 }
+
