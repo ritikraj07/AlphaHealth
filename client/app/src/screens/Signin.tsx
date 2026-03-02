@@ -22,7 +22,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { setCredentials } from "../shared/store/slices/authSlice";
 import { Ionicons } from "@expo/vector-icons";
 import { useServerStatus } from "../shared/componets/hooks/useServerStatus.ts";
-import ServerConnectingOverlay from "../shared/componets/ServerConnectingOverlay";
+
 
 
 
@@ -219,7 +219,7 @@ const isServerOnline = serverStatus === "online";
         animating={isLoading}
       /> */}
   
-      <ServerConnectingOverlay visible={!isServerOnline} />
+      
 
       {/* Header */}
       <View style={{ alignItems: "center" }}>
