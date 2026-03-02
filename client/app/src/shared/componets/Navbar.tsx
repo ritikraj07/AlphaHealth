@@ -1,6 +1,6 @@
 import { StyleSheet, Text, TouchableOpacity, View, Image } from 'react-native'
 import React from 'react'
-import { Ionicons } from '@expo/vector-icons'
+import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { DrawerActions, useNavigation } from "@react-navigation/native";
 import { useAppSelector } from '../store/hooks';
 import { useDispatch } from 'react-redux';
@@ -58,7 +58,12 @@ export default function Navbar() {
           <Ionicons name="log-out-outline" size={20} color="black" />
         )}
         {role !== "admin" && (
-          <Ionicons name="settings-outline" size={24} color="black" />
+          // <Ionicons name="settings-outline" size={24} color="black" />
+          <MaterialCommunityIcons
+            name="dots-vertical"
+            size={24}
+            color="black"
+          />
         )}
       </TouchableOpacity>
     </View>
@@ -69,7 +74,7 @@ const styles = StyleSheet.create({
   container: {
     width: "100%",
     height: 70,
-    backgroundColor: "#fcfcfcff",
+    backgroundColor: "rgb(255, 255, 255)",
     justifyContent: "space-between",
     alignItems: "center",
     paddingHorizontal: 20,
@@ -130,8 +135,7 @@ const styles = StyleSheet.create({
     backgroundColor: "transparent",
     padding: 10,
     borderRadius: 6,
-    borderWidth: 1,
-    borderColor: "#666",
+    borderWidth: 0,
     justifyContent: "center",
     alignItems: "center",
   },
