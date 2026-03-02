@@ -34,6 +34,7 @@ import { useAppSelector } from "../../shared/store/hooks";
 import * as DocumentPicker from "expo-document-picker";
 import AddEmployeeFromExcelModal from "../Modals/AddEmpFromExcel";
 import AddDoctorChemistFromExcleModal from "../Modals/AddDocCheExcle";
+import { NavProp } from "../../navigators";
 
 type Props = {
   title: string;
@@ -86,7 +87,7 @@ export default function AdminDashboard(): JSX.Element {
   
   const [createEmployee, { isLoading: createEmployeeLoading }] =  useCreateEmployeeMutation();
   const { userId, name} = useAppSelector((state) => state.auth);
-  const navigation = useNavigation();
+  const navigation = useNavigation<NavProp>();
   const dispatch = useDispatch();
   const TotalEmployee = data?.data?.employees?.total ?? 0;
   const TotalManager = data?.data?.employees?.managers ?? 0;
@@ -328,7 +329,7 @@ export default function AdminDashboard(): JSX.Element {
                 styles.actionBtn,
                 {
                   alignItems: "center",
-                  justifyContent: "center",
+                  
                   flexDirection: "row",
                   gap: 10,
                 },
@@ -337,6 +338,41 @@ export default function AdminDashboard(): JSX.Element {
             >
               <Ionicons name="calendar-outline" size={24} color="#fff" />
               <Text style={styles.actionText}>{"Leave Application"}</Text>
+            </TouchableOpacity>
+
+            {/* DoctorChemistListScreen */}
+
+            <TouchableOpacity
+              style={[
+                styles.actionBtn,
+                {
+                  alignItems: "center",
+                  
+                  flexDirection: "row",
+                  gap: 10,
+                },
+              ]}
+              onPress={() => navigation.navigate("DoctorChemistListScreen")}
+            >
+              <FontAwesome6 name="user-doctor" size={24} color="#fff" />
+              <Text style={styles.actionText}>{"Doctor & Chemist List"}</Text>
+            </TouchableOpacity>
+
+            {/* ProductScreen */}
+            <TouchableOpacity
+              style={[
+                styles.actionBtn,
+                {
+                  alignItems: "center",
+                  // justifyContent: "center",
+                  flexDirection: "row",
+                  gap: 10,
+                },
+              ]}
+              onPress={() => navigation.navigate("ProductScreen")}
+            >
+              <AntDesign name="product" size={24} color="white" />
+              <Text style={styles.actionText}>{"ProductScreen"}</Text>
             </TouchableOpacity>
           </View>
         </View>
