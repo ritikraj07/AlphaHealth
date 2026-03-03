@@ -3,7 +3,7 @@ const Visit = require("../models/visit.model");
 
 const createPOB = async (req, res) => {
   try {
-    const { doctorChemist, visit, products, pobContributors,  } = req.body;
+    const { doctorChemist, visit, products, pobContributors, hq  } = req.body;
 
     const totalAmount = products.reduce((sum, item) => sum + item.amount, 0);
 
@@ -14,7 +14,7 @@ const createPOB = async (req, res) => {
       products,
       totalAmount,
       pobContributors,
-      hq: req.user.hq,
+      hq: hq || req.user.hq,
     });
 
     // If linked visit exists → mark order received
