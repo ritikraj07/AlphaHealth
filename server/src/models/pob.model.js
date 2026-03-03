@@ -57,6 +57,7 @@ const pobSchema = new mongoose.Schema(
     hq: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Headquarter",
+      
     },
 
     /**
@@ -103,7 +104,10 @@ const pobSchema = new mongoose.Schema(
     timestamps: true,
   },
 );
-
+pobSchema.index({ date: 1, employee: 1 });
+pobSchema.index({ date: 1, hq: 1 });
+pobSchema.index({ doctorChemist: 1, date: 1 });
+pobSchema.index({ visit: 1 });
 
 const POB = mongoose.model("POB", pobSchema);
 
