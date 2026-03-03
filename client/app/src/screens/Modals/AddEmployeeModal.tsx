@@ -49,7 +49,7 @@ export default function AddEmployeeModal({
   managerId,
   managerModel
 }: AddEmployeeModalProps) {
-  const { data: HQ, isLoading , error, refetch } = useGetHeadQuartersQuery({});
+  const { data: HQ, isLoading: isLoadingHQ , error, refetch } = useGetHeadQuartersQuery({});
   const [createEmployee, { isLoading: isCreateEmployeeLoading }] =  useCreateEmployeeMutation();
   const [name, setName] = useState<string>("");
   const [role, setRole] = useState<RoleType>("employee");
@@ -61,8 +61,8 @@ export default function AddEmployeeModal({
   // Manager
   const [managerType, setManagerType] = useState<string>("");
   const [selectedManager, setSelectedManager] = useState<string>("");
-  const { data: managersData } = useGetManagersQuery("");
-
+  const { data: managers, isLoading: isLoadingManagers } = useGetManagersQuery("");
+  const managersData = managers?.data?.employees || [];
   const managerTypes = [
     { label: "Training", value: "Training" },
     { label: "Territory", value: "Territory" },
@@ -76,7 +76,7 @@ export default function AddEmployeeModal({
     { id: "manager", label: "Manager" },
   ];
 
-  // console.log("data==>", HQ?.data);
+  // console.log("data==>", managersData);
 
   // Validate form
   const validateForm = (): boolean => {
@@ -94,6 +94,17 @@ export default function AddEmployeeModal({
 
     if (!headquarter) {
       newErrors.headquarter = "Headquarter is required";
+    }
+
+    if (!phone.trim()) {
+      newErrors.phone = "Phone number is required";
+    }
+    if(phone.length < 10 || phone.length > 10){
+      newErrors.phone = "Please enter a valid phone number";
+    }
+
+    if (role === "manager" && !managerType) {
+      newErrors.managerType = "Manager type is required";
     }
 
     setErrors(newErrors);
@@ -116,9 +127,14 @@ export default function AddEmployeeModal({
       hq: headquarter,
       password: DEFAULT_PASSWORD,
       phone: phone,
-      manager: "",
-      managerModel: "",
+      manager: selectedManager,
+      managerModel: "Employee",
     };
+
+    if (role === "manager") {
+      employeeData.manager = managerId;
+      employeeData.managerModel = managerModel;
+    }
 
     handleAddEmployee(employeeData);
   };
@@ -130,6 +146,9 @@ export default function AddEmployeeModal({
     setEmail("");
     setHeadquarter("");
     setErrors({});
+    setPhoneNo("");
+    setManagerType("");
+    setSelectedManager("");
   };
 
   // Handle modal close
@@ -139,9 +158,9 @@ export default function AddEmployeeModal({
   };
 
    const handleAddEmployee = async  (employeeData: any)=> {
-       console.log("New employee:", employeeData);
+      //  console.log("New employee:", employeeData);
      // Add n API call to save the employee later when ReduxRTK is implemented
-     
+
        try {
          let response = await createEmployee({
            name: employeeData.name,
@@ -149,11 +168,12 @@ export default function AddEmployeeModal({
            password: employeeData.password,
            role: employeeData.role,
            hq: employeeData.hq,
-           manager: managerId,
-           managerModel: managerModel,
+           manager: employeeData.manager || managerId,
+           managerModel: employeeData.managerModel || managerModel,
            phone: employeeData.phone,
+           designation: managerType || "employee",
          }).unwrap();
-         console.log("Response:", response);
+        //  console.log("Response:", response);
          if (response.success) {
            ToastAndroid.show(response?.message, ToastAndroid.SHORT);
            handleClose();
@@ -179,7 +199,24 @@ export default function AddEmployeeModal({
        }
 
         
-     };
+  };
+  
+  if (isLoadingManagers || isLoadingHQ ) {
+    return (
+      <Modal
+        visible={visible}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={handleClose}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <Text>Loading...</Text>
+          </View>
+        </View>
+      </Modal>
+    );
+  }
 
   return (
     <Modal
@@ -265,10 +302,10 @@ export default function AddEmployeeModal({
                     Manager <Text style={styles.required}>*</Text>
                   </Text>
 
-                  {/* <Dropdown
+                  <Dropdown
                     data={
-                      managersData?.map((mgr) => ({
-                        label: mgr.name,
+                      managersData?.map((mgr: any) => ({
+                        label: mgr.name + " (" + mgr.email + ")",
                         value: mgr._id,
                       })) ?? []
                     }
@@ -280,7 +317,7 @@ export default function AddEmployeeModal({
                     value={selectedManager}
                     onChange={(item) => setSelectedManager(item.value)}
                     style={styles.dropdown}
-                  /> */}
+                  />
 
                   {errors.manager && (
                     <Text style={styles.errorText}>{errors.manager}</Text>
@@ -352,8 +389,8 @@ export default function AddEmployeeModal({
                     if (errors.phone) setErrors({ ...errors, phone: "" });
                   }}
                 />
-                {errors.email ? (
-                  <Text style={styles.errorText}>{errors.email}</Text>
+                {errors.phone ? (
+                  <Text style={styles.errorText}>{errors.phone}</Text>
                 ) : null}
               </View>
 
@@ -393,7 +430,7 @@ export default function AddEmployeeModal({
                   isCreateEmployeeLoading && styles.disabledButton,
                 ]}
                 onPress={handleSubmit}
-                disabled={isCreateEmployeeLoading || isLoading}
+                disabled={isCreateEmployeeLoading || isLoadingHQ}
               >
                 {isCreateEmployeeLoading ? (
                   <ActivityIndicator size="small" color="#fff" />
@@ -405,7 +442,7 @@ export default function AddEmployeeModal({
               <TouchableOpacity
                 style={styles.cancelButton}
                 onPress={handleClose}
-                disabled={isCreateEmployeeLoading || isLoading}
+                disabled={isCreateEmployeeLoading || isLoadingHQ}
               >
                 <Text style={styles.cancelButtonText}>Cancel</Text>
               </TouchableOpacity>

@@ -30,9 +30,7 @@ export default function EmployeesScreen() {
 
   const filteredEmployees = useMemo(() => {
     return employees.filter((emp) => {
-      const matchesSearch =
-        emp.name.toLowerCase().includes(search.toLowerCase()) ||
-        emp.email.toLowerCase().includes(search.toLowerCase());
+      const matchesSearch =  emp.name.toLowerCase().includes(search.toLowerCase()) || emp.email.toLowerCase().includes(search.toLowerCase());
 
       const matchesRole = roleFilter === "all" ? true : emp.role === roleFilter;
 
@@ -104,11 +102,41 @@ export default function EmployeesScreen() {
 
   return (
     <View style={styles.container}>
+      <View style={{ marginBottom: 10 }}>
+        <TextInput
+          style={styles.searchInput}
+          placeholder="Search by name or email..."
+          value={search}
+          onChangeText={setSearch}
+        />
+
+        <View style={styles.filterRow}>
+          {["all", "manager", "employee"].map((r) => (
+            <TouchableOpacity
+              key={r}
+              style={[
+                styles.filterBtn,
+                roleFilter === r && styles.filterBtnActive,
+              ]}
+              onPress={() => setRoleFilter(r as any)}
+            >
+              <Text
+                style={[
+                  styles.filterText,
+                  roleFilter === r && styles.filterTextActive,
+                ]}
+              >
+                {r === "all" ? "All" : r.charAt(0).toUpperCase() + r.slice(1)}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      </View>
       <FlatList
         data={filteredEmployees}
         keyExtractor={(item) => item._id}
         renderItem={renderItem}
-        ListHeaderComponent={renderHeader}
+        // ListHeaderComponent={renderHeader}
         ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
         contentContainerStyle={{ paddingBottom: 40 }}
         ListEmptyComponent={() =>

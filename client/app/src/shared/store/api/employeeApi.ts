@@ -63,6 +63,8 @@ export interface CreateEmployeeRequest {
   manager: string;
   managerModel: string;
   phone: string;
+  designation: string;
+
 }
 
 
@@ -105,6 +107,7 @@ export const employeeApi = apiSlice.injectEndpoints({
         url: `/employee`,
         method: "GET",
       }),
+      providesTags: ["AdminDashboard", { type: "Employee", id: "LIST" }, "Employee"],
     }),
 
     // Get employee by ID
@@ -122,6 +125,7 @@ export const employeeApi = apiSlice.injectEndpoints({
         url: `/employee?role=manager`,
         method: "GET",
       }),
+      providesTags: ["AdminDashboard", { type: "Employee", id: "LIST" }, "Employee"],
     }),
 
     //  add employee from excel
@@ -145,6 +149,7 @@ export const employeeApi = apiSlice.injectEndpoints({
           },
         };
       },
+      invalidatesTags: ["AdminDashboard", { type: "Employee", id: "LIST" }, "Employee"],
     }),
 
     // Create new employee
@@ -157,7 +162,7 @@ export const employeeApi = apiSlice.injectEndpoints({
         method: "POST",
         body: employeeData,
       }),
-      invalidatesTags: ["AdminDashboard", { type: "Employee", id: "LIST" }],
+      invalidatesTags: ["AdminDashboard", { type: "Employee", id: "LIST" }, "Employee"],
     }),
 
     // Update employee
