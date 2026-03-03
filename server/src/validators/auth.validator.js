@@ -12,7 +12,7 @@ const getUser = async (id) => {
   if (!user) {
     user = await Employee.findById(id);
     }
-    console.log("Log from auth validator \n",id,"\n" ,user)
+    // console.log("Log from auth validator \n",id,"\n" ,user)
   return user;
 };
 
