@@ -1186,6 +1186,12 @@
                 },
                 "remark": {
                   "example": "any"
+                },
+                "employeeModel": {
+                  "example": "any"
+                },
+                "isJointPlan": {
+                  "example": "any"
                 }
               }
             }
@@ -1194,6 +1200,27 @@
         "responses": {
           "201": {
             "description": "Created"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      },
+      "get": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
           },
           "401": {
             "description": "Unauthorized"
@@ -1243,8 +1270,14 @@
           }
         ],
         "responses": {
+          "200": {
+            "description": "OK"
+          },
           "401": {
             "description": "Unauthorized"
+          },
+          "500": {
+            "description": "Internal Server Error"
           }
         }
       }
@@ -1346,10 +1379,10 @@
             "schema": {
               "type": "object",
               "properties": {
-                "doctorChemist": {
+                "plan": {
                   "example": "any"
                 },
-                "plan": {
+                "doctorChemist": {
                   "example": "any"
                 },
                 "remark": {
@@ -1365,6 +1398,9 @@
         "responses": {
           "201": {
             "description": "Created"
+          },
+          "400": {
+            "description": "Bad Request"
           },
           "401": {
             "description": "Unauthorized"
