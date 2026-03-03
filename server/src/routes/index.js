@@ -14,6 +14,7 @@ const setupRoutes = require('./setup.route');
 const productRoutes = require('./product.route');
 const planRoutes = require('./plan.route');
 const visitRoutes = require('./visit.route');
+const analyticsRoutes = require('./analytics.route');
 
 router.use('/admin', adminRoutes);
 router.use('/employee', employeeRoutes);
@@ -26,5 +27,6 @@ router.use('/attendances', attendanceRoutes);
 router.use('/setup', setupRoutes);
 router.use('/plans', planRoutes);
 router.use('/visits', visitRoutes);
+router.use('/analytics', analyticsRoutes);
 
 module.exports = router;
