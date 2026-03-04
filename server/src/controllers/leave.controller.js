@@ -19,14 +19,27 @@ const ApplyLeave = async(req, res) => {
             }
 
             // 2. Sick/Casual leave cutoff 9 AM
-            if ((type === "sick" || type === "casual")) {
-                const now = new Date();
-                const cutoff = new Date();
-                cutoff.setHours(9, 0, 0, 0);
-                if (now > cutoff) {
-                    return res.status(400).json({ success: false, message: `${type === "sick" ? "Sick" : "Casual"} leave can only be applied before 9 AM` });
-                }
-            }
+           if (type === "sick" || type === "casual") {
+             const now = new Date();
+
+             // Create today 9 AM
+             const todayEnd = new Date();
+             todayEnd.setHours(LEAVE_WINDOW_END_HOUR, 0, 0, 0);
+
+             // Create yesterday 8 PM
+             const yesterdayStart = new Date();
+             yesterdayStart.setDate(yesterdayStart.getDate() - 1);
+             yesterdayStart.setHours(LEAVE_WINDOW_START_HOUR, 0, 0, 0);
+
+             const isWithinWindow = now >= yesterdayStart && now <= todayEnd;
+
+             if (!isWithinWindow) {
+               return res.status(400).json({
+                 success: false,
+                 message: `Sick/Casual leave can only be applied between ${LEAVE_WINDOW_START_HOUR}:00 (previous day) and ${LEAVE_WINDOW_END_HOUR}:00 (today).`,
+               });
+             }
+           }
 
             // 3. Half-day validation
            if (isHalfDay) {
