@@ -66,7 +66,7 @@ const validateCreateDoctorChemist = [
   body("addedBy.id").isMongoId().withMessage("Invalid addedBy ID"),
 
   body("addedBy.role")
-    .isIn(["admin", "employee"])
+    .isIn(["admin", "employee", "manager"])
     .withMessage("Invalid addedBy role"),
 
   body("addedBy.model")
