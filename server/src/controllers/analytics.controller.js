@@ -2,6 +2,12 @@ const mongoose = require("mongoose");
 const dayjs = require("dayjs");
 const POB = require("../models/pob.model");
 const Visit = require("../models/visit.model");
+const Attendance = require("../models/attendance.model");
+const Plan = require("../models/plan.model");
+const Leave = require("../models/leave.model");
+const Employee = require("../models/employee.model");
+const DoctorChemist = require("../models/doctorChemist.model");
+
 
 
 
@@ -318,4 +324,341 @@ const getDashboardAnalytics = async (req, res) => {
   }
 };
 
-module.exports = { getDashboardAnalytics };
+
+
+const getEmployeeDashboard = async (req, res) => {
+  try {
+    const userId = req.userId;
+    const employeeId = new mongoose.Types.ObjectId(userId);
+
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+
+    const todayEnd = new Date();
+    todayEnd.setHours(23, 59, 59, 999);
+
+    const monthStart = new Date();
+    monthStart.setDate(1);
+    monthStart.setHours(0, 0, 0, 0);
+
+    // Employee info (join date)
+    const employee = await Employee.findById(userId).select("createdAt");
+
+    // =========================
+    // DAYS WORKED
+    // =========================
+    const daysWorked = await Attendance.countDocuments({
+      employee: userId,
+      status: "present",
+    });
+
+    // Total days since joining (simple count – can be refined later)
+    const totalWorkingDays = Math.ceil(
+      (Date.now() - new Date(employee.createdAt)) / (1000 * 60 * 60 * 24),
+    );
+
+    const workingPercent =
+      totalWorkingDays > 0
+        ? ((daysWorked / totalWorkingDays) * 100).toFixed(1)
+        : 0;
+
+    // =========================
+    // PLANS & VISITS (CALLS)
+    // =========================
+    const plannedCalls = await Plan.countDocuments({
+      employee: userId,
+      date: { $gte: monthStart },
+    });
+
+    const completedCalls = await Visit.countDocuments({
+      employee: userId,
+      date: { $gte: monthStart },
+    });
+
+    const missedCalls = Math.max(0, plannedCalls - completedCalls); // avoid negative
+
+    const avgCallsPerDay =
+      daysWorked > 0 ? (completedCalls / daysWorked).toFixed(1) : 0;
+
+    // =========================
+    // VISITS BREAKDOWN (Doctor vs Chemist)
+    // =========================
+    // Get all visits for the month, then lookup the type
+    const visitsWithType = await Visit.aggregate([
+      {
+        $match: {
+          employee: new mongoose.Types.ObjectId(userId),
+          doctorChemist: { $ne: null },
+          date: { $gte: monthStart },
+        },
+      },
+      {
+        $lookup: {
+          from: "doctorchemists",
+          localField: "doctorChemist",
+          foreignField: "_id",
+          as: "dc",
+        },
+      },
+      { $unwind: "$dc" },
+      {
+        $group: {
+          _id: "$dc.type",
+          count: { $sum: 1 },
+        },
+      },
+    ]);
+
+    let doctorVisits = 0,
+      chemistVisits = 0;
+    visitsWithType.forEach((item) => {
+      if (item._id === "doctor") doctorVisits = item.count;
+      if (item._id === "chemist") chemistVisits = item.count;
+    });
+
+    const totalVisits = doctorVisits + chemistVisits;
+
+    // =========================
+    // POB / SALES
+    // =========================
+    const monthOrders = await POB.aggregate([
+      {
+        $match: {
+          employee: new mongoose.Types.ObjectId(userId),
+          date: { $gte: monthStart },
+        },
+      },
+      {
+        $group: {
+          _id: null,
+          orders: { $sum: 1 },
+          value: { $sum: "$totalAmount" },
+        },
+      },
+    ]);
+
+
+    const monthOrderData = monthOrders[0] || { orders: 0, value: 0 };
+
+    const conversionRate =
+      totalVisits > 0
+        ? ((monthOrderData.orders / totalVisits) * 100).toFixed(1)
+        : 0;
+
+    // =========================
+    // COVERAGE (unique doctors visited)
+    // =========================
+    const totalDoctors = await DoctorChemist.countDocuments({ type: "doctor" }); // only doctors matter for coverage
+
+    const visitedDoctors = await Visit.distinct("doctorChemist", {
+      employee: userId,
+      date: { $gte: monthStart },
+      doctorChemist: { $ne: null },
+    });
+
+    const coverageRate =
+      totalDoctors > 0
+        ? ((visitedDoctors.length / totalDoctors) * 100).toFixed(1)
+        : 0;
+
+    // =========================
+    // HIGH POTENTIAL FREQUENCY
+    // =========================
+    const highPotentialDoctors = await DoctorChemist.find({
+      potential: "high",
+    }).select("_id");
+
+    const highDoctorIds = highPotentialDoctors.map((d) => d._id);
+
+    const highVisits = await Visit.countDocuments({
+      employee: userId,
+      doctorChemist: { $in: highDoctorIds },
+      date: { $gte: monthStart },
+    });
+
+    const highFrequency =
+      highDoctorIds.length > 0
+        ? (highVisits / highDoctorIds.length).toFixed(1)
+        : 0;
+
+    // =========================
+    // DOCTOR COVERAGE ANALYSIS (planned vs actual)
+    // =========================
+    // For each plan this month, get actual visits by this employee to the same doctor within the month
+    const doctorCoverage = await Plan.aggregate([
+      {
+        $match: {
+          employee: new mongoose.Types.ObjectId(userId),
+          date: { $gte: monthStart },
+        },
+      },
+      {
+        $lookup: {
+          from: "doctorchemists",
+          localField: "doctorChemist",
+          foreignField: "_id",
+          as: "doctorInfo",
+        },
+      },
+      { $unwind: "$doctorInfo" },
+      {
+        $lookup: {
+          from: "visits",
+          let: { doctorId: "$doctorChemist" },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $and: [
+                    { $eq: ["$doctorChemist", "$$doctorId"] },
+                    { $eq: ["$employee", new mongoose.Types.ObjectId(userId)] },
+                    { $gte: ["$date", monthStart] },
+                  ],
+                },
+              },
+            },
+          ],
+          as: "actualVisits",
+        },
+      },
+      {
+        $project: {
+          doctorName: "$doctorInfo.name",
+          targetFrequency: "$doctorInfo.frequency", // target from doctorChemist
+          plannedDate: "$date",
+          actualVisits: { $size: "$actualVisits" },
+        },
+      },
+      {
+        $group: {
+          _id: "$doctorName",
+          targetFrequency: { $first: "$targetFrequency" },
+          plannedVisits: { $sum: 1 },
+          actualVisits: { $sum: "$actualVisits" },
+        },
+      },
+      {
+        $project: {
+          doctorName: "$_id",
+          targetFrequency: 1,
+          plannedVisits: 1,
+          actualVisits: 1,
+          _id: 0,
+        },
+      },
+      { $sort: { doctorName: 1 } },
+    ]);
+
+  
+    // =========================
+    // MOST VISITED DOCTORS
+    // =========================
+    const topDoctors = await Visit.aggregate([
+      {
+        $match: {
+          employee: new mongoose.Types.ObjectId(userId) ,
+          doctorChemist: { $ne: null },
+          date: { $gte: monthStart },
+        },
+      },
+      {
+        $group: {
+          _id: "$doctorChemist",
+          visits: { $sum: 1 },
+        },
+      },
+      { $sort: { visits: -1 } },
+      { $limit: 5 },
+      {
+        $lookup: {
+          from: "doctorchemists",
+          localField: "_id",
+          foreignField: "_id",
+          as: "doctorChemist",
+        },
+      },
+      { $unwind: "$doctorChemist" },
+      {
+        $project: {
+          name: "$doctorChemist.name",
+          visits: 1,
+        },
+      },
+    ]);
+
+    // =========================
+    // TODAY STATUS
+    // =========================
+    const attendance = await Attendance.findOne({
+      employee: userId,
+      date: { $gte: todayStart, $lte: todayEnd },
+    });
+
+    const todayPlans = await Plan.countDocuments({
+      employee: userId,
+      date: { $gte: todayStart, $lte: todayEnd },
+    });
+
+    // =========================
+    // RESPONSE
+    // =========================
+    res.json({
+      success: true,
+
+      performance: {
+        daysWorked,
+        workingPercent,
+        callsCompleted: completedCalls,
+        avgCallsPerDay,
+        pobValue: monthOrderData.value,
+        coverage: coverageRate,
+      },
+
+      callPerformance: {
+        coverageRate,
+        completedCalls,
+        plannedCalls,
+        missedCalls, // added for completeness
+        executionRate:
+          plannedCalls > 0
+            ? ((completedCalls / plannedCalls) * 100).toFixed(1)
+            : 0,
+        highPotentialFrequency: highFrequency,
+      },
+
+      doctorCoverageAnalysis: doctorCoverage,
+
+      sales: {
+        pobValue: monthOrderData.value,
+        orders: monthOrderData.orders,
+        conversionRate,
+      },
+
+      activityBreakdown: {
+        doctorVisits,
+        chemistVisits,
+        totalVisits,
+      },
+
+      topDoctors,
+
+      todayStatus: {
+        attendance: attendance
+          ? {
+              status: attendance.status,
+              checkIn: attendance.startTime,
+              checkOut: attendance.endTime,
+            }
+          : null,
+        plansToday: todayPlans,
+      },
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      success: false,
+      message: "Dashboard fetch failed",
+    });
+  }
+};
+module.exports = { getDashboardAnalytics, getEmployeeDashboard };
