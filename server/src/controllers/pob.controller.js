@@ -1,21 +1,35 @@
 const POB = require("../models/pob.model");
 const Visit = require("../models/visit.model");
+const moment = require("moment");
 
 const createPOB = async (req, res) => {
   try {
     const { doctorChemist, visit, products, pobContributors, hq  } = req.body;
 
     const totalAmount = products.reduce((sum, item) => sum + item.amount, 0);
+    if (!doctorChemist) {
+      return res.status(400).json({ message: "Missing doctor/chemist" });
+    }
 
-    const pob = await POB.create({
+    const payLoad = {
       employee: req.userId,
       doctorChemist,
       visit,
       products,
       totalAmount,
-      pobContributors,
       hq: hq || req.user.hq,
-    });
+    };
+
+    console.log(req.body);
+
+    if(pobContributors[0].employee && pobContributors.length > 0) {
+      payLoad.pobContributors = pobContributors;
+    }
+    
+
+
+
+    const pob = await POB.create(payLoad);
 
     // If linked visit exists → mark order received
     if (visit) {
@@ -35,7 +49,10 @@ const createPOB = async (req, res) => {
 };
 
 
-
+// doctor count with total sales, chemist count with total sales,
+// this month visit count with doctor frenquency and chemist frenquency
+// this month total sales
+// 
 const getMyPOB = async (req, res) => {
   try {
     const { filter } = req.query;
@@ -54,10 +71,69 @@ const getMyPOB = async (req, res) => {
       .populate("products.product")
       .sort({ date: -1 });
 
+    let totalSales = 0;
+
+    let doctorsOrders = 0;
+    let doctorsValue = 0;
+
+    let chemistsOrders = 0;
+    let chemistsValue = 0;
+
+    let pending = 0;
+
+    let monthlyValue = 0;
+    let monthlyOrders = 0;
+
+    const startOfMonth = moment().startOf("month");
+
+    pobs.forEach((pob) => {
+      const amount = pob.totalAmount || 0;
+      totalSales += amount;
+
+      // Pending
+      if (pob.status === "pending") {
+        pending++;
+      }
+
+      // Doctor / Chemist split
+      if (pob.doctorChemist?.type === "doctor") {
+        doctorsOrders++;
+        doctorsValue += amount;
+      }
+
+      if (pob.doctorChemist?.type === "chemist") {
+        chemistsOrders++;
+        chemistsValue += amount;
+      }
+
+      // Monthly stats
+      if (moment(pob.date).isSame(startOfMonth, "month")) {
+        monthlyOrders++;
+        monthlyValue += amount;
+      }
+    });
+
     res.json({
       success: true,
-      totalSales: pobs.reduce((sum, p) => sum + p.totalAmount, 0),
+
+      totalSales,
       count: pobs.length,
+
+      thisMonthSell: monthlyOrders,
+      monthlyValue,
+
+      doctors: {
+        orders: doctorsOrders,
+        value: doctorsValue,
+      },
+
+      chemists: {
+        orders: chemistsOrders,
+        value: chemistsValue,
+      },
+
+      pending,
+
       data: pobs,
     });
   } catch (error) {

@@ -67,7 +67,9 @@ const ApplyLeave = async(req, res) => {
                 }
             }
 
+    
 
+      
 
         const leave = await Leave.create({
             employee: userId,
