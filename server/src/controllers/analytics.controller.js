@@ -186,7 +186,7 @@ const getDashboardAnalytics = async (req, res) => {
       {
         $group: {
           _id: "$employee",
-          totalSales: { $sum: "$total" },
+          totalSales: { $sum: "$totalAmount" },
           totalOrders: { $sum: 1 },
         },
       },
@@ -237,7 +237,7 @@ const getDashboardAnalytics = async (req, res) => {
       {
         $group: {
           _id: "$hq",
-          totalSales: { $sum: "$total" },
+          totalSales: { $sum: "$totalAmount" },
         },
       },
       { $sort: { totalSales: -1 } },
@@ -259,7 +259,7 @@ const getDashboardAnalytics = async (req, res) => {
       {
         $group: {
           _id: "$employee",
-          totalSales: { $sum: "$total" },
+          totalSales: { $sum: "$totalAmount" },
           totalOrders: { $sum: 1 },
         },
       },
@@ -424,7 +424,7 @@ const getEmployeeDashboard = async (req, res) => {
     const monthOrders = await POB.aggregate([
       {
         $match: {
-          employee: new mongoose.Types.ObjectId(userId),
+          employee: employeeId,
           date: { $gte: monthStart },
         },
       },
@@ -511,7 +511,7 @@ const getEmployeeDashboard = async (req, res) => {
                 $expr: {
                   $and: [
                     { $eq: ["$doctorChemist", "$$doctorId"] },
-                    { $eq: ["$employee", new mongoose.Types.ObjectId(userId)] },
+                    { $eq: ["$employee", employeeId] },
                     { $gte: ["$date", monthStart] },
                   ],
                 },
@@ -556,7 +556,7 @@ const getEmployeeDashboard = async (req, res) => {
     const topDoctors = await Visit.aggregate([
       {
         $match: {
-          employee: new mongoose.Types.ObjectId(userId) ,
+          employee: employeeId,
           doctorChemist: { $ne: null },
           date: { $gte: monthStart },
         },
