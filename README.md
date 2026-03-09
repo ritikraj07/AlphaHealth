@@ -170,14 +170,40 @@ LOG_LEVEL=info
 
 > **One README for root:** the repo contains `server` and `client` folders. Run them separately.
 
-### 1. Internal development setup
+### 1. Environment Setup
+
+### Requirements
+- **Node.js:** v24.12.0 (required for the entire project)
+- **npm:** v11.6.1
+- **Expo CLI**
+
+Install Expo CLI globally:
+
+```bash
+npm install -g expo-cli
+````
+
+### MongoDB Setup
+
+1. Create an account at: [https://cloud.mongodb.com/](https://cloud.mongodb.com/)
+2. Create a **cluster**.
+3. Get your **MongoDB connection string**.
+4. Add the connection string to your `.env` file:
+
+```env
+MONGO_URI=your_mongodb_connection_string/PharmaPrime
+```
+
+
+
+### 2. Internal development setup
 
 ```bash
 git clone https://github.com/ritikraj07/PharmaPrime.git
 cd PharmaPrime
 ```
 
-### 2. Server (backend)
+### 3. Server (backend)
 
 ```bash
 cd server
@@ -190,7 +216,7 @@ npm start        # production start (node index.js)
 
 **Quick check**: Server listens on `PORT` from `.env`. API docs available at `/api-docs/` (e.g. [https://PharmaPrime.onrender.com/api-docs/](https://alphahealth.onrender.com/api-docs/))
 
-### 3. Client (React Native / Expo)
+### 4. Client (React Native / Expo)
 
 ```bash
 cd client
