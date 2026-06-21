@@ -9,8 +9,8 @@ const doctorChemistSchema = new mongoose.Schema(
 
     email: {
       type: String,
-      unique: false, // change to true if business rule allows
-      sparse: true,
+      // unique: false, // change to true if business rule allows
+      // sparse: true,
     },
 
     type: {
