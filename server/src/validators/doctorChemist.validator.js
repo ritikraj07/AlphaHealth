@@ -41,6 +41,7 @@ const validateCreateDoctorChemist = [
 
   body("type").isIn(["doctor", "chemist"]).withMessage("Invalid type"),
   body("phone")
+    .optional()
     .trim()
     .notEmpty()
     .withMessage("Phone number is required")
