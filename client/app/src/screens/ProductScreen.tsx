@@ -1,4 +1,5 @@
 import React from "react";
+import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
 import {
   View,
   Text,
@@ -57,7 +58,11 @@ const ProductScreen = () => {
           <Image source={{ uri: item.image }} style={styles.image} />
         ) : (
           <View style={styles.placeholder}>
-            <Text style={styles.placeholderText}>No Image</Text>
+            {/* <Text style={styles.placeholderText}>No Image</Text> */}
+            <Image
+              style={styles.image}
+              source={require("../shared/images/icon.png")}
+            />
           </View>
         )}
       </View>
@@ -69,12 +74,12 @@ const ProductScreen = () => {
         <Text style={styles.stock}>Stock: {item.quantity}</Text>
       </View>
 
-      <TouchableOpacity
+      {/* <TouchableOpacity
         style={styles.deleteBtn}
         onPress={() => handleDelete(item._id)}
       >
         <Text style={styles.deleteText}>Delete</Text>
-      </TouchableOpacity>
+      </TouchableOpacity> */}
     </TouchableOpacity>
   );
 
@@ -88,6 +93,10 @@ const ProductScreen = () => {
 
   return (
     <View style={styles.container}>
+      <View style={styles.header}>
+        <FontAwesome6 name="truck-medical" size={24} color="white" />
+        <Text style={styles.title}>Products</Text>
+      </View>
       <FlatList
         data={products}
         keyExtractor={(item) => item._id}
@@ -120,7 +129,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#f5f6fa",
-    padding: 10,
+    // padding: 10,
   },
   card: {
     backgroundColor: "#fff",
@@ -130,6 +139,27 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     elevation: 3,
+    margin:10
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: "bold",
+    color: "#fff",
+    marginLeft: 8,
+  },
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 15,
+    paddingLeft: 25,
+    backgroundColor: "#e91e62",
+    paddingVertical: 15,
+  },
+
+  center: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
   },
   imageContainer: {
     marginRight: 12,
@@ -194,9 +224,5 @@ const styles = StyleSheet.create({
     fontSize: 16,
     textAlign: "center",
   },
-  center: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
+ 
 });

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -7,12 +7,10 @@ import {
   TouchableOpacity,
   ScrollView,
   ActivityIndicator,
-  Alert,
   KeyboardAvoidingView,
   Platform,
   ToastAndroid,
 } from "react-native";
-import { useForm, Controller } from "react-hook-form";
 import { useNavigation } from "@react-navigation/native";
 import {
   useCreateProductMutation,
@@ -23,129 +21,138 @@ const AddProductScreen = () => {
   const navigation = useNavigation<any>();
   const [createProduct, { isLoading }] = useCreateProductMutation();
 
-  const { control, handleSubmit, reset } = useForm<CreateProductPayload>({
-    defaultValues: {
-      product_name: "",
-      brand: "",
-      category: "",
-      price: 0,
-      quantity: 0,
-      description: "",
-      mrp: 0,
-      ptr: 0,
-      pts: 0,
-      packSize: "",
-      composition: "",
-      isActive: true,
-    },
+  const [form, setForm] = useState<CreateProductPayload>({
+    product_name: "",
+    brand: "",
+    category: "",
+    price: 0,
+    quantity: 0,
+    description: "",
+    mrp: 0,
+    ptr: 0,
+    pts: 0,
+    packSize: "",
+    composition: "",
+    isActive: true,
   });
 
-  const onSubmit = async (data: CreateProductPayload) => {
+  const handleChange = (key: keyof CreateProductPayload, value: any) => {
+    setForm((prev) => ({
+      ...prev,
+      [key]: value,
+    }));
+  };
+
+  const onSubmit = async () => {
+    console.log("📤 Attempting to create product...");
+    console.log("DATA:", form);
+
+    if (!form.product_name.trim()) {
+      ToastAndroid.show("Product Name is required", ToastAndroid.SHORT);
+      return;
+    }
+
     try {
-      await createProduct(data).unwrap();
+      await createProduct(form).unwrap();
+
       ToastAndroid.show("Product created successfully", ToastAndroid.SHORT);
-      reset();
+
+      setForm({
+        product_name: "",
+        brand: "",
+        category: "",
+        price: 0,
+        quantity: 0,
+        description: "",
+        mrp: 0,
+        ptr: 0,
+        pts: 0,
+        packSize: "",
+        composition: "",
+        isActive: true,
+      });
+
       navigation.goBack();
     } catch (error) {
-      console.error("Create Product Error:", error);
+      console.log("❌ Create Product Error:", error);
       ToastAndroid.show("Failed to create product", ToastAndroid.SHORT);
     }
   };
 
-  if (isLoading) {
-    return (
-      <View style={styles.container}>
-        <Text>Loading...</Text>
-      </View>
-    );
-  }
-
   const renderInput = (
     label: string,
-    name: any,
-    control: any,
+    key: keyof CreateProductPayload,
     multiline = false,
   ) => (
     <View style={styles.inputContainer}>
       <Text style={styles.label}>{label}</Text>
-      <Controller
-        control={control}
-        name={name}
-        rules={{ required: true }}
-        render={({ field: { onChange, value } }) => (
-          <TextInput
-            style={[styles.input, multiline && { height: 80 }]}
-            placeholder={label}
-            value={value}
-            onChangeText={onChange}
-            multiline={multiline}
-          />
-        )}
+      <TextInput
+        style={[styles.input, multiline && { height: 80 }]}
+        placeholder={label}
+        value={String(form[key] ?? "")}
+        onChangeText={(text) => handleChange(key, text)}
+        multiline={multiline}
       />
     </View>
   );
 
-  const renderNumberInput = (label: string, name: any, control: any) => (
+  const renderNumberInput = (
+    label: string,
+    key: keyof CreateProductPayload,
+  ) => (
     <View style={styles.inputContainer}>
       <Text style={styles.label}>{label}</Text>
-      <Controller
-        control={control}
-        name={name}
-        rules={{ required: true }}
-        render={({ field: { onChange, value } }) => (
-          <TextInput
-            style={styles.input}
-            placeholder={label}
-            keyboardType="numeric"
-            value={String(value)}
-            onChangeText={(text) => onChange(Number(text))}
-          />
-        )}
+      <TextInput
+        style={styles.input}
+        placeholder={label}
+        keyboardType="numeric"
+        value={String(form[key] ?? "")}
+        onChangeText={(text) => handleChange(key, Number(text))}
       />
     </View>
   );
 
-return (
-  <KeyboardAvoidingView
-    style={{ flex: 1 }}
-    behavior={Platform.OS === "ios" ? "padding" : "height"}
-  >
-    <View style={styles.container}>
-      <ScrollView
-        contentContainerStyle={{ paddingBottom: 120 }}
-        keyboardShouldPersistTaps="handled"
-        showsVerticalScrollIndicator={false}
-      >
-        <Text style={styles.title}>Add New Product</Text>
+  return (
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+    >
+      <View style={styles.container}>
+        <ScrollView
+          contentContainerStyle={{ paddingBottom: 120 }}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
+          <Text style={styles.title}>Add New Product</Text>
 
-        {renderInput("Product Name", "product_name", control)}
-        {renderInput("Brand", "brand", control)}
-        {renderInput("Category", "category", control)}
-        {renderInput("Pack Size", "packSize", control)}
-        {renderInput("Composition", "composition", control)}
-        {renderInput("Description", "description", control, true)}
+          {renderInput("Product Name *", "product_name")}
+          {renderInput("Brand", "brand")}
+          {renderInput("Category", "category")}
+          {renderInput("Pack Size", "packSize")}
+          {renderInput("Composition", "composition")}
+          {renderInput("Description", "description", true)}
 
-        {renderNumberInput("MRP", "mrp", control)}
-        {renderNumberInput("PTR", "ptr", control)}
-        {renderNumberInput("PTS", "pts", control)}
-        {renderNumberInput("Selling Price", "price", control)}
-        {renderNumberInput("Quantity", "quantity", control)}
-      </ScrollView>
+          {renderNumberInput("MRP", "mrp")}
+          {renderNumberInput("PTR", "ptr")}
+          {renderNumberInput("PTS", "pts")}
+          {renderNumberInput("Selling Price", "price")}
+          {renderNumberInput("Quantity", "quantity")}
+        </ScrollView>
 
-      <TouchableOpacity
-        style={styles.button}
-        onPress={handleSubmit(onSubmit)}
-        disabled={isLoading}
-      >
-        {isLoading ? (
-          <ActivityIndicator color="#fff" />
-        ) : (
-          <Text style={styles.buttonText}>Create Product</Text>
-        )}
-      </TouchableOpacity>
-    </View>
-  </KeyboardAvoidingView>
-);
+        <TouchableOpacity
+          style={styles.button}
+          onPress={onSubmit}
+          disabled={isLoading}
+        >
+          {isLoading ? (
+            <ActivityIndicator color="#fff" />
+          ) : (
+            <Text style={styles.buttonText}>Create Product</Text>
+          )}
+        </TouchableOpacity>
+      </View>
+    </KeyboardAvoidingView>
+  );
 };
 
 export default AddProductScreen;
@@ -157,7 +164,7 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   title: {
-    fontSize: 20,
+    fontSize: 22,
     fontWeight: "bold",
     marginBottom: 20,
   },
@@ -185,7 +192,6 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     borderRadius: 12,
     alignItems: "center",
-    marginBottom:20
   },
   buttonText: {
     color: "#fff",
