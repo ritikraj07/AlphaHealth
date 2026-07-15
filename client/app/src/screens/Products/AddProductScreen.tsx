@@ -44,8 +44,8 @@ const AddProductScreen = () => {
   };
 
   const onSubmit = async () => {
-    console.log("📤 Attempting to create product...");
-    console.log("DATA:", form);
+    // console.log("📤 Attempting to create product...");
+    // console.log("DATA:", form);
 
     if (!form.product_name.trim()) {
       ToastAndroid.show("Product Name is required", ToastAndroid.SHORT);

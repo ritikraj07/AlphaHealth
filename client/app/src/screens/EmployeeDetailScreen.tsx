@@ -5,6 +5,7 @@ import {
   StyleSheet,
   TouchableOpacity,
   ScrollView,
+  ActivityIndicator,
 } from "react-native";
 import EditEmployeeModal from "./Modals/EditEmployeeModal";
 import { useGetMyDetailQuery } from "../shared/store/api/employeeApi";
@@ -13,17 +14,30 @@ import { useGetMyDetailQuery } from "../shared/store/api/employeeApi";
 export default function EmployeeDetailScreen({ route }: {route: any}) {
   const { employee, id } = route.params;
   const [editVisible, setEditVisible] = useState(false);
-  const {data: employeeDetail} = useGetMyDetailQuery({ id: employee?._id || id});
+  const {data: employeeDetail, isLoading: employeeDetailLoading, isError: employeeDetailError} = useGetMyDetailQuery({ id: employee?._id || id});
 
   const employeeData = employeeDetail?.data || employee;
   
 
+  
+  if (employeeDetailError) {
+    return (
+      <Text style={{}}>Error fetching employee details</Text>
+    );
+  }
+  
+  if (employeeDetailLoading) {
+    return (
+      <ActivityIndicator style={{flex:1, justifyContent:"center", alignItems:"center"}} size="large" color="#e91e62" />
+      
+    );
+  }
+  // console.log(employeeData);
   const totalLeaves =
-    employeeData.leavesTaken.sick +
-    employeeData.leavesTaken.casual +
-    employeeData.leavesTaken.earned +
-    employeeData.leavesTaken.public;
-
+    employeeData?.leavesTaken.sick +
+    employeeData?.leavesTaken.casual +
+    employeeData?.leavesTaken.earned +
+    employeeData?.leavesTaken.public;
 
   return (
     <ScrollView style={styles.container}>
@@ -50,13 +64,13 @@ export default function EmployeeDetailScreen({ route }: {route: any}) {
       <View style={styles.card}>
         <Text style={styles.cardTitle}>Organizational Info</Text>
         <Text style={styles.label}>Headquarter:</Text>
-        <Text style={styles.value}>{employee?.hq?.name}</Text>
+        <Text style={styles.value}>{employeeData?.hq?.name}</Text>
 
         <Text style={styles.label}>Manager:</Text>
         <Text style={styles.value}>
           {/* {employee.manager?.name} */}
-          {employee?.managerModel === "Admin"
-            ? "Admin"
+          {employeeData?.managerModel === "Admin"
+            ? "Admin" 
             : employeeData.manager?.name}
         </Text>
       </View>

@@ -35,6 +35,8 @@ const authSlice = createSlice({
       state.userId = "";
       state.token = "";
       state.isAuthenticated = false;
+      state.role = "";
+      state.name = "";
     },
     
   

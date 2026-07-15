@@ -66,10 +66,10 @@ export default function DocCheManagement() {
   const { total = 0, doctors = 0, chemists = 0 } = docChemData?.extra ?? {};
   const list = docChemData?.data || [];
 
-  console.log(
-    "\n\n 🚀 ~ file: DocCheManagement.tsx:40 ~ DocCheManagement ~ docChemData \n \n",
-    // docChemData,
-  );
+  // console.log(
+  //   "\n\n 🚀 ~ file: DocCheManagement.tsx:40 ~ DocCheManagement ~ docChemData \n \n",
+  //   // docChemData,
+  // );
 
   return (
     <View style={{ flex: 1 }}>
@@ -184,7 +184,7 @@ const VisitButton = () => {
       <TouchableOpacity
         style={[AnimatedBtms.button, { backgroundColor: "#f74e81" }]}
         onPress={() => {
-          navigation.navigate("CreateVisitScreen");
+          navigation.navigate( "CreateVisitScreen" );
         }}
       >
         <FontAwesome5 name="walking" size={24} color="white" />

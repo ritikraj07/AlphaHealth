@@ -18,7 +18,7 @@ export interface Employee {
     _id: string;
     name: string;
   };
-  manager: string;
+  manager: any;
   leavesTaken: leavesTaken;
   managerModel?: string;
   phone: number;

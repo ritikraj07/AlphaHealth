@@ -89,6 +89,7 @@ const AppliedLeavesScreen: React.FC = () => {
   
   const [updateLeaveStatus, { isLoading: isUpdatingLeaveStatus }] = useUpdateLeaveStatusMutation();
 
+    // console.log(data);
 
   const resetAndRefetch = () => {
     setPage(1);
@@ -189,7 +190,7 @@ const AppliedLeavesScreen: React.FC = () => {
       }
     };
 
-    console.log(item);
+    // console.log(item);
 
     
 
@@ -234,6 +235,7 @@ const AppliedLeavesScreen: React.FC = () => {
               <TouchableOpacity
                 style={styles.rejectBtn}
                 onPress={() => onReject(item._id)}
+                disabled={isUpdatingLeaveStatus}
               >
                 <Text style={styles.rejectText}>Reject</Text>
               </TouchableOpacity>
@@ -241,6 +243,7 @@ const AppliedLeavesScreen: React.FC = () => {
               <TouchableOpacity
                 style={styles.approveBtn}
                 onPress={() => onApprove(item._id)}
+                disabled={isUpdatingLeaveStatus}
               >
                 <Text style={styles.approveText}>Approve</Text>
               </TouchableOpacity>
@@ -314,7 +317,9 @@ const AppliedLeavesScreen: React.FC = () => {
           ListFooterComponent={
             isFetching ? <ActivityIndicator color={PRIMARY} /> : null
           }
-          onEndReached={loadMore}
+            onEndReached={loadMore}
+            onEndReachedThreshold={0.3}
+            
         />
       )}
     </View>

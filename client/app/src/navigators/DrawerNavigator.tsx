@@ -3,6 +3,8 @@ import { createDrawerNavigator } from "@react-navigation/drawer";
 import EmployeeDrawer from "../shared/componets/EmployeeDrawer";
 import BottomTabs from "./BottomTab";
 import { Dimensions } from "react-native";
+import { useAppSelector } from "../shared/store/hooks";
+import AdminDrawer from "../shared/componets/AdminDrawer";
 
 export type DrawerParamList = {
   Home: undefined;
@@ -12,7 +14,8 @@ export type DrawerParamList = {
 const Drawer = createDrawerNavigator();
 
 export default function DrawerNavigator() {
-    const screenWidth = Dimensions.get("window").width;
+  const screenWidth = Dimensions.get("window").width;
+  const { role } = useAppSelector((state) => state.auth);
 
   return (
     <Drawer.Navigator
@@ -25,7 +28,7 @@ export default function DrawerNavigator() {
           backgroundColor: "#fff",
         },
       }}
-      drawerContent={(props) => <EmployeeDrawer {...props} />}
+      drawerContent={(props) =>{ return role === "admin" ? <AdminDrawer {...props} />  : <EmployeeDrawer {...props} />}}
     >
       <Drawer.Screen name="Home" component={BottomTabs} />
     </Drawer.Navigator>

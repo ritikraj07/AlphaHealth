@@ -8,7 +8,7 @@ export const performLogout = async (
   navigation: any
 ) => {
   // 1. Clear persisted data
-  await AsyncStorage.multiRemove(["token", "role", "userId"]);
+  await AsyncStorage.multiRemove(["token", "role", "userId", "name"]);
 
   // 2. Clear Redux auth state
   dispatch(clearCredentials());

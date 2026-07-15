@@ -30,6 +30,8 @@ export const authApi = apiSlice.injectEndpoints({
           if (data.success) {
             await AsyncStorage.setItem('userToken', data?.data?.token);
             await AsyncStorage.setItem('userRole', data.data?.role);
+            await AsyncStorage.setItem('userId', data.data?._id);
+            await AsyncStorage.setItem('name', data.data?.name);
           }
         } catch (error) {
           console.log('❌ Admin Login Error:', error);
@@ -59,6 +61,10 @@ export const authApi = apiSlice.injectEndpoints({
           if (data.success) {
             // ! persist token can to store in local storage here
             console.log('✅ Employee Login Success:', data);
+            await AsyncStorage.setItem('userToken', data?.data?.token);
+            await AsyncStorage.setItem('userRole', data.data?.role);
+            await AsyncStorage.setItem('userId', data.data?._id);
+            await AsyncStorage.setItem('name', data.data?.name);
           }
         } catch (error) {
           console.log('❌ Employee Login Error:', error);

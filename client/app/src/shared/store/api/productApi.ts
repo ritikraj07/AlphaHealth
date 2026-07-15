@@ -15,8 +15,8 @@ export interface IProduct {
   packSize?: string;
   composition?: string;
   isActive: boolean;
-  createdBy: string;
-  createdAt: string;
+  createdBy?: string;
+  createdAt?: string;
   updatedAt: string;
 
   // virtuals (optional)

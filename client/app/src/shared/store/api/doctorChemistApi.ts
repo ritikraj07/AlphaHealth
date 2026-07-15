@@ -2,7 +2,7 @@ import { apiSlice } from "./apiSlice";
 
 export interface CreateDoctorChemistRequest {
   name: string;
-  email: string;
+  email?: string;
   type: "doctor" | "chemist";
   specialization?: string;
   location?: string;
@@ -12,12 +12,13 @@ export interface CreateDoctorChemistRequest {
     role: string;
     model: string;
   };
+  phoneNo?: string;
 }
 
 export interface DoctorChemist {
   _id: string;
   name: string;
-  email: string;
+  email?: string;
   type: string;
   specialization?: string;
   location?: string;
@@ -37,6 +38,7 @@ export interface DoctorChemist {
     role: string;
     model: string;
   };
+  phone?: string;
 }
 
 export interface ApiResponse<T> {

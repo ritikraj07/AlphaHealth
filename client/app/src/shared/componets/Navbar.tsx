@@ -18,16 +18,14 @@ export default function Navbar() {
   const navigation = useNavigation();
   const dispatch = useDispatch();
   const { name, role } = useAppSelector((state) => state.auth);
+  console.log("🚀 ~ file: Navbar.tsx:27 ~ Navbar ~ role:", role, " ", name);
   
 
   const handleBtm = async () => {
-    if (role === "admin") {
-      await performLogout(dispatch, navigation);
-      return;
-    } else {
+  
       return navigation.dispatch(DrawerActions.openDrawer());
       
-    }
+    
   };
 
   return (
@@ -54,17 +52,14 @@ export default function Navbar() {
 
       {/* Right side - Logout button with icon */}
       <TouchableOpacity style={styles.logoutButton} onPress={handleBtm}>
-        {role === "admin" && (
-          <Ionicons name="log-out-outline" size={20} color="black" />
-        )}
-        {role !== "admin" && (
-          // <Ionicons name="settings-outline" size={24} color="black" />
+    
+          
           <MaterialCommunityIcons
             name="dots-vertical"
             size={24}
             color="black"
           />
-        )}
+        
       </TouchableOpacity>
     </View>
   );

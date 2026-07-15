@@ -5,7 +5,7 @@ import {
   FontAwesome,
   Ionicons,
 } from "@expo/vector-icons";
-import { ScrollView, StyleSheet, Text, View } from "react-native";
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 import { useNavigation } from "@react-navigation/native";
 import { RefreshControl } from "react-native-gesture-handler";
@@ -16,9 +16,11 @@ import { useAppSelector } from "../../shared/store/hooks";
 import { handleApiError } from "../../shared/utils/apiErrorHandler";
 import { performLogout } from "../../shared/utils/logout";
 import EmployeeDashboardSkeleton from "../../shared/componets/skeletons/EmployeeDashboardSkeleton";
+import { useGetEmployeeDashboardQuery } from "../../shared/store/api/analyticsApi";
+import { NavProp } from "../../navigators";
 
 export default function EmployeeDashboard() {
-  const navigation = useNavigation();
+  const navigation = useNavigation<NavProp>();
   const dispatch = useDispatch();
   const year = new Date().getFullYear();
   const auth = useAppSelector((state) => state.auth);
@@ -29,13 +31,37 @@ export default function EmployeeDashboard() {
     });
   const name = data?.data?.name;
   const headQuater = data?.data?.hq?.name;
-// console.log(data)
+  const {
+    data: dashboardData,
+    isLoading: dashboardLoading,
+    isFetching: dashboardFetching,
+    refetch: dashboardRefetch
+  } = useGetEmployeeDashboardQuery();
   
 
-  if (isLoading) {
-    return (
-      <EmployeeDashboardSkeleton />
-    );
+  const performace = dashboardData?.performance;
+
+  const callPerformance = dashboardData?.callPerformance;
+  const doctorCoverageAnalysis = dashboardData?.doctorCoverageAnalysis;
+  const sales = dashboardData?.sales;
+  const activityBreakdown = dashboardData?.activityBreakdown;
+  const topDoctors = dashboardData?.topDoctors;
+  const todayStatus = dashboardData?.todayStatus;
+
+  console.log("🚀 ~ file: EmployeeDashboard.tsx ~ line 51 ~ EmployeeDashboard ~ todayStatus", todayStatus)
+
+  const totalVisits = activityBreakdown?.totalVisits ?? 0;
+
+  const doctorPercent =
+    totalVisits > 0 ? (activityBreakdown?.doctorVisits / totalVisits) * 100 : 0;
+
+  const chemistPercent =
+    totalVisits > 0
+      ? (activityBreakdown?.chemistVisits / totalVisits) * 100
+      : 0;
+
+  if (isLoading || dashboardLoading) {
+    return <EmployeeDashboardSkeleton />;
   }
 
   if (isError) {
@@ -85,51 +111,57 @@ export default function EmployeeDashboard() {
           </View>
         </View>
 
-
         {/* Report section */}
 
+        <View style={styles.gridContainer}>
+          {/* Days Worked */}
+          <View style={styles.leaveCard}>
+            <View style={styles.header}>
+              <Text style={styles.leaveName}>Days Worked</Text>
+              <Feather name="calendar" size={24} color="grey" />
+            </View>
+            <Text style={styles.leaveCount}>{performace?.daysWorked ?? 0}</Text>
+            <Text style={styles.leaveDescription}>
+              {performace?.workingPercent ?? 0}% of working days
+            </Text>
+          </View>
 
-          <View style={styles.gridContainer}>
-                {/* Days Worked */}
-                <View style={styles.leaveCard}>
-                  <View style={styles.header}>
-                    <Text style={styles.leaveName}>Days Worked</Text>
-                    <Feather name="calendar" size={24} color="grey" />
-                  </View>
-                  <Text style={styles.leaveCount}>0</Text>
-                  <Text style={styles.leaveDescription}>0% of working days</Text>
-                </View>
-        
-                {/* Calls Completed */}
-                <View style={styles.leaveCard}>
-                  <View style={styles.header}>
-                    <Text style={styles.leaveName}>Calls Completed</Text>
-                    <Feather name="users" size={24} color="lightblue" />
-                  </View>
-                  <Text style={styles.leaveCount}>0</Text>
-                  <Text style={styles.leaveDescription}>Avg: 0.0 per day</Text>
-                </View>
-        
-                {/* Earned Leave */}
-                <View style={styles.leaveCard}>
-                  <View style={styles.header}>
-                    <Text style={styles.leaveName}>POB Value</Text>
-                    <Feather name="dollar-sign" size={24} color="green" />
-                  </View>
-                  <Text style={styles.leaveCount}>₹ 0</Text>
-                  <Text style={styles.leaveDescription}>0 orders</Text>
-                </View>
-        
-                {/* Coverage */}
-                <View style={styles.leaveCard}>
-                  <View style={styles.header}>
-                    <Text style={styles.leaveName}>Coverage</Text>
-                    <Ionicons name="filter-circle-outline" size={24} color="blue" />
-                  </View>
-                  <Text style={styles.leaveCount}>0%</Text>
-                  <Text style={styles.leaveDescription}>Doctor coverage rate</Text>
-                </View>
-              </View>
+          {/* Calls Completed */}
+          <View style={styles.leaveCard}>
+            <View style={styles.header}>
+              <Text style={styles.leaveName}>Calls Completed</Text>
+              <Feather name="users" size={24} color="lightblue" />
+            </View>
+            <Text style={styles.leaveCount}>
+              {performace?.callsCompleted ?? 0}
+            </Text>
+            <Text style={styles.leaveDescription}>
+              Avg: {performace?.avgCallsPerDay ?? 0} per day
+            </Text>
+          </View>
+
+          {/* POB */}
+          <View style={styles.leaveCard}>
+            <View style={styles.header}>
+              <Text style={styles.leaveName}>POB Value</Text>
+              <Feather name="dollar-sign" size={24} color="green" />
+            </View>
+            <Text style={styles.leaveCount}>₹ {performace?.pobValue ?? 0}</Text>
+            <Text style={styles.leaveDescription}>
+              {sales?.orders ?? 0} orders
+            </Text>
+          </View>
+
+          {/* Coverage */}
+          <View style={styles.leaveCard}>
+            <View style={styles.header}>
+              <Text style={styles.leaveName}>Coverage</Text>
+              <Ionicons name="filter-circle-outline" size={24} color="blue" />
+            </View>
+            <Text style={styles.leaveCount}>{performace?.coverage ?? 0}%</Text>
+            <Text style={styles.leaveDescription}>Doctor coverage rate</Text>
+          </View>
+        </View>
 
         {/* Call Performance */}
         <View style={styles.card}>
@@ -144,27 +176,50 @@ export default function EmployeeDashboard() {
           {/* Coverage Rate */}
           <View style={styles.metricRow}>
             <Text style={styles.metricLabel}>Coverage Rate</Text>
-            <Text style={styles.metricValue}>0%</Text>
+            <Text style={styles.metricValue}>
+              {callPerformance?.coverageRate ?? 0}%
+            </Text>
           </View>
-          <Text style={styles.metricNumber}>0</Text>
-          <Text style={styles.metricDescription}>of 100 target doctors</Text>
+
+          <Text style={styles.metricNumber}>
+            {callPerformance?.completedCalls ?? 0}
+          </Text>
+          <Text style={styles.metricDescription}>
+            of {callPerformance?.plannedCalls ?? 0} planned doctors
+          </Text>
 
           {/* Progress Bar */}
           <View style={styles.progressBar}>
-            <View style={[styles.progressFill, { width: "0%" }]} />
+            <View
+              style={[
+                styles.progressFill,
+                { width: `${callPerformance?.coverageRate ?? 0}% ` },
+              ]}
+            />
           </View>
 
           {/* Call Execution */}
           <View style={[styles.metricRow, styles.metricSpacing]}>
             <Text style={styles.metricLabel}>Call Execution</Text>
-            <Text style={styles.metricValue}>0%</Text>
+            <Text style={styles.metricValue}>
+              {callPerformance?.executionRate ?? 0}%
+            </Text>
           </View>
-          <Text style={styles.metricNumber}>0</Text>
-          <Text style={styles.metricDescription}>of 0 planned calls</Text>
+          <Text style={styles.metricNumber}>
+            {callPerformance?.completedCalls ?? 0}
+          </Text>
+          <Text style={styles.metricDescription}>
+            of {callPerformance?.plannedCalls ?? 0} planned calls
+          </Text>
 
           {/* Progress Bar */}
           <View style={styles.progressBar}>
-            <View style={[styles.progressFill, { width: "0%" }]} />
+            <View
+              style={[
+                styles.progressFill,
+                { width: `${callPerformance?.executionRate ?? 0}%` },
+              ]}
+            />
           </View>
 
           {/* High-Potential Frequency */}
@@ -172,72 +227,76 @@ export default function EmployeeDashboard() {
             <Text style={styles.metricLabel}>High-Potential Frequency</Text>
             <Entypo name="star-outlined" size={20} color="black" />
           </View>
-          <Text style={styles.metricNumber}>0.0</Text>
+          <Text style={styles.metricNumber}>
+            {callPerformance?.highPotentialFrequency ?? 0}
+          </Text>
           <Text style={styles.metricDescription}>
             avg visits per high-potential doctor
           </Text>
+
           <Text style={[styles.metricDescription, styles.successText]}>
-            0 total visits to 1 doctors
+            {callPerformance?.completedCalls ?? 0} total visits
           </Text>
         </View>
 
+        {/* Doctor Coverage Analysis card */}
 
-        
-          {/* Doctor Coverage Analysis card */}
-        
-              <View style={[styles.leaveCard, { width: "100%" }]}>
-                <View style={[styles.cardHeader]}>
-                  <Ionicons name="filter-circle-outline" size={24} color="black" />
-                  <Text style={[styles.title, { fontSize: 20 }]}>
-                    Doctor Coverage Analysis
-                  </Text>
-                </View>
-                <Text style={styles.subtitle}>
-                  Coverage vs target frequency for each doctor
-                </Text>
-        
+        <View style={[styles.leaveCard, { width: "100%" }]}>
+          <View style={[styles.cardHeader]}>
+            <Ionicons name="filter-circle-outline" size={24} color="black" />
+            <Text style={[styles.title, { fontSize: 20 }]}>
+              Doctor Coverage Analysis
+            </Text>
+          </View>
+          <Text style={styles.subtitle}>
+            Coverage vs target frequency for each doctor
+          </Text>
+
+          {doctorCoverageAnalysis?.map((doc, index) => {
+            const percent = Math.min(
+              (doc.actualVisits / doc.targetFrequency) * 100,
+              100,
+            );
+
+            return (
+              <View key={index} style={{ marginBottom: 20 }}>
                 <View
                   style={{
                     flexDirection: "row",
                     justifyContent: "space-between",
-                    alignItems: "center",
                   }}
                 >
-                  <View
-                    style={{
-                      flexDirection: "row",
-                      justifyContent: "flex-start",
-                      alignItems: "center",
-                    }}
-                  >
-                    <Text style={{ fontWeight: "700", marginRight: 10 }}>
-                      Dr. Smith
-                    </Text>
-                    <Text
-                      style={{
-                        backgroundColor: "deepskyblue",
-                        paddingHorizontal: 2,
-                        color: "white",
-                        borderRadius: 5,
-                      }}
-                    >
-                      high
-                    </Text>
-                  </View>
-                  <Text>0/4 calls</Text>
+                  <Text style={{ fontWeight: "700" }}>{doc.doctorName}</Text>
+
+                  <Text>
+                    {doc.actualVisits}/{doc.targetFrequency} calls
+                  </Text>
                 </View>
-        
+
                 <View
                   style={{
                     width: "100%",
                     height: 5,
-                    backgroundColor: "pink",
+                    backgroundColor: "#eee",
                     marginVertical: 10,
                     borderRadius: 5,
                   }}
-                ></View>
-                <Text>0% coverage</Text>
+                >
+                  <View
+                    style={{
+                      width: `${percent}%`,
+                      height: 5,
+                      backgroundColor: "deepskyblue",
+                      borderRadius: 5,
+                    }}
+                  />
+                </View>
+
+                <Text>{percent.toFixed(0)}% coverage</Text>
               </View>
+            );
+          })}
+        </View>
 
         {/* Sales and POBs Section */}
         <View style={styles.card}>
@@ -252,13 +311,17 @@ export default function EmployeeDashboard() {
           <View style={styles.statsContainer}>
             <View style={styles.statItem}>
               <Text style={styles.statLabel}>Total POB Value</Text>
-              <Text style={styles.statValue}>₹0</Text>
-              <Text style={styles.statDescription}>0 orders</Text>
+              <Text style={styles.statValue}>₹{sales?.pobValue ?? 0}</Text>
+              <Text style={styles.statDescription}>
+                {sales?.orders ?? 0} orders
+              </Text>
             </View>
 
             <View style={styles.statItem}>
               <Text style={styles.statLabel}>Conversion Rate</Text>
-              <Text style={styles.statValue}>0%</Text>
+              <Text style={styles.statValue}>
+                {sales?.conversionRate ?? 0}%
+              </Text>
               <Text style={styles.statDescription}>calls to POB ratio</Text>
             </View>
           </View>
@@ -281,14 +344,16 @@ export default function EmployeeDashboard() {
                   <View style={[styles.colorDot, styles.yellowDot]} />
                   <Text style={styles.activityText}>Doctor Visits</Text>
                 </View>
-                <Text style={styles.activityPercent}>0%</Text>
+                <Text style={styles.activityPercent}>
+                  {doctorPercent.toFixed(0)}%
+                </Text>
               </View>
               <View style={styles.progressBar}>
                 <View
                   style={[
                     styles.progressFill,
                     styles.yellowFill,
-                    { width: "0%" },
+                    { width: `${doctorPercent}%` },
                   ]}
                 />
               </View>
@@ -300,21 +365,21 @@ export default function EmployeeDashboard() {
                   <View style={[styles.colorDot, styles.blueDot]} />
                   <Text style={styles.activityText}>Chemist Visits</Text>
                 </View>
-                <Text style={styles.activityPercent}>0%</Text>
+                <Text style={styles.activityPercent}>
+                  {chemistPercent.toFixed(0)}%
+                </Text>
               </View>
               <View style={styles.progressBar}>
-                <View
-                  style={[
-                    styles.progressFill,
-                    styles.blueFill,
-                    { width: "0%" },
-                  ]}
-                />
+                <Text style={styles.activityPercent}>
+                  {chemistPercent.toFixed(0)}%
+                </Text>
               </View>
             </View>
           </View>
 
-          <Text style={styles.totalVisits}>Total: 0 visits this month</Text>
+          <Text style={styles.totalVisits}>
+            Total: {activityBreakdown?.totalVisits ?? 0} visits this month
+          </Text>
         </View>
 
         {/* Most Frequently Visited Doctors */}
@@ -329,17 +394,33 @@ export default function EmployeeDashboard() {
             Your top doctor relationships this month
           </Text>
 
-          <View style={styles.emptyState}>
-            <Feather
-              name="users"
-              size={64}
-              color="lightgray"
-              style={styles.emptyIcon}
-            />
-            <Text style={styles.emptyText}>
-              No doctor visits recorded yet this month
-            </Text>
-          </View>
+          {topDoctors?.length ? (
+            topDoctors.map((doc) => (
+              <View
+                key={doc._id}
+                style={{
+                  flexDirection: "row",
+                  justifyContent: "space-between",
+                  marginBottom: 10,
+                }}
+              >
+                <Text>{doc.name}</Text>
+                <Text>{doc.visits} visits</Text>
+              </View>
+            ))
+          ) : (
+            <View style={styles.emptyState}>
+              <Feather
+                name="users"
+                size={64}
+                color="lightgray"
+                style={styles.emptyIcon}
+              />
+              <Text style={styles.emptyText}>
+                No doctor visits recorded yet this month
+              </Text>
+            </View>
+          )}
         </View>
 
         {/* Today's Status */}
@@ -357,13 +438,19 @@ export default function EmployeeDashboard() {
               <Text style={styles.statusLabel}>Attendance Status</Text>
               <View style={styles.statusValue}>
                 <View style={styles.statusDot} />
-                <Text style={styles.statusText}>Not Started</Text>
+                <Text style={styles.statusText}>
+                  {todayStatus?.attendance ? "Started" : "Not Started"}
+                </Text>
               </View>
             </View>
 
             <View style={styles.statusItem}>
               <Text style={styles.statusLabel}>Plan Status</Text>
-              <Text style={styles.planText}>Plan not shared yet</Text>
+              <Text style={styles.planText}>
+                {todayStatus?.plansToday > 0
+                  ? `${todayStatus.plansToday} plans today`
+                  : "Plan not shared yet"}
+              </Text>
             </View>
           </View>
         </View>
@@ -375,27 +462,36 @@ export default function EmployeeDashboard() {
 
           <View style={styles.actionsContainer}>
             <View style={styles.actionsRow}>
-              <View style={styles.actionButton}>
+              <TouchableOpacity
+                onPress={() => navigation.navigate("Attendance")}
+                style={styles.actionButton}
+              >
                 <AntDesign name="clock-circle" size={24} color="deeppink" />
                 <Text style={styles.actionText}>Attendance</Text>
-              </View>
+              </TouchableOpacity>
 
-              <View style={styles.actionButton}>
+              <TouchableOpacity
+                onPress={() => navigation.navigate("DoctorChemistListScreen")}
+                style={styles.actionButton}
+              >
                 <Feather name="users" size={24} color="deeppink" />
                 <Text style={styles.actionText}>Doctors</Text>
-              </View>
+              </TouchableOpacity>
             </View>
 
             <View style={styles.actionsRow}>
-              <View style={styles.actionButton}>
+              <TouchableOpacity
+                onPress={() => navigation.navigate("CreatePOBScreen")}
+                style={styles.actionButton}
+              >
                 <Feather name="shopping-cart" size={24} color="deeppink" />
                 <Text style={styles.actionText}>Create POB</Text>
-              </View>
+              </TouchableOpacity>
 
-              <View style={styles.actionButton}>
+              {/* <TouchableOpacity style={styles.actionButton}>
                 <Ionicons name="stats-chart-sharp" size={24} color="deeppink" />
                 <Text style={styles.actionText}>Reports</Text>
-              </View>
+              </TouchableOpacity> */}
             </View>
           </View>
         </View>

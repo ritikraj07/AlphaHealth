@@ -33,6 +33,10 @@ interface DoctorChemistData {
   specialization: string;
   location: string;
   hq: string;
+  email?: string;
+  phoneNo?: string;
+  frequencyOfVisit?: string;
+  potential?: string;
 }
 
 interface Headquarter {
@@ -130,21 +134,18 @@ export default function AddDoctorChemistModal({
       newErrors.type = "Type is required";
     }
     
-    
-
-    
 
     if (!name.trim()) {
       newErrors.name = "Name is required";
     }
 
-    if (!email.trim()) {
-      newErrors.email = "Email is required";
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
-      newErrors.email = "Please enter a valid email";
-    }
+    // if (!email.trim()) {
+    //   newErrors.email = "Email is required";
+    // } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+    //   newErrors.email = "Please enter a valid email";
+    // }
 
-    console.log("142");
+    // console.log("142");
 
     if (!location.trim()) {
       newErrors.location = "Location is required";
@@ -161,15 +162,21 @@ export default function AddDoctorChemistModal({
       newErrors.specialization = "Specialization is required for doctors";
     }
 
-    console.log("159");
-    if (!phoneNo) {
-      newErrors.phoneNo = "Phone number is required";
+    
+    // if (!phoneNo) {
+    //   newErrors.phoneNo = "Phone number is required";
+    // }
+
+    
+
+    if (phoneNo.length > 1 && phoneNo.length != 10) {
+      newErrors.phoneNo = "Please enter a valid phone number";
     }
 
     if (!frequencyOfVisit) {
       newErrors.frequencyOfVisit = "Frequency of visit is required";
     }
-    console.log("167");
+    // console.log("167");
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -177,14 +184,13 @@ export default function AddDoctorChemistModal({
 
   // Handle form submission
   const handleSubmit = async () => {
-    console.log("Form submitted");
-    console.log("validateForm()", validateForm());
+    
     if (!validateForm()) {
       ToastAndroid.show("Please fill in all required fields", ToastAndroid.SHORT);
       return;
     }
 
-    console.log("form validated");
+    
 
 
     const CreatedBy = {
@@ -204,30 +210,38 @@ export default function AddDoctorChemistModal({
       location: location.trim(),
       hq,
       addedBy: CreatedBy,
-      email: email.trim(),
-      phone: phoneNo,
-      frequencyOfVisit: frequencyOfVisit,
+      frequency: frequencyOfVisit,
       approvedBy: role === "admin" ? ApprovedBy : {},
       potential,
+      ...(email.trim().length > 4 && {
+        email: email.trim(),
+      }),
+
+      ...(phoneNo.length === 10 && {
+        phone: phoneNo,
+      }),
     };
 
 
 
-    console.log("Form Data:", formData);
+
+    
 
     try {
       const response = await createDoctorChemist(formData).unwrap();
-      console.log("Response:", response);
+      // console.log("Response:", response);
 
       if (response.success) {
         ToastAndroid.show(response?.message, ToastAndroid.SHORT);
 
         handleClose();
       } else {
+        
         ToastAndroid.show(response?.message, ToastAndroid.SHORT);
       }
     } catch (error: any) {
       console.error("Error creating doctor/chemist:", error);
+      console.log(error.data);
       const msg =
         error?.data?.message || error?.data?.message || "Something went wrong";
       ToastAndroid.show(msg, ToastAndroid.SHORT);
@@ -243,6 +257,8 @@ export default function AddDoctorChemistModal({
     setHq("");
     setErrors({});
     setEmail("");
+    setPhoneNo("");
+    setFrequencyOfVisit("");
   };
 
   // Handle modal close
@@ -365,7 +381,7 @@ export default function AddDoctorChemistModal({
 
               <View style={styles.section}>
                 <Text style={styles.sectionTitle}>
-                  Email <Text style={styles.required}>*</Text>
+                  Email 
                 </Text>
                 <TextInput
                   style={[styles.textInput, errors.email && styles.inputError]}
@@ -386,7 +402,7 @@ export default function AddDoctorChemistModal({
 
               <View style={styles.section}>
                 <Text style={styles.sectionTitle}>
-                  Phone <Text style={styles.required}>*</Text>
+                  Phone
                 </Text>
                 <TextInput
                   style={[styles.textInput, errors.phone && styles.inputError]}
@@ -400,8 +416,8 @@ export default function AddDoctorChemistModal({
                   }}
                   keyboardType="phone-pad"
                 />
-                {errors.phone ? (
-                  <Text style={styles.errorText}>{errors.phone}</Text>
+                {errors.phoneNo ? (
+                  <Text style={styles.errorText}>{errors.phoneNo}</Text>
                 ) : null}
               </View>
 

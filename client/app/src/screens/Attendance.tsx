@@ -85,7 +85,7 @@ useEffect(() => {
 
   // -----------
 
-console.log("myTodaysAttendance", myTodaysAttendance?.data);
+// console.log("myTodaysAttendance", myTodaysAttendance?.data);
 
   // Set greeting based on time
   useEffect(() => {
@@ -207,7 +207,7 @@ console.log("myTodaysAttendance", myTodaysAttendance?.data);
 
       // Update states
       setLocation(locationData);
-      console.log('Location:', locationData);
+      // console.log('Location:', locationData);
 
       // !IMPORTANT: Coordinates should be [longitude, latitude], not [latitude, latitude]
 
@@ -215,7 +215,7 @@ console.log("myTodaysAttendance", myTodaysAttendance?.data);
       const detailedAddress = await getDetailedAddress(latitude, longitude);
       setAddress(detailedAddress);
 
-      console.log('Location fetched:', { latitude, longitude, address: detailedAddress });
+      // console.log('Location fetched:', { latitude, longitude, address: detailedAddress });
       return locationData;
 
     } catch (error) {

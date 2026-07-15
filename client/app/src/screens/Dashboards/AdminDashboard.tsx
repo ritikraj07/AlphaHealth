@@ -96,10 +96,14 @@ export default function AdminDashboard(): JSX.Element {
   const TotalChemists = data?.data?.doctors?.chemists ?? 0;
   const TotalHospitals = data?.data?.hospitals?.hospitals ?? 0;
   const HQ = data?.data?.hqDistribution;
-  const TodaysAttendace = data?.data?.attendace?.presentToday ?? 0;
+  const TodaysAttendace = data?.data?.attendance?.presentToday ?? 0;
   const PendingLeaves = data?.data?.leaves?.pending ?? 0;
   const ApprovedLeaves = data?.data?.leaves?.approved ?? 0;
   const RejectedLeaves = data?.data?.leaves?.rejected ?? 0;
+  
+
+  
+
   
 
   
@@ -140,7 +144,7 @@ export default function AdminDashboard(): JSX.Element {
            ],
          });
 
-         console.log(res);
+        //  console.log(res);
     } catch (error) {
        console.log("Error from pickExcle file ", error)
     }
@@ -303,7 +307,7 @@ export default function AdminDashboard(): JSX.Element {
                 <Text style={styles.actionButtonText}>System Reports</Text>
               </TouchableOpacity> */}
             </View>
-            <View style={styles.actionRow}>
+            {/* <View style={styles.actionRow}>
               <ActionButton
                 icon={<Feather name="users" size={24} color="#ffffffff" />}
                 label="Manage Doctors"
@@ -314,7 +318,7 @@ export default function AdminDashboard(): JSX.Element {
                 label="HQ Settings"
                 onPress={() => {}}
               />
-            </View>
+            </View> */}
 
             {/* Add Employee from Excel */}
             {/* <AddEmployeeFromExcelModal /> */}
@@ -324,12 +328,12 @@ export default function AdminDashboard(): JSX.Element {
 
             {/* Applied Leave */}
 
-            <TouchableOpacity
+            {/* <TouchableOpacity
               style={[
                 styles.actionBtn,
                 {
                   alignItems: "center",
-                  
+
                   flexDirection: "row",
                   gap: 10,
                 },
@@ -338,16 +342,16 @@ export default function AdminDashboard(): JSX.Element {
             >
               <Ionicons name="calendar-outline" size={24} color="#fff" />
               <Text style={styles.actionText}>{"Leave Application"}</Text>
-            </TouchableOpacity>
+            </TouchableOpacity> */}
 
             {/* DoctorChemistListScreen */}
 
-            <TouchableOpacity
+            {/* <TouchableOpacity
               style={[
                 styles.actionBtn,
                 {
                   alignItems: "center",
-                  
+
                   flexDirection: "row",
                   gap: 10,
                 },
@@ -355,11 +359,11 @@ export default function AdminDashboard(): JSX.Element {
               onPress={() => navigation.navigate("DoctorChemistListScreen")}
             >
               <FontAwesome6 name="user-doctor" size={24} color="#fff" />
-              <Text style={styles.actionText}>{"Doctor & Chemist List"}</Text>
-            </TouchableOpacity>
+              <Text style={styles.actionText}>{"Doctors"}</Text>
+            </TouchableOpacity> */}
 
             {/* ProductScreen */}
-            <TouchableOpacity
+            {/* <TouchableOpacity
               style={[
                 styles.actionBtn,
                 {
@@ -372,8 +376,25 @@ export default function AdminDashboard(): JSX.Element {
               onPress={() => navigation.navigate("ProductScreen")}
             >
               <AntDesign name="product" size={24} color="white" />
-              <Text style={styles.actionText}>{"ProductScreen"}</Text>
-            </TouchableOpacity>
+              <Text style={styles.actionText}>{"Products"}</Text>
+            </TouchableOpacity> */}
+
+            {/* Analytics Dashboard */}
+            {/* <TouchableOpacity
+              style={[
+                styles.actionBtn,
+                {
+                  alignItems: "center",
+                  // justifyContent: "center",
+                  flexDirection: "row",
+                  gap: 10,
+                },
+              ]}
+              onPress={() => navigation.navigate("AnalyticsDashboard")}
+            >
+              <AntDesign name="product" size={24} color="white" />
+              <Text style={styles.actionText}>{"Analytics Dashboard"}</Text>
+            </TouchableOpacity> */}
           </View>
         </View>
 

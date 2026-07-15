@@ -5,18 +5,19 @@ export const pobApi = apiSlice.injectEndpoints({
     // Create POB
     createPOB: builder.mutation({
       query: (data) => ({
-        url: "/plans",
+        url: "/pobs",
         method: "POST",
         body: data,
       }),
-      invalidatesTags: ["POB"],
+      invalidatesTags: ["POB", "Dashboard", "Analytics"],
     }),
 
     // Get My POB
     getMyPOB: builder.query({
-      query: () => ({
-        url: "/plans/my",
+      query: (query) => ({
+        url: "/pobs/my",
         method: "GET",
+        query: query,
       }),
       providesTags: ["POB"],
     }),
@@ -24,7 +25,7 @@ export const pobApi = apiSlice.injectEndpoints({
     // Get Team POB
     getTeamPOB: builder.query({
       query: () => ({
-        url: "/plans/team",
+        url: "/pobs/team",
         method: "GET",
       }),
       providesTags: ["POB"],
@@ -33,7 +34,7 @@ export const pobApi = apiSlice.injectEndpoints({
     // Delete POB
     deletePOB: builder.mutation({
       query: (id) => ({
-        url: `/plans/${id}`,
+        url: `/pobs/${id}`,
         method: "DELETE",
       }),
       invalidatesTags: ["POB"],

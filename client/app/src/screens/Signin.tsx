@@ -65,7 +65,7 @@ const isServerOnline = serverStatus === "online";
 
     setIsLoading(true);
     try {
-      console.log("📤 Attempting employee login...");
+      // console.log("📤 Attempting employee login...");
       const result = await login({ email, password }).unwrap();
       
      
@@ -79,11 +79,11 @@ const isServerOnline = serverStatus === "online";
         await AsyncStorage.setItem("userId", _id);
         await AsyncStorage.setItem("name", name);
 
-        // 🔍 VERIFY
-        const savedToken = await AsyncStorage.getItem("token");
-        const savedRole = await AsyncStorage.getItem("role");
-        const savedUserId = await AsyncStorage.getItem("userId");
-        const savedName = await AsyncStorage.getItem("name");
+        // // 🔍 VERIFY
+        // const savedToken = await AsyncStorage.getItem("token");
+        // const savedRole = await AsyncStorage.getItem("role");
+        // const savedUserId = await AsyncStorage.getItem("userId");
+        // const savedName = await AsyncStorage.getItem("name");
 
 
         //  console.log("🔐 AsyncStorage check:", {
@@ -145,14 +145,14 @@ const isServerOnline = serverStatus === "online";
     setIsLoading(true);
     try {
       const adminPassword = password.replace("@admin", "");
-      console.log("📤 Attempting admin login...");
+      // console.log("📤 Attempting admin login...");
 
       const result = await adminLogin({
         email,
         password: adminPassword,
       }).unwrap();
 
-      console.log("Admin login result:", result);
+      // console.log("Admin login result:", result);
 
       if (result.success) {
         // Alert.alert("Success", "Admin login successful!");

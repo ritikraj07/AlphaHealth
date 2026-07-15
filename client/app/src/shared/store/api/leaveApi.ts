@@ -129,10 +129,13 @@ export const leaveApi = apiSlice.injectEndpoints({
         if (name) params.append("name", name);
         if (role) params.append("role", role);
 
+
         return {
           url: `/leaves`,
           params,
         };
+
+        
       },
 
       

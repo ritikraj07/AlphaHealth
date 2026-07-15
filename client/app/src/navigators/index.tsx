@@ -18,13 +18,13 @@ import CreatePlanScreen from "../screens/Plans/CreatePlanScreen";
 import CreateVisitScreen from "../screens/Visit/CreateVisitScreen";
 import PlanDetailsScreen from "../screens/Plans/PlanDetailsScreen";
 import CreatePOBScreen from "../screens/POB/CreatePOBScreen";
-
+import AnalyticsDashboard from "../screens/Analytics/AnalyticsDashboard";
 
 export type RootStackParamList = {
   navigate(arg0: string): void;
   SignIn: undefined;
   Drawer: undefined;
-  EmployeeDetailScreen: undefined;
+  EmployeeDetailScreen: { params: any } | {id: string} |  undefined;
   LeaveAppliedScreen: undefined;
   DoctorChemistListScreen: undefined;
   DoctorChemistDetailsScreen: { item: any };
@@ -34,13 +34,13 @@ export type RootStackParamList = {
   EditProductScreen: { product: any };
   AddProductScreen: undefined;
   CreatePlanScreen: undefined;
-  CreateVisitScreen: { item: any };
+  CreateVisitScreen: { item: any } | undefined;
   PlanDetailsScreen: { item: any };
   CreatePOBScreen: undefined;
+  AnalyticsDashboard: undefined | { item: any };
 };
 
 // export type NavProp = RootStackParamList;
-
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -79,7 +79,8 @@ export default function Navigation() {
           <Stack.Screen name="CreatePlanScreen" component={CreatePlanScreen} />
           <Stack.Screen name="CreateVisitScreen" component={CreateVisitScreen} />
           <Stack.Screen name="PlanDetailsScreen" component={PlanDetailsScreen} />
-          <Stack.Screen name="CreatePOBScreen" component={CreatePOBScreen}/>
+          <Stack.Screen name="CreatePOBScreen" component={CreatePOBScreen} />
+          <Stack.Screen name="AnalyticsDashboard" component={AnalyticsDashboard} />
         </Stack.Group>
       ) : (
         <Stack.Screen name="SignIn" component={SignIn} />
@@ -87,3 +88,4 @@ export default function Navigation() {
     </Stack.Navigator>
   );
 }
+

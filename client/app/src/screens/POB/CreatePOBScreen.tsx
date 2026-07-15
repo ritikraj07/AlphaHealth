@@ -119,12 +119,15 @@ const CreatePOBScreen = () => {
       employeeModel:role=="admin"?"Admin":"Employee",
     };
 
+    // console.log("payload", payload);
     try {
         await createPOB(payload).unwrap();
         resetForm()
         ToastAndroid.show("POB Created Successfully", ToastAndroid.SHORT);
     } catch (err) {
-      Alert.alert("Error", "Something went wrong");
+      ToastAndroid.show("Something went wrong", ToastAndroid.SHORT);
+      
+      console.log(" error from product add", err);
     }
     };
     

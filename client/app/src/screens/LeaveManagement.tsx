@@ -13,6 +13,8 @@ import { useGetMyDetailQuery } from "../shared/store/api/employeeApi";
 import { useAppSelector } from "../shared/store/hooks";
 import LeaveModal from "./Modals/LeaveModal";
 import MyLeaveHistory from "../shared/componets/MyLeaveHistory";
+import { useGetMyLeavesQuery } from "../shared/store/api/leaveApi";
+import LeaveManagementSkeleton from "../shared/componets/skeletons/LeaveManagementSkeleton";
 
 const PRIMARY = "#e91e62";
 
@@ -23,8 +25,14 @@ export default function LeaveManagement() {
   const { data, isFetching, refetch } = useGetMyDetailQuery({
     id: auth?.userId,
   });
+  const { isLoading, data: leavesData , refetch : leavesRefetch ,  isFetching: isLeavesFetching} = useGetMyLeavesQuery({ employeeId: auth?.userId });
 
   const leaves = data?.data?.leavesTaken;
+  console.log(leaves);
+
+  if (isLoading || isFetching || isLeavesFetching) {
+    return <LeaveManagementSkeleton />;
+  }
 
   return (
     <View style={styles.root}>
@@ -41,7 +49,7 @@ export default function LeaveManagement() {
         bounces={false} // iOS clean feel
         overScrollMode="never" // Android glow off
         refreshControl={
-          <RefreshControl refreshing={isFetching} onRefresh={refetch} />
+          <RefreshControl refreshing={ isLeavesFetching} onRefresh={leavesRefetch} />
         }
         ListHeaderComponent={
           <>
