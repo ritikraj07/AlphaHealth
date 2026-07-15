@@ -11,14 +11,6 @@ const validateCreateDoctorChemist = [
     .matches(/^[a-zA-Z\s.]+$/)
     .withMessage("Name can only contain letters and spaces"),
 
-  body("email")
-    .optional()
-    .trim()
-    .notEmpty()
-    .withMessage("Email is required")
-    .isEmail()
-    .withMessage("Please enter a valid email")
-    .normalizeEmail(),
 
   body("location")
     .trim()
@@ -40,17 +32,7 @@ const validateCreateDoctorChemist = [
   body("hq").isMongoId().withMessage("Invalid headquarter ID"),
 
   body("type").isIn(["doctor", "chemist"]).withMessage("Invalid type"),
-  body("phone")
-    .optional()
-    .trim()
-    .notEmpty()
-    .withMessage("Phone number is required")
-    .isNumeric()
-    .withMessage("Phone number must be numeric")
-    .isLength({ min: 10, max: 10 })
-    .withMessage("Phone number must be between 10 and 15 digits")
-    .matches(/^\d+$/)
-    .withMessage("Phone number can only contain digits"),
+
 
   body("potential")
     .trim()
