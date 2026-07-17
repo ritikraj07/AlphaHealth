@@ -8,7 +8,7 @@ import {
   ToastAndroid,
   RefreshControl,
 } from "react-native";
-import React, { JSX, useState } from 'react'
+import React, { JSX, useState, useEffect } from 'react'
 import {
   Octicons,
   Feather,
@@ -35,6 +35,7 @@ import * as DocumentPicker from "expo-document-picker";
 import AddEmployeeFromExcelModal from "../Modals/AddEmpFromExcel";
 import AddDoctorChemistFromExcleModal from "../Modals/AddDocCheExcle";
 import { NavProp } from "../../navigators";
+  
 
 type Props = {
   title: string;
@@ -101,15 +102,12 @@ export default function AdminDashboard(): JSX.Element {
   const ApprovedLeaves = data?.data?.leaves?.approved ?? 0;
   const RejectedLeaves = data?.data?.leaves?.rejected ?? 0;
   
-
-  
-
-  
-
   
   
   const [isAddEmployeeModalVisible, setIsAddEmployeeModalVisible] = useState(false);
   const [isAddHQModalVisible, setIsAddHQModalVisible] = useState(false);
+  
+ 
   
     const employee = [
       {
@@ -134,6 +132,11 @@ export default function AdminDashboard(): JSX.Element {
         icon: "hand",
       },
   ];
+
+
+
+
+
   
   async function pickExcelFile() {
     try {

@@ -44,6 +44,9 @@ const serverStatus = useServerStatus();
 const isServerOnline = serverStatus === "online";
 
 
+  // take permission notification permisson from user
+  
+
 
 
 
@@ -218,8 +221,6 @@ const isServerOnline = serverStatus === "online";
         color="hotpink"
         animating={isLoading}
       /> */}
-  
-      
 
       {/* Header */}
       <View style={{ alignItems: "center" }}>
@@ -244,6 +245,7 @@ const isServerOnline = serverStatus === "online";
           placeholder="your.email@company.com"
           value={email}
           onChangeText={setEmail}
+          placeholderTextColor="gray"
         />
 
         <Text style={styles.lable}>Password</Text>
@@ -254,6 +256,7 @@ const isServerOnline = serverStatus === "online";
             value={password}
             onChangeText={setPassword}
             secureTextEntry={!showPassword}
+            placeholderTextColor="gray"
           />
 
           <TouchableOpacity
@@ -341,15 +344,16 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     marginBottom: 5,
   },
-  // input: {
-  //   height: 40,
-  //   borderColor: "gray",
-  //   borderWidth: 0.5,
-  //   marginBottom: 10,
-  //   paddingHorizontal: 10,
-  //   borderRadius: 5,
-  //   backgroundColor: "white",
-  // },
+  input: {
+    height: 40,
+    borderColor: "gray",
+    borderWidth: 0.5,
+    marginBottom: 10,
+    paddingHorizontal: 10,
+    borderRadius: 5,
+    backgroundColor: "white",
+    color: "black",
+  },
 
   btm: {
     padding: 10,
@@ -381,13 +385,13 @@ const styles = StyleSheet.create({
     position: "relative",
   },
 
-  input: {
-    borderWidth: 1,
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingRight: 40, // space for icon
-    height: 48,
-  },
+  // input: {
+  //   borderWidth: 1,
+  //   borderRadius: 8,
+  //   paddingHorizontal: 12,
+  //   paddingRight: 40, // space for icon
+  //   height: 48,
+  // },
 
   eyeIcon: {
     position: "absolute",

@@ -16,7 +16,7 @@ import { RootStackParamList } from "../../navigators";
 type VisitRouteProp = RouteProp<RootStackParamList, "PlanDetailsScreen">;
 type NavProp = NativeStackNavigationProp<RootStackParamList>;
 
-const VisitDetailsScreen = () => {
+const PlanDetailsScreen = () => {
   const route = useRoute<VisitRouteProp>();
   const navigation = useNavigation<NavProp>();
   const { item } = route.params;
@@ -45,8 +45,7 @@ const VisitDetailsScreen = () => {
   };
 
   return (
-    <View style={{ flex: 1,  }}>
-
+    <View style={{ flex: 1 }}>
       {/* Premium Header */}
       <View style={styles.header}>
         <View>
@@ -124,7 +123,7 @@ const VisitDetailsScreen = () => {
         </View>
 
         {/* Meta Info */}
-              <View style={[styles.card, { marginBottom: 100 } ]}>
+        <View style={[styles.card, { marginBottom: 100 }]}>
           <Text style={styles.sectionTitle}>Activity</Text>
           <View style={styles.row}>
             <Text style={styles.label}>Created On</Text>
@@ -143,7 +142,7 @@ const VisitDetailsScreen = () => {
   );
 };
 
-export default VisitDetailsScreen;
+export default PlanDetailsScreen;
 
 const styles = StyleSheet.create({
   header: {

@@ -1,4 +1,4 @@
-const API_BASE_URL = 'https://alphahealth.onrender.com/api';
+export const API_BASE_URL = 'https://alphahealth.onrender.com/api';
 
 
 console.log('🔗 API Base URL:', API_BASE_URL);

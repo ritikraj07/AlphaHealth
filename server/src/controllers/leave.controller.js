@@ -1,5 +1,7 @@
+const Device = require("../models/device.model");
 const Employee = require("../models/employee.model");
 const Leave = require("../models/leave.model");
+const { sendNotification } = require("../services/Notification");
 
 
 const ApplyLeave = async(req, res) => {
@@ -148,12 +150,14 @@ const LeaveApprove = async (req, res) => {
       });
     }
 
+    let Approver = "Admin"
+
     // 3️⃣ Authorization check
     if (approvedBy.model === "Admin") {
       // Admin can approve anything
     } else if (approvedBy.model === "Employee") {
       const manager = await Employee.findById(userId);
-
+      Approver = manager.name;
       if (!manager) {
         return res.status(404).json({
           success: false,
@@ -185,7 +189,21 @@ const LeaveApprove = async (req, res) => {
       model: approvedBy.model,
     };
 
+
+
     await leave.save();
+
+    const devices = await Device.find({ user: leave.employee._id, notificationsEnabled: true }).sort({lastSeen: -1})
+
+    for (let divice of devices) {
+      sendNotification({
+        pushToken: divice.expoPushToken,
+        title: "Leave updated",
+        body: `Your leave has been ${status} by ${Approver}`,
+      })
+    }
+
+  
 
     // 5️⃣ Update employee leave count (only if approved)
     if (status === "approved") {

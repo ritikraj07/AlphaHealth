@@ -18,6 +18,8 @@ import { performLogout } from "../../shared/utils/logout";
 import EmployeeDashboardSkeleton from "../../shared/componets/skeletons/EmployeeDashboardSkeleton";
 import { useGetEmployeeDashboardQuery } from "../../shared/store/api/analyticsApi";
 import { NavProp } from "../../navigators";
+import { useEffect, useState } from "react"
+
 
 export default function EmployeeDashboard() {
   const navigation = useNavigation<NavProp>();
@@ -37,6 +39,8 @@ export default function EmployeeDashboard() {
     isFetching: dashboardFetching,
     refetch: dashboardRefetch
   } = useGetEmployeeDashboardQuery();
+
+  const [hasPermission, setHasPermission] = useState<boolean | null>(null);
   
 
   const performace = dashboardData?.performance;
@@ -48,7 +52,12 @@ export default function EmployeeDashboard() {
   const topDoctors = dashboardData?.topDoctors;
   const todayStatus = dashboardData?.todayStatus;
 
-  console.log("🚀 ~ file: EmployeeDashboard.tsx ~ line 51 ~ EmployeeDashboard ~ todayStatus", todayStatus)
+
+  
+  
+  
+
+  // console.log("🚀 ~ file: EmployeeDashboard.tsx ~ line 51 ~ EmployeeDashboard ~ todayStatus", todayStatus)
 
   const totalVisits = activityBreakdown?.totalVisits ?? 0;
 
@@ -59,6 +68,10 @@ export default function EmployeeDashboard() {
     totalVisits > 0
       ? (activityBreakdown?.chemistVisits / totalVisits) * 100
       : 0;
+  
+
+
+
 
   if (isLoading || dashboardLoading) {
     return <EmployeeDashboardSkeleton />;

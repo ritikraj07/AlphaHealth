@@ -1,6 +1,8 @@
 const Admin = require("../models/admin.model");
 const Plan = require("../models/plan.model");
 const moment = require("moment");
+const { scheduleNotification } = require("../services/scheduler.service");
+const Device = require("../models/device.model");
 
 
 
@@ -19,6 +21,37 @@ const createPlan = async (req, res) => {
       employeeModel,
       isJointPlan
     });
+
+    const employeeIds = [
+      req.userId,
+      ...jointEmployees
+    ];
+
+    const devices = await Device.find({
+      user: { $in: employeeIds }
+    });
+
+    const notificationDate = new Date(plan.date);
+
+    // Set notification time to 9:00:00 AM
+    notificationDate.setHours(9);
+    notificationDate.setMinutes(0);
+    notificationDate.setSeconds(0);
+    notificationDate.setMilliseconds(0);
+
+    for (const device of devices) {
+
+      scheduleNotification({
+        jobId: `${plan._id}-${device._id}`,
+        date: notificationDate,
+        title: `Today's Plan`,
+        body: remark,
+        data: { planId: plan._id, screen: "PlanDetailsScreen", plan },
+        pushToken: devices.expoPushToken
+      })
+    }
+    
+
 
     res.status(201).json({
       success: true,

@@ -15,6 +15,7 @@ import AdminDashboard from "../screens/Dashboards/AdminDashboard";
 import EmployeeDashboard from "../screens/Dashboards/EmployeeDashboard";
 import { useAppSelector } from "../shared/store/hooks";
 import EmployeesScreen from "../screens/EmployeesScreen";
+import * as Device from "expo-device";
 
 export type TabParamList = {
   Attendance: undefined;
@@ -39,6 +40,8 @@ const Tab = createBottomTabNavigator<TabParamList>();
 const BottomTabs = () => {
   const role = useAppSelector((state) => state.auth.role);
   // console.info("Current User--->", role);
+  // console.log("Device", Device);
+
   
 
   

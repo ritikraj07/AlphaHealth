@@ -1,0 +1,87 @@
+{
+  "project_info": {
+    "project_number": "724545586875",
+    "firebase_url": "https://androidfirebase-26-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "androidfirebase-26",
+    "storage_bucket": "androidfirebase-26.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:724545586875:android:586ca0713024e3c79acb9e",
+        "android_client_info": {
+          "package_name": "com.firebase"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAs-7pkTmj58fkeuNCFPLMk4J7xmEIUFkw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:724545586875:android:f12d400753eebe549acb9e",
+        "android_client_info": {
+          "package_name": "com.pharmaprime.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAs-7pkTmj58fkeuNCFPLMk4J7xmEIUFkw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:724545586875:android:1ddfa9beb5ce683c9acb9e",
+        "android_client_info": {
+          "package_name": "com.ritikraj07.alarmapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAs-7pkTmj58fkeuNCFPLMk4J7xmEIUFkw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:724545586875:android:b14fb3aee8a96da19acb9e",
+        "android_client_info": {
+          "package_name": "com.ritikraj07.pharmaprime"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAs-7pkTmj58fkeuNCFPLMk4J7xmEIUFkw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
