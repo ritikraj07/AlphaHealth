@@ -84,9 +84,9 @@ const doctorChemistSchema = new mongoose.Schema(
     phone: {
       type: String,
       
-      maxlength: 10,
-      minlength: 10,
-      unique: true
+      // maxlength: 10,
+      // minlength: 10,
+      // unique: true
     },
   },
   { timestamps: true },

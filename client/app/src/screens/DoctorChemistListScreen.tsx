@@ -10,21 +10,25 @@ import {
 } from "react-native";
 import { Dropdown } from "react-native-element-dropdown";
 import { MaterialIcons } from "@expo/vector-icons";
-
 import { useNavigation } from "@react-navigation/native";
+import { RefreshControl } from "react-native-gesture-handler";
+
 import { useGetDoctorChemistDashboardQuery } from "../shared/store/api/doctorChemistApi";
 import { NavProp } from "../navigators";
-import { RefreshControl } from "react-native-gesture-handler";
 
 const DoctorChemistListScreen = () => {
   const navigation = useNavigation<NavProp>();
-  const { data, isLoading, isError, error, refetch, isFetching } = useGetDoctorChemistDashboardQuery({});
+
+  const { data, isFetching, refetch } = useGetDoctorChemistDashboardQuery({});
+
+  const list = data?.data ?? [];
 
   const [search, setSearch] = useState("");
+
   const [typeFilter, setTypeFilter] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<string | null>(null);
-    const [cityFilter, setCityFilter] = useState<string | null>(null);
-    const [potentialFilter, setPotentialFilter] = useState<string | null>(null);
+  const [cityFilter, setCityFilter] = useState<string | null>(null);
+  const [potentialFilter, setPotentialFilter] = useState<string | null>(null);
 
   const rotateAnim = useRef(new Animated.Value(0)).current;
 
@@ -41,22 +45,27 @@ const DoctorChemistListScreen = () => {
     outputRange: ["0deg", "180deg"],
   });
 
-  const list = data?.data || [];
-
-  // 🔥 Dynamic Filter Data From API
   const typeOptions = useMemo(() => {
     const types = [...new Set(list.map((i) => i.type))];
+
     return [
       { label: "All", value: null },
-      ...types.map((t) => ({ label: t, value: t })),
+      ...types.map((t) => ({
+        label: t.charAt(0).toUpperCase() + t.slice(1),
+        value: t,
+      })),
     ];
   }, [list]);
 
   const cityOptions = useMemo(() => {
     const cities = [...new Set(list.map((i) => i.location))];
+
     return [
       { label: "All", value: null },
-      ...cities.map((c) => ({ label: c, value: c })),
+      ...cities.map((c) => ({
+        label: c,
+        value: c,
+      })),
     ];
   }, [list]);
 
@@ -64,74 +73,91 @@ const DoctorChemistListScreen = () => {
     { label: "All", value: null },
     { label: "Approved", value: "Approved" },
     { label: "Pending", value: "Pending" },
-    ];
-    
-    const potentialOptions = [
-      { label: "All", value: null },
-      { label: "High", value: "high" },
-      { label: "Medium", value: "medium" },
-      { label: "Low", value: "low" },
-    ]
+  ];
 
-  // 🔥 Filtering Logic
+  const potentialOptions = [
+    { label: "All", value: null },
+    { label: "High", value: "high" },
+    { label: "Medium", value: "medium" },
+    { label: "Low", value: "low" },
+  ];
+
   const filteredData = useMemo(() => {
     return list.filter((item) => {
       return (
         item.name.toLowerCase().includes(search.toLowerCase()) &&
-        (!typeFilter || item?.type === typeFilter) &&
-        (!cityFilter || item?.location === cityFilter) &&
+        (!typeFilter || item.type === typeFilter) &&
+        (!cityFilter || item.location === cityFilter) &&
+        (!potentialFilter || item.potential === potentialFilter) &&
         (!statusFilter ||
-              (statusFilter === "Approved" ? item.isApproved : !item.isApproved)) &&
-              (!potentialFilter || item?.potential === potentialFilter)
+          (statusFilter === "Approved" ? item.isApproved : !item.isApproved))
       );
     });
-  }, [list, search, typeFilter, cityFilter, statusFilter, potentialFilter]);
+  }, [list, search, typeFilter, cityFilter, potentialFilter, statusFilter]);
 
   const resetFilters = () => {
-    setTypeFilter(null);
-    setCityFilter(null);
-      setStatusFilter(null);
-      setPotentialFilter(null);
     setSearch("");
+    setTypeFilter(null);
+    setStatusFilter(null);
+    setCityFilter(null);
+    setPotentialFilter(null);
   };
 
   const renderCard = ({ item }: any) => (
     <TouchableOpacity
       style={styles.card}
+      activeOpacity={0.8}
       onPress={() =>
-        navigation.navigate("DoctorChemistDetailsScreen"  , {item } )
+        navigation.navigate("DoctorChemistDetailsScreen", { item })
       }
-      >
-          
-      <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+    >
+      <View style={styles.cardHeader}>
         <Text style={styles.name}>{item.name}</Text>
-        <Text style={{ color: item.isApproved ? "#22c55e" : "#ef4444" }}>
+
+        <Text
+          style={{
+            color: item.isApproved ? "#22c55e" : "#ef4444",
+            fontWeight: "600",
+          }}
+        >
           {item.isApproved ? "Approved" : "Pending"}
         </Text>
       </View>
 
       <Text style={styles.sub}>
-        {item.type} • {item.city}
+        {item.type} • {item.location}
       </Text>
     </TouchableOpacity>
   );
 
   return (
-      <View style={styles.container}
-          
-      >
-      {/* 🔍 Search */}
+    <View style={styles.container}>
+      {/* HEADER */}
+
+      <View style={styles.header}>
+        <Text style={styles.title}>Doctors & Chemists</Text>
+
+        <TouchableOpacity onPress={resetFilters}>
+          <Text style={styles.reset}>Reset Filters</Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* SEARCH */}
+
       <View style={styles.searchContainer}>
-        <MaterialIcons name="search" size={20} color="#9ca3af" />
+        <MaterialIcons name="search" size={20} color="#888" />
+
         <TextInput
+          style={{ flex: 1, marginLeft: 10 }}
           placeholder="Search doctor or chemist..."
+          placeholderTextColor="#999"
           value={search}
           onChangeText={setSearch}
-          style={{ flex: 1, marginLeft: 8 }}
         />
       </View>
 
-      {/* 🔽 Filter Row */}
+      {/* FILTERS */}
+
       <View style={styles.filterRow}>
         {[
           {
@@ -151,8 +177,8 @@ const DoctorChemistListScreen = () => {
             value: cityFilter,
             set: setCityFilter,
             placeholder: "City",
-                  },
-                  {
+          },
+          {
             data: potentialOptions,
             value: potentialFilter,
             set: setPotentialFilter,
@@ -171,11 +197,15 @@ const DoctorChemistListScreen = () => {
             onBlur={() => rotateIcon(false)}
             onChange={(val) => item.set(val.value)}
             renderRightIcon={() => (
-              <Animated.View style={{ transform: [{ rotate }] }}>
+              <Animated.View
+                style={{
+                  transform: [{ rotate }],
+                }}
+              >
                 <MaterialIcons
                   name="keyboard-arrow-down"
                   size={20}
-                  color="#555"
+                  color="#666"
                 />
               </Animated.View>
             )}
@@ -183,34 +213,39 @@ const DoctorChemistListScreen = () => {
         ))}
       </View>
 
-      {/* 🟢 Selected Filter Chips */}
+      {/* CHIPS */}
+
       <View style={styles.chipContainer}>
-        {[typeFilter, statusFilter, cityFilter]
+        {[typeFilter, statusFilter, cityFilter, potentialFilter]
           .filter(Boolean)
-          .map((chip, i) => (
-            <View key={i} style={styles.chip}>
+          .map((chip, index) => (
+            <View key={index} style={styles.chip}>
               <Text style={{ color: "#fff" }}>{chip}</Text>
             </View>
           ))}
-        {(typeFilter || statusFilter || cityFilter || search) && (
-          <TouchableOpacity onPress={resetFilters}>
-            <Text style={styles.reset}>Reset</Text>
-          </TouchableOpacity>
-        )}
       </View>
 
-      {/* 📋 List */}
+      {/* LIST */}
+
       <FlatList
         data={filteredData}
-        keyExtractor={(item) => item._id}
         renderItem={renderCard}
-              showsVerticalScrollIndicator={false}
-              refreshControl={
-                  <RefreshControl 
-                      refreshing={isFetching}
-                      onRefresh={refetch}
-                  />
-              }
+        keyExtractor={(item) => item._id}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{
+          paddingHorizontal: 15,
+          paddingBottom: 40,
+          flexGrow: 1,
+        }}
+        refreshControl={
+          <RefreshControl refreshing={isFetching} onRefresh={refetch} />
+        }
+        ListEmptyComponent={
+          <View style={styles.emptyContainer}>
+            <MaterialIcons name="medical-services" size={70} color="#d1d5db" />
+            <Text style={styles.emptyTitle}>No Doctors / Chemists Found</Text>
+          </View>
+        }
       />
     </View>
   );
@@ -221,76 +256,107 @@ export default DoctorChemistListScreen;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 15,
     backgroundColor: "#f8fafc",
   },
+
+  header: {
+    backgroundColor: "#e91e62",
+    padding: 20,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+
+  title: {
+    color: "#fff",
+    fontSize: 20,
+    fontWeight: "700",
+  },
+
+  reset: {
+    color: "#fff",
+    fontWeight: "600",
+  },
+
   searchContainer: {
+    margin: 15,
+    backgroundColor: "#fff",
+    height: 50,
+    borderRadius: 14,
+    paddingHorizontal: 15,
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#fff",
-    paddingHorizontal: 14,
-    height: 50,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: "#e5e7eb",
-    marginBottom: 12,
+    elevation: 2,
   },
 
   filterRow: {
     flexDirection: "row",
     flexWrap: "wrap",
     justifyContent: "space-between",
-    marginBottom: 14,
+    paddingHorizontal: 15,
   },
 
   dropdown: {
     width: "48%",
-    height: 44,
+    height: 45,
     backgroundColor: "#fff",
-    borderRadius: 14,
-    paddingHorizontal: 12,
+    borderRadius: 12,
     marginBottom: 10,
-    borderWidth: 1,
-    borderColor: "#f1f5f9",
-    shadowColor: "#000",
-    shadowOpacity: 0.05,
-    shadowRadius: 6,
-    shadowOffset: { width: 0, height: 3 },
+    paddingHorizontal: 12,
     elevation: 2,
   },
 
   chipContainer: {
     flexDirection: "row",
     flexWrap: "wrap",
-    alignItems: "center",
+    paddingHorizontal: 15,
     marginBottom: 10,
   },
+
   chip: {
     backgroundColor: "#6366f1",
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 20,
     marginRight: 8,
-    marginBottom: 6,
+    marginBottom: 8,
   },
-  reset: {
-    color: "#ef4444",
-    fontWeight: "600",
-    marginLeft: 5,
-  },
+
   card: {
     backgroundColor: "#fff",
     padding: 18,
-    borderRadius: 18,
-    marginBottom: 15,
-    elevation: 4,
+    borderRadius: 14,
+    marginBottom: 12,
+    elevation: 2,
   },
+
+  cardHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
+
   name: {
     fontSize: 17,
     fontWeight: "700",
   },
+
   sub: {
     color: "#64748b",
-    marginTop: 4,
+    marginTop: 6,
+    textTransform: "capitalize",
+  },
+
+  emptyContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 80,
+  },
+
+  emptyTitle: {
+    marginTop: 15,
+    fontSize: 17,
+    color: "#94a3b8",
+    fontWeight: "600",
   },
 });

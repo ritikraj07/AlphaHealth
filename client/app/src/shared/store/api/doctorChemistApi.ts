@@ -70,6 +70,7 @@ export const doctorChemistApi = apiSlice.injectEndpoints({
         params,
       }),
       providesTags: ["DoctorChemist"],
+      
     }),
 
     // 🔹 Create doctor / chemist
@@ -85,7 +86,6 @@ export const doctorChemistApi = apiSlice.injectEndpoints({
       invalidatesTags: ["DoctorChemist"],
     }),
 
-
     // approve doctor / chemist
 
     approveDoctorChemist: builder.mutation<
@@ -98,14 +98,21 @@ export const doctorChemistApi = apiSlice.injectEndpoints({
         body,
       }),
       invalidatesTags: ["DoctorChemist"],
-    })
+    }),
 
-
+    deleteDoctorChemist: builder.mutation({
+      query: (id) => ({
+        url: `/doctorChemists/delete/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["DoctorChemist"],
+    }),
   }),
 });
 
 export const {
   useGetDoctorChemistDashboardQuery,
   useCreateDoctorChemistMutation,
-  useApproveDoctorChemistMutation
+  useApproveDoctorChemistMutation,
+  useDeleteDoctorChemistMutation
 } = doctorChemistApi;

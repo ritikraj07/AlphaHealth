@@ -3,7 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { API_BASE_URL } from '@/app/src/config/constants';
 
 const baseQuery = fetchBaseQuery({
-  baseUrl: "https://alphahealth.onrender.com/api",
+  baseUrl: "http://10.109.221.180:3000/api",
   // "https://alphahealth.onrender.com/api"
   /**
    * Prepare headers for API requests.

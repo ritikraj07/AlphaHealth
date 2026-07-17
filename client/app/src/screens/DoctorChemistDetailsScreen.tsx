@@ -11,22 +11,30 @@ import {
   ToastAndroid,
 } from "react-native";
 
+import { useNavigation } from "@react-navigation/native";
+
+
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRoute } from "@react-navigation/native";
 import { useAppSelector } from "../shared/store/hooks";
 import { MaterialIcons } from "@expo/vector-icons";
-import { useApproveDoctorChemistMutation } from "../shared/store/api/doctorChemistApi";
+import { useApproveDoctorChemistMutation, useDeleteDoctorChemistMutation } from "../shared/store/api/doctorChemistApi";
 
 
 const DoctorChemistDetailsScreen = () => {
   const route = useRoute<any>();
     const item = route.params.item;
-    console.log(item);
+const navigation = useNavigation();
+  // console.log("item", item);
+  
 
-  const { role } = useAppSelector((state) => state.auth);
-    const isAdmin = role === "admin";
+  const { role, userId } = useAppSelector((state) => state.auth);
+  const canApprove = role === "admin" || userId === item.addedBy.id.manager;
+  
+  
     
-    const [approveChemist, { isLoading }] = useApproveDoctorChemistMutation();
+  const [approveChemist, { isLoading }] = useApproveDoctorChemistMutation();
+  const [deleteChemist] = useDeleteDoctorChemistMutation();
 
   // 🔥 Slide Animation
   const slideAnim = useRef(new Animated.Value(50)).current;
@@ -50,12 +58,16 @@ const DoctorChemistDetailsScreen = () => {
   const openDialer = () => {
     if (item.phone) {
       Linking.openURL(`tel:${item.phone}`);
+    } else {
+      ToastAndroid.show("No phone number available", ToastAndroid.SHORT);
     }
   };
 
   const openWhatsApp = () => {
     if (item.phone) {
       Linking.openURL(`https://wa.me/${item.phone}`);
+    } else {
+      ToastAndroid.show("No phone number available", ToastAndroid.SHORT);
     }
   };
 
@@ -64,11 +76,44 @@ const DoctorChemistDetailsScreen = () => {
       Linking.openURL(
         `https://www.google.com/maps/search/?api=1&query=${item.location}`,
       );
+    } else {
+      ToastAndroid.show("No location available", ToastAndroid.SHORT);
     }
     };
     
 
   
+
+  const handleDelete = () => {
+    Alert.alert(
+      `Delete ${item.type === "chemist" ? "Chemist" : "Doctor"} ${item.name}`,
+      `Are you sure you want to delete this ${item.type}?`,
+      [
+        {
+          text: "Cancel",
+          style: "cancel",
+        },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              const response = await deleteChemist(item._id).unwrap();
+
+              // console.log(response);
+              navigation.goBack();
+
+              ToastAndroid.show("Deleted successfully ✅", ToastAndroid.SHORT);
+            } catch (error: any) {
+              console.log(error);
+
+              ToastAndroid.show(error?.data?.message || "Something went wrong", ToastAndroid.SHORT);
+            }
+          },
+        },
+      ],
+    );
+  };
 
   const handleApprove = () => {
     Alert.alert(
@@ -84,11 +129,12 @@ const DoctorChemistDetailsScreen = () => {
           onPress: async () => {
             try {
                 let response = await approveChemist({doctorChemistId: item._id}).unwrap();
-                console.log(response);
+              // console.log(response);
+            navigation.goBack();
 
               ToastAndroid.show("Approved successfully ✅", ToastAndroid.SHORT);
-            } catch (error) {
-                ToastAndroid.show("Something went wrong", ToastAndroid.SHORT);
+            } catch (error: any) {
+                ToastAndroid.show( error?.data?.message || "Something went wrong", ToastAndroid.SHORT);
                 console.log(error)
             }
           },
@@ -99,7 +145,7 @@ const DoctorChemistDetailsScreen = () => {
 
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "#f5f7fa" }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#f5f7fa" }}  >
       <Animated.ScrollView
         style={{
           transform: [{ translateY: slideAnim }],
@@ -161,16 +207,28 @@ const DoctorChemistDetailsScreen = () => {
           <ActionButton icon="chat" label="WhatsApp" onPress={openWhatsApp} />
           <ActionButton icon="map" label="Map" onPress={openMap} />
         </View>
-      </Animated.ScrollView>
 
-      {/* ✅ Sticky Approve Button */}
-      {isAdmin && !item.isApproved && (
-        <View style={styles.bottomBar}>
-          <TouchableOpacity style={styles.approveBtn} onPress={handleApprove} >
-                      <Text style={styles.approveText}>Approve {item.type.charAt(0).toUpperCase() + item.type.slice(1) }</Text>
-          </TouchableOpacity>
-        </View>
-      )}
+        {/* ✅ Sticky Approve Button */}
+          <View style={styles.bottomBar}>
+        {canApprove && !item.isApproved && (
+            <TouchableOpacity style={styles.approveBtn} onPress={handleApprove}>
+              <Text style={styles.approveText}>
+                Approve {item.type.charAt(0).toUpperCase() + item.type.slice(1)}
+              </Text>
+            </TouchableOpacity>
+          
+        )}
+
+        {canApprove && (
+          
+            <TouchableOpacity style={styles.rejectBtn} onPress={handleDelete}>
+              <Text style={styles.rejectText}>
+                Delete {item.type.charAt(0).toUpperCase() + item.type.slice(1)}
+              </Text>
+            </TouchableOpacity>
+        )}
+          </View>
+      </Animated.ScrollView>
     </SafeAreaView>
   );
 };
@@ -249,21 +307,38 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
   bottomBar: {
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
-    backgroundColor: "#fff",
+    // position: "absolute",
+    // bottom: 0,
+    // left: 0,
+    // right: 0,
+    // backgroundColor: "#fff",
     padding: 15,
-    elevation: 10,
+    // elevation: 10,
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    gap: 20,
   },
   approveBtn: {
     backgroundColor: "#22c55e",
     padding: 16,
     borderRadius: 16,
     alignItems: "center",
+    width: "45%",
   },
   approveText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "700",
+  },
+  rejectBtn: {
+    backgroundColor: "#ef4444",
+    padding: 16,
+    borderRadius: 16,
+    alignItems: "center",
+    width: "45%",
+  },
+  rejectText: {
     color: "#fff",
     fontSize: 16,
     fontWeight: "700",

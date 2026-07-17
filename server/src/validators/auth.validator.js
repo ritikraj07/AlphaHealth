@@ -30,6 +30,7 @@ const verifyToken = async (req, res, next) => {
         
         const decoded = jwt.verify(token, JWT_Secret_Key);
         req.userId = decoded.id; // Set user ID for later use
+        // whole user at the bottom 43 line of the file
         
         const user = await getUser(decoded.id);
         if (!user) {

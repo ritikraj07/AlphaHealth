@@ -11,12 +11,12 @@ const createDoctorChemist = async (req, res) => {
     let isApproved = false;
     let approvedBy = null;
 
-    if (addedBy.role === 'admin' || addedBy.role === 'manager') {
+    if (addedBy.role === 'admin') {
       isApproved = true;
       approvedBy = {
         id: addedBy.id,
         role: addedBy.role,
-        model: addedBy.model == 'Admin' ? 'Admin' : 'Employee'
+        model:'Admin'
       };
     }
 
@@ -57,6 +57,7 @@ const createDoctorChemist = async (req, res) => {
       success: false,
       message: `This ${field} already exists`,
       field,
+      file:"doctorChemist.controller.js"
     });
   }
 
@@ -130,11 +131,11 @@ const getAllDoctorChemist = async (req, res) => {
     const [data, counts] = await Promise.all([
       DoctorChemist.find(filter)
         .populate("hq", "name")
-        .populate("addedBy.id", "name")
-        .populate("approvedBy.id", "name")
-        .sort({ createdAt: -1 })
-        .skip(skip)
-        .limit(limitNumber),
+        .populate("addedBy.id")
+        .populate("approvedBy.id")
+        .sort({ createdAt: -1 }),
+        // .skip(skip)
+        // .limit(limitNumber),
 
       DoctorChemist.aggregate([
         { $match: filter }, // IMPORTANT: apply filter here
@@ -200,13 +201,39 @@ const getAllDoctorChemist = async (req, res) => {
 
 
 const deleteDoctorChemist = async (req, res) => {
-    res.send("Delete Doctor Chemist")
+  try {
+    const userId = req.userId;
+    const role = req.user.role;
+    
+
+    const { id } = req.params;
+    console.log(id)
+
+
+    if (role == "admin" || role == "manager") {
+      await DoctorChemist.findByIdAndDelete(id);
+      return res.status(200).json({ success: true, message: "Deleted successfully" });
+    }
+
+    return res.status(403).json({ success: false, message: "Unauthorized" });
+
+  } catch (error) {
+
+    console.error("deleteDoctorChemist error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Something went wrong",
+      error: error.message,
+    });
+    
+    }
 }
 
 
 const approveDoctorChemist = async (req, res) => {
   try {
     const userId = req.userId;
+
     const { doctorChemistId } = req.body;
 
     const doctorChemist = await DoctorChemist.findById(doctorChemistId);

@@ -69,6 +69,10 @@ const validateCreateDoctorChemist = [
     .optional()
     .isIn(["Admin", "Employee"])
     .withMessage("Invalid approvedBy model"),
+  body("phone")
+  .optional()
+  .matches(/^[0-9]{10}$/)
+  .withMessage("Phone number must contain exactly 10 digits"),
 
   // Check for validation errors
   (req, res, next) => {
