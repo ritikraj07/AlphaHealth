@@ -19,6 +19,7 @@ import CreateVisitScreen from "../screens/Visit/CreateVisitScreen";
 import PlanDetailsScreen from "../screens/Plans/PlanDetailsScreen";
 import CreatePOBScreen from "../screens/POB/CreatePOBScreen";
 import AnalyticsDashboard from "../screens/Analytics/AnalyticsDashboard";
+import NotificationPermission from "../screens/NotificationPermission";
 
 export type RootStackParamList = {
   navigate(arg0: string): void;
@@ -38,6 +39,8 @@ export type RootStackParamList = {
   PlanDetailsScreen: { item: any };
   CreatePOBScreen: undefined;
   AnalyticsDashboard: undefined | { item: any };
+  NotificationPermission: undefined;
+  
 };
 
 // export type NavProp = RootStackParamList;
@@ -81,6 +84,7 @@ export default function Navigation() {
           <Stack.Screen name="PlanDetailsScreen" component={PlanDetailsScreen} />
           <Stack.Screen name="CreatePOBScreen" component={CreatePOBScreen} />
           <Stack.Screen name="AnalyticsDashboard" component={AnalyticsDashboard} />
+          <Stack.Screen name="NotificationPermission" component={NotificationPermission} />
         </Stack.Group>
       ) : (
         <Stack.Screen name="SignIn" component={SignIn} />

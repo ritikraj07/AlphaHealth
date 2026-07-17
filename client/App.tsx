@@ -18,6 +18,18 @@ import { NavigationContainer } from "@react-navigation/native";
 import { useServerStatus } from "./app/src/shared/componets/hooks/useServerStatus.ts";
 import ServerConnectingOverlay from "./app/src/shared/componets/ServerConnectingOverlay";
 import StartupScreen from "./app/StartupScreen";
+
+import { navigationRef } from "./app/src/navigators/navigationRef";
+
+import { setupNotificationChannels } from "./app/src/shared/services/notification/notificationChannels";
+import { initializeNotificationListeners } from "./app/src/shared/services/notification/notificationListeners";
+import { setupNotificationHandler } from "./app/src/shared/services/notification/notificationHandler";
+
+
+
+
+
+
 SplashScreen.preventAutoHideAsync();
 
 export default function Index() {
@@ -78,68 +90,34 @@ export default function Index() {
     }
   }, [ready]);
 
-
-
-  
-
-  // useEffect(() => {
-  //   async function prepareApp() {
-  //     try {
-  //       // 🔹 Hydrate auth
-  //       const token = await AsyncStorage.getItem("token");
-  //       const role = await AsyncStorage.getItem("role");
-  //       const userId = await AsyncStorage.getItem("userId");
-  //       const name = await AsyncStorage.getItem("name");
-
-  //       if (token && role && userId) {
-  //         store.dispatch(
-  //           setCredentials({
-  //             token,
-  //             role,
-  //             _id: userId,
-  //             name,
-  //           })
-  //         );
-  //       }
-
-  //       // Optional minimum splash duration (UX polish)
-  //       await new Promise((resolve) => setTimeout(resolve, 1500));
-  //     } catch (e) {
-  //       // We might want to provide this error information to an error reporting service
-  //       ToastAndroid.show("Something went wrong", ToastAndroid.SHORT);
-  //       console.log("Startup error", e);
-  //     } finally {
-  //       setReady(true);
-  //       await SplashScreen.hideAsync();
-  //     }
-  //   }
-
-  //   prepareApp();
-  // }, []);
-
   const serverStatus = useServerStatus();
   const isServerOnline = serverStatus === "online";
 
   console.log("🚀 Server status:", isServerOnline);
   console.log("🚀 isReady:", ready);
 
-  // if (!ready) {
-  //   // We haven't finished checking for the token yet
-  //   console.log("🚀 App is not ready yet");
-  //   return <StartupScreen step={bootStep} />;
-  // }
 
-//   if (serverStatus === "checking") {
-//   return <StartupScreen step="Checking server..." />;
-// }
+  useEffect(() => {
+   setupNotificationHandler();
+ },[])
 
 
-  // if (!isServerOnline) {
-  //   return <ServerConnectingOverlay visible={isServerOnline} />;
-  // }
+useEffect(() => {
+  setupNotificationChannels();
+}, []);
 
+
+
+
+
+  useEffect(() => {
+    const cleanup = initializeNotificationListeners()
+
+    return cleanup;
+  }, []);
 
   
+
 
   return (
     <Provider store={store}>
@@ -158,7 +136,7 @@ export default function Index() {
             ) : !isServerOnline ? (
               <ServerConnectingOverlay visible={!isServerOnline} />
             ) : (
-              <NavigationContainer>
+              <NavigationContainer ref={navigationRef} >
                 <Navigation />
               </NavigationContainer>
             )}
