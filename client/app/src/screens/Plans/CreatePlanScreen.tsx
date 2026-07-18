@@ -25,6 +25,7 @@ import {
 } from "../../shared/store/api/employeeApi";
 
 import { CreatePlanPayload } from "../../shared/types/plan.types";
+import { useNavigation } from "@react-navigation/native";
 
 
 // ================= TYPES =================
@@ -44,9 +45,12 @@ interface Employee {
 
 
 
+
+
 // ================= COMPONENT =================
 
 const CreatePlanScreen = () => {
+  const navigation = useNavigation();
     
   const [title, setTitle] = useState("");
   const [selectedDoctor, setSelectedDoctor] = useState<DoctorChemist | null>(
@@ -172,13 +176,15 @@ const [remark, setRemark] = useState<string>("");
       behavior={Platform.OS === "ios" ? "padding" : "height"}
       keyboardVerticalOffset={Platform.OS === "ios" ? 80 : 0}
     >
-          <ScrollView
-              contentContainerStyle={styles.container}
-              showsVerticalScrollIndicator={false}
-              keyboardShouldPersistTaps="handled"
-              bounces={false}
-
-          >
+      <View style={styles.header}>
+        <Text style={styles.title}>Tour Plan</Text>
+      </View>
+      <ScrollView
+        contentContainerStyle={styles.container}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+        bounces={false}
+      >
         {/* <Text style={styles.label}>Plan Title</Text>
         <TextInput
           style={styles.input}
@@ -251,28 +257,47 @@ const [remark, setRemark] = useState<string>("");
           value={remark}
           onChangeText={setRemark}
           multiline
+          placeholderTextColor={"grey"}
         />
 
-        <View style={{ height: 100, width: "100%" }}></View>
+        {/* <View style={{ height: 100, width: "100%" }}></View> */}
+        <View style={styles.buttonContainer}>
+          <TouchableOpacity
+            style={styles.cancelbtm}
+            onPress={() => {
+              navigation.goBack();
+            }}
+          >
+            <Text>Cancel</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.submitBtn}
+            onPress={handleSubmit}
+            disabled={isLoading}
+          >
+            <Text style={{ color: "#fff" }}>
+              {isLoading ? "Creating..." : "Create "}
+            </Text>
+          </TouchableOpacity>
+        </View>
       </ScrollView>
-        <TouchableOpacity
-          style={styles.submitBtn}
-          onPress={handleSubmit}
-          disabled={isLoading}
-        >
-          <Text style={{ color: "#fff" }}>
-            {isLoading ? "Creating..." : "Create Plan"}
-          </Text>
-        </TouchableOpacity>
 
       {/* ================= MODALS ================= */}
 
       {/* Doctor Modal */}
-      <Modal visible={doctorModal}>
+      <Modal animationType="slide" visible={doctorModal}>
         <View style={styles.modalContainer}>
+          {/* Header with title + close button */}
+          <View style={styles.modalHeader}>
+            <Text style={styles.modalTitle}>Select Doctor</Text>
+            <TouchableOpacity onPress={() => setDoctorModal(false)}>
+              <Text style={styles.closeButton}>✕</Text>
+            </TouchableOpacity>
+          </View>
           <TextInput
-            style={styles.input}
+            style={[styles.input, styles.searchInput]}
             placeholder="Search Doctor"
+            placeholderTextColor="#999"
             value={doctorSearch}
             onChangeText={setDoctorSearch}
           />
@@ -281,32 +306,38 @@ const [remark, setRemark] = useState<string>("");
             keyExtractor={(item) => item._id}
             renderItem={({ item }) => (
               <TouchableOpacity
-                style={styles.listItem}
+                style={[
+                  styles.listItem,
+                  selectedDoctor?._id === item._id && styles.selectedItem,
+                ]}
                 onPress={() => {
                   setSelectedDoctor(item);
                   setDoctorModal(false);
                 }}
               >
-                <Text>{item.name}</Text>
+                <Text style={styles.listItemText}>{item.name}</Text>
+                {selectedDoctor?._id === item._id && (
+                  <Text style={styles.checkMark}>✓</Text>
+                )}
               </TouchableOpacity>
             )}
           />
-
-          <TouchableOpacity
-            style={styles.modalSubmitBtn}
-            onPress={() => setDoctorModal(false)}
-          >
-            <Text style={styles.modalSubmitText}>Done</Text>
-          </TouchableOpacity>
         </View>
       </Modal>
 
       {/* Product Modal */}
-      <Modal visible={productModal}>
+      <Modal animationType="slide" visible={productModal}>
         <View style={styles.modalContainer}>
+          <View style={styles.modalHeader}>
+            <Text style={styles.modalTitle}>Select Products</Text>
+            <TouchableOpacity onPress={() => setProductModal(false)}>
+              <Text style={styles.closeButton}>✕</Text>
+            </TouchableOpacity>
+          </View>
           <TextInput
-            style={styles.input}
+            style={[styles.input, styles.searchInput]}
             placeholder="Search Product"
+            placeholderTextColor="#999"
             value={productSearch}
             onChangeText={setProductSearch}
           />
@@ -315,32 +346,36 @@ const [remark, setRemark] = useState<string>("");
             keyExtractor={(item) => item._id}
             renderItem={({ item }) => (
               <TouchableOpacity
-                style={styles.listItem}
+                style={[
+                  styles.listItem,
+                  selectedProducts.some((p) => p._id === item._id) &&
+                    styles.selectedItem,
+                ]}
                 onPress={() => toggleProduct(item)}
               >
-                <Text>
-                  {selectedProducts.find((p) => p._id === item._id) ? "✓ " : ""}
-                  {item.product_name}
-                </Text>
+                <Text style={styles.listItemText}>{item.product_name}</Text>
+                {selectedProducts.some((p) => p._id === item._id) && (
+                  <Text style={styles.checkMark}>✓</Text>
+                )}
               </TouchableOpacity>
             )}
           />
-
-          <TouchableOpacity
-            style={styles.modalSubmitBtn}
-            onPress={() => setProductModal(false)}
-          >
-            <Text style={styles.modalSubmitText}>Done</Text>
-          </TouchableOpacity>
         </View>
       </Modal>
 
       {/* Employee Modal */}
-      <Modal visible={employeeModal}>
+      <Modal animationType="slide" visible={employeeModal} >
         <View style={styles.modalContainer}>
+          <View style={styles.modalHeader}>
+            <Text style={styles.modalTitle}>Select Employees (Max 4)</Text>
+            <TouchableOpacity onPress={() => setEmployeeModal(false)}>
+              <Text style={styles.closeButton}>✕</Text>
+            </TouchableOpacity>
+          </View>
           <TextInput
-            style={styles.input}
+            style={[styles.input, styles.searchInput]}
             placeholder="Search Employee"
+            placeholderTextColor="#999"
             value={employeeSearch}
             onChangeText={setEmployeeSearch}
           />
@@ -349,25 +384,20 @@ const [remark, setRemark] = useState<string>("");
             keyExtractor={(item) => item._id}
             renderItem={({ item }) => (
               <TouchableOpacity
-                style={styles.listItem}
+                style={[
+                  styles.listItem,
+                  selectedEmployees.some((e) => e._id === item._id) &&
+                    styles.selectedItem,
+                ]}
                 onPress={() => toggleEmployee(item)}
               >
-                <Text>
-                  {selectedEmployees.find((e) => e._id === item._id)
-                    ? "✓ "
-                    : ""}
-                  {item.name}
-                </Text>
+                <Text style={styles.listItemText}>{item.name}</Text>
+                {selectedEmployees.some((e) => e._id === item._id) && (
+                  <Text style={styles.checkMark}>✓</Text>
+                )}
               </TouchableOpacity>
             )}
           />
-
-          <TouchableOpacity
-            style={styles.modalSubmitBtn}
-            onPress={() => setEmployeeModal(false)}
-          >
-            <Text style={styles.modalSubmitText}>Done</Text>
-          </TouchableOpacity>
         </View>
       </Modal>
     </KeyboardAvoidingView>
@@ -380,8 +410,21 @@ export default CreatePlanScreen;
 
 const styles = StyleSheet.create({
   container: {
-        padding: 16,
-        paddingBottom: 100
+    padding: 16,
+    // paddingBottom: 100,
+  },
+  header: {
+    backgroundColor: "#e91e62",
+    padding: 15,
+    paddingHorizontal: 20,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  title: {
+    color: "#fff",
+    fontSize: 25,
+    fontWeight: "700",
   },
   label: {
     marginTop: 16,
@@ -401,27 +444,8 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     justifyContent: "center",
   },
-  submitBtn: {
-    
-    backgroundColor: "#007bff",
-    padding: 14,
-    borderRadius: 8,
-      alignItems: "center",
-      position: 'absolute',
-      bottom: 10,
-      left: 16,
-      right: 16,
-      marginBottom:30
-  },
-  modalContainer: {
-    flex: 1,
-    padding: 16,
-  },
-  listItem: {
-    padding: 14,
-    borderBottomWidth: 1,
-    borderColor: "#eee",
-  },
+
+
   modalSubmitBtn: {
     marginTop: 16,
     backgroundColor: "#007bff",
@@ -434,5 +458,95 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontWeight: "600",
     fontSize: 16,
+  },
+
+  buttonContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginTop: 20,
+  },
+  submitBtn: {
+    backgroundColor: "#e91e62",
+    padding: 14,
+    borderRadius: 8,
+    alignItems: "center",
+    width: "45%",
+  },
+  cancelbtm: {
+    backgroundColor: "#fff",
+    padding: 14,
+    borderRadius: 8,
+    alignItems: "center",
+    width: "45%",
+    borderWidth: 1,
+    borderColor: "#e91e62",
+  },
+  modalContainer: {
+    flex: 1,
+    backgroundColor: "#fff",
+    // paddingTop: 40, // for status bar
+  },
+
+  modalHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    backgroundColor: "#e91e62",
+    paddingVertical: 16,
+    paddingHorizontal: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: "#d81b60",
+    paddingTop:40
+  },
+
+  modalTitle: {
+    color: "#fff",
+    fontSize: 20,
+    fontWeight: "700",
+  },
+
+  closeButton: {
+    color: "#fff",
+    fontSize: 24,
+    fontWeight: "600",
+    padding: 4,
+  },
+
+  searchInput: {
+    marginHorizontal: 16,
+    marginVertical: 12,
+    borderColor: "#ccc",
+    borderWidth: 1,
+    borderRadius: 8,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    fontSize: 16,
+    backgroundColor: "#f8f8f8",
+  },
+
+  listItem: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingVertical: 14,
+    paddingHorizontal: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: "#f0f0f0",
+  },
+
+  selectedItem: {
+    backgroundColor: "#fce4ec", // light pink highlight
+  },
+
+  listItemText: {
+    fontSize: 16,
+    color: "#333",
+  },
+
+  checkMark: {
+    fontSize: 18,
+    color: "#e91e62",
+    fontWeight: "bold",
   },
 });
