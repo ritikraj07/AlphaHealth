@@ -6,6 +6,7 @@ import {useState} from 'react'
 import { useNavigation } from '@react-navigation/native';
 import { NavProp } from '../navigators';
 import { useGetMyPOBQuery } from '../shared/store/api/pobApi';
+import POBSkeleton from '../shared/componets/skeletons/POBSkeleton';
 
 // Doctors Component
 const DoctorsCard = (params: any) => {
@@ -75,9 +76,7 @@ export default function POB() {
 
   if (isLoading) {
     return (
-      <View style={styles.container}>
-        <Text>Loading...</Text>
-      </View>
+      <POBSkeleton />
     );
   }
   
