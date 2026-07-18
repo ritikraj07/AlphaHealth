@@ -20,12 +20,15 @@ import PlanDetailsScreen from "../screens/Plans/PlanDetailsScreen";
 import CreatePOBScreen from "../screens/POB/CreatePOBScreen";
 import AnalyticsDashboard from "../screens/Analytics/AnalyticsDashboard";
 import NotificationPermission from "../screens/NotificationPermission";
+import SettingsScreen from "../screens/settings/Setting";
+import ChangePasswordScreen from "../screens/settings/ChangePassword";
+import ForgotPasswordScreen from "../screens/ForgotPassword";
 
 export type RootStackParamList = {
   navigate(arg0: string): void;
   SignIn: undefined;
   Drawer: undefined;
-  EmployeeDetailScreen: { params: any } | {id: string} |  undefined;
+  EmployeeDetailScreen: { params: any } | { id: string } | undefined;
   LeaveAppliedScreen: undefined;
   DoctorChemistListScreen: undefined;
   DoctorChemistDetailsScreen: { item: any };
@@ -40,7 +43,9 @@ export type RootStackParamList = {
   CreatePOBScreen: undefined;
   AnalyticsDashboard: undefined | { item: any };
   NotificationPermission: undefined;
-  
+  SettingsScreen: undefined | { item: any };
+  ChangePasswordScreen: undefined | { item: any };
+  ForgotPasswordScreen: undefined | { item: any };
 };
 
 // export type NavProp = RootStackParamList;
@@ -76,18 +81,41 @@ export default function Navigation() {
             component={DoctorChemistDetailsScreen}
           />
           <Stack.Screen name="ProductScreen" component={ProductScreen} />
-          <Stack.Screen name="ProductDetailScreen" component={ProductDetailScreen} />
+          <Stack.Screen
+            name="ProductDetailScreen"
+            component={ProductDetailScreen}
+          />
           <Stack.Screen name="AddProductScreen" component={AddProductScreen} />
-          <Stack.Screen name="EditProductScreen" component={EditProductScreen} />
+          <Stack.Screen
+            name="EditProductScreen"
+            component={EditProductScreen}
+          />
           <Stack.Screen name="CreatePlanScreen" component={CreatePlanScreen} />
-          <Stack.Screen name="CreateVisitScreen" component={CreateVisitScreen} />
-          <Stack.Screen name="PlanDetailsScreen" component={PlanDetailsScreen} />
+          <Stack.Screen
+            name="CreateVisitScreen"
+            component={CreateVisitScreen}
+          />
+          <Stack.Screen
+            name="PlanDetailsScreen"
+            component={PlanDetailsScreen}
+          />
           <Stack.Screen name="CreatePOBScreen" component={CreatePOBScreen} />
-          <Stack.Screen name="AnalyticsDashboard" component={AnalyticsDashboard} />
-          <Stack.Screen name="NotificationPermission" component={NotificationPermission} />
+          <Stack.Screen
+            name="AnalyticsDashboard"
+            component={AnalyticsDashboard}
+          />
+          <Stack.Screen
+            name="NotificationPermission"
+            component={NotificationPermission}
+          />
+          <Stack.Screen name="SettingsScreen" component={SettingsScreen} />
+          <Stack.Screen name="ChangePasswordScreen" component={ChangePasswordScreen} />
         </Stack.Group>
       ) : (
-        <Stack.Screen name="SignIn" component={SignIn} />
+        <Stack.Group>
+            <Stack.Screen name="SignIn" component={SignIn} />
+          <Stack.Screen name="ForgotPasswordScreen" component={ForgotPasswordScreen} />
+        </Stack.Group>
       )}
     </Stack.Navigator>
   );

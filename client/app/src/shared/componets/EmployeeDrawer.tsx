@@ -7,6 +7,7 @@ import {
   MaterialCommunityIcons,
   Feather,
 } from "@expo/vector-icons";
+
 import { useGetMyDetailQuery } from "../store/api/employeeApi";
 import { useAppSelector } from "../store/hooks";
 import { useDispatch } from "react-redux";
@@ -17,7 +18,7 @@ import { NavProp } from "../../navigators";
 export default function EmployeeDrawer(props: any) {
   const navigation = useNavigation<NavProp>();
   const dispatch = useDispatch();
-
+ 
   const { userId } = useAppSelector((state) => state.auth);
 
   const { data } = useGetMyDetailQuery({
@@ -26,8 +27,9 @@ export default function EmployeeDrawer(props: any) {
 
   const user = data?.data;
 
-  const handleLogout = async () => {
-    await performLogout(dispatch, props.navigation);
+  const openSetting = async () => {
+    // await performLogout(dispatch, props.navigation);
+    navigation.navigate("SettingsScreen");
   };
 
   const MenuItem = ({
@@ -88,23 +90,23 @@ export default function EmployeeDrawer(props: any) {
       <View style={styles.menuSection}>
         <Text style={styles.sectionTitle}>Management</Text>
 
-        {/* <MenuItem
+        <MenuItem
           icon={<Ionicons name="today-outline" size={20} color="#e91e62" />}
           label="Day Plan"
-          onPress={() => navigation.navigate("DoctorChemistDetailsScreen")}
-        /> */}
+          onPress={() => navigation.navigate("CreateVisitScreen")}
+        />
 
-        {/* <MenuItem
+        <MenuItem
           icon={<Ionicons name="map-outline" size={20} color="#e91e62" />}
           label="Tour Plan"
-          onPress={() => navigation.navigate("DoctorChemistDetailsScreen")}
-        /> */}
+          onPress={() => navigation.navigate("CreatePlanScreen")}
+        />
 
-        {/* <MenuItem
+        <MenuItem
           icon={<FontAwesome6 name="user-doctor" size={18} color="#e91e62" />}
           label="Doctors & Chemists"
           onPress={() => navigation.navigate("DoctorChemistListScreen")}
-        /> */}
+        />
 
         <MenuItem
           icon={<Ionicons name="cube-outline" size={20} color="#e91e62" />}
@@ -204,9 +206,9 @@ export default function EmployeeDrawer(props: any) {
       {/* LOGOUT */}
 
       <View style={styles.bottom}>
-        <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout}>
-          <Ionicons name="log-out-outline" size={20} color="#fff" />
-          <Text style={styles.logoutText}>Logout</Text>
+        <TouchableOpacity style={styles.logoutBtn} onPress={openSetting}>
+          <Feather name="settings" size={24} color="white" />
+          <Text style={styles.logoutText}>Setting</Text>
         </TouchableOpacity>
       </View>
     </DrawerContentScrollView>
