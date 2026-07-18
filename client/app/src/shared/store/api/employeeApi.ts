@@ -177,6 +177,22 @@ export const employeeApi = apiSlice.injectEndpoints({
       }),
       invalidatesTags: ["AdminDashboard", { type: "Employee", id: "LIST" }],
     }),
+
+    resetPassword: builder.mutation({
+      query: () => ({
+        url: `/employee/reset-password`,
+        method: "POST",
+      }),
+      invalidatesTags: ["AdminDashboard", { type: "Employee", id: "LIST" }],
+    }),
+    forgotPassord: builder.mutation({
+      query: ({email}) => ({
+        url: `/employee/forgot-password`,
+        method: "POST",
+        body: {email}
+      }),
+      invalidatesTags: ["AdminDashboard", { type: "Employee", id: "LIST" }],
+    })
   }),
 });
 
@@ -188,6 +204,9 @@ export const {
   useGetMyDetailQuery,
   useGetManagersQuery,
   useUpdateEmployeeMutation,
+  useResetPasswordMutation,
+  
+  useForgotPassordMutation
   
   
   

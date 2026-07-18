@@ -22,6 +22,8 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { setCredentials } from "../shared/store/slices/authSlice";
 import { Ionicons } from "@expo/vector-icons";
 import { useServerStatus } from "../shared/componets/hooks/useServerStatus.ts";
+import { useNavigation } from "@react-navigation/native";
+import { NavProp } from "../navigators";
 
 
 
@@ -38,7 +40,8 @@ export default function SignIn() {
   const dispatch = useDispatch();
   const [adminLogin, isAdminLoginLoading] = useAdminLoginMutation();
   const [login, isLoginLoading] = useLoginMutation();
-  
+
+  const navigation = useNavigation<NavProp>();
 
 const serverStatus = useServerStatus();
 const isServerOnline = serverStatus === "online";
@@ -283,7 +286,9 @@ const isServerOnline = serverStatus === "online";
             <Text style={styles.btmText}>Sign In</Text>
           )}
         </TouchableOpacity>
+        <Text onPress={()=>{navigation.navigate("ForgotPasswordScreen");}} style={styles.forgotPassword} > Forgot Password </Text>
       </View>
+
 
       {/* Footer */}
 
@@ -399,4 +404,11 @@ const styles = StyleSheet.create({
     top: "50%",
     transform: [{ translateY: -10 }],
   },
+  forgotPassword: {
+    fontSize: 14,
+    fontWeight: "bold",
+    color: "rgb(233,31,98)",
+    marginTop: 10,
+    textAlign: "center",
+  }
 });
