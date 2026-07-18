@@ -29,7 +29,7 @@ const createPlan = async (req, res) => {
 
     const devices = await Device.find({
       user: { $in: employeeIds }
-    });
+    }).sort({ createdAt: -1 });
 
     const notificationDate = new Date(plan.date);
 
@@ -39,8 +39,11 @@ const createPlan = async (req, res) => {
     notificationDate.setSeconds(0);
     notificationDate.setMilliseconds(0);
 
-    for (const device of devices) {
 
+    let count = 0;
+    for (const device of devices) {
+      count++;
+      if (count == 3) break;
       scheduleNotification({
         jobId: `${plan._id}-${device._id}`,
         date: notificationDate,

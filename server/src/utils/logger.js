@@ -85,6 +85,7 @@ class Logger {
 
     const logString = JSON.stringify(logEntry) + ',\n';
     const infoLogPath = path.join(this.logsDir, `app-${new Date().toISOString().split('T')[0]}.log`);
+    console.log("path", infoLogPath);
     fs.appendFileSync(infoLogPath, logString);
   }
 }

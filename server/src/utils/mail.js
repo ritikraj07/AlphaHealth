@@ -18,7 +18,7 @@
 //    .send();
 //
 // ======================================================================
-
+require('dotenv').config();
 const nodemailer = require('nodemailer');
 
 
@@ -54,7 +54,7 @@ class Mail {
         this.mailOptions = {
             from: {
                 address: process.env.EMAIL,   // Default sender
-                name: "AlphaHealth"           // Default from-name
+                name: "PharmaPrime"           // Default from-name
             },
             to: [],       // Receiver list
             cc: [],       // Carbon copy
@@ -157,7 +157,7 @@ class Mail {
         const emailTemplates = require('../static/emailTemplates');
 
         this.setReceiver(adminData.email)
-            .setSubject(`Admin Account Created - AlphaHealth`)
+            .setSubject(`Admin Account Created - PharmaPrime`)
             .setHTML(emailTemplates.getAdminCreationTemplate(adminData));
 
         return await this.send();
@@ -167,7 +167,7 @@ class Mail {
         const emailTemplates = require('../static/emailTemplates');
 
         this.setReceiver(leaveData.employeeEmail)
-            .setSubject(`Leave Request Approved - AlphaHealth`)
+            .setSubject(`Leave Request Approved - PharmaPrime`)
             .setHTML(emailTemplates.getLeaveApprovalTemplate(leaveData));
 
         return await this.send();
@@ -177,7 +177,7 @@ class Mail {
         const emailTemplates = require('../static/emailTemplates');
 
         this.setReceiver(leaveData.employeeEmail)
-            .setSubject(`Leave Request Update - AlphaHealth`)
+            .setSubject(`Leave Request Update - PharmaPrime`)
             .setHTML(emailTemplates.getLeaveRejectionTemplate(leaveData));
 
         return await this.send();
@@ -187,7 +187,7 @@ class Mail {
         const emailTemplates = require('../static/emailTemplates');
 
         this.setReceiver(employeeData.email)
-            .setSubject(`Employee Account Created - AlphaHealth`)
+            .setSubject(`Employee Account Created - PharmaPrime`)
             .setHTML(emailTemplates.getEmployeeCreationTemplate(employeeData, tempPassword));
 
         return await this.send();
@@ -197,7 +197,7 @@ class Mail {
         const emailTemplates = require('../static/emailTemplates');
 
         this.setReceiver(userData.email)
-            .setSubject(`Password Reset Request - AlphaHealth`)
+            .setSubject(`Password Reset Request - PharmaPrime`)
             .setHTML(emailTemplates.getPasswordResetTemplate(userData, resetLink));
 
         return await this.send();
@@ -230,7 +230,7 @@ class Mail {
         this.mailOptions = {
             from: {
                 address: process.env.EMAIL,
-                name: "AlphaHealth"
+                name: "PharmaPrime"
             },
             to: [],
             cc: [],

@@ -2,6 +2,7 @@ const { hashPassword, comparePassword } = require("../utils/auth");
 const Employee = require("../models/employee.model");
 const Mail = require("../utils/mail");
 const { createToken } = require("../validators/auth.validator");
+const logger = require("../utils/logger");
 
 
 
@@ -81,14 +82,14 @@ const createEmployee = async (req, res) => {
 
         console.log("Employee created successfully:", employeeResponse);
 
-        // const mailer = new Mail();
+        const mailer = new Mail();
 
-        // try { 
-        //     await mailer.sendEmployeeCreationEmail(employeeResponse, password);
-        //     console.log("Email sent successfully");
-        // } catch (error) {
-        //     console.error("Email sending error:", error);
-        // }
+        try { 
+            await mailer.sendEmployeeCreationEmail(employeeResponse, password);
+            console.log("Email sent successfully");
+        } catch (error) {
+            console.error("Email sending error:", error);
+        }
 
         return res.status(201).send({ 
             success: true,
@@ -453,6 +454,176 @@ const loginEmpoloyee = async (req, res) => {
                 message: "An error occurred during login",
             });
     }
+}
+ 
+
+const sendPasswordResetMail = async (req, res) => {
+    try { 
+        const email = req.user ? req.user.email : req.query.email;
+        const employee = await Employee.findOne({ email: email });
+        if (!employee) {
+            return res.status(404).json({
+                success: false,
+                message: "No employee found with this email",
+            });
+        }
+        const employeeId = employee._id.toString();
+        console.log("Password reset email sent to:", employee.email, "with ID:", employeeId);
+        const token = createToken(employeeId);
+        const url = `${process.env.SERVER_URL}/api/employee/set-new-password?token=${token}`;
+        const mailer = new Mail();
+        await mailer.sendPasswordResetEmail(employee, url);
+        logger.logInfo('Password reset email sent', {
+            email: employee.email,
+            name: employee.name,
+            endpoint: req.originalUrl,
+            requestId: req.requestId,
+        })
+
+        return res.status(200).json({
+            success: true,
+            message: "Password reset email sent successfully",
+        });
+
+    } catch (error) {
+        console.error("Password reset error:", error);
+        logger.logError('Password reset error', {
+            error: error.message,
+            endpoint: req.originalUrl,
+            requestId: req.requestId,
+            file: __filename,
+            line: error.stack.split('\n')[0],
+        })
+        return res.status(500).json({
+            success: false,
+            message: "An error occurred during password reset",
+        });
+     }
+}
+
+const forgotPassword = async (req, res) => {
+    try {
+        const email =  req.body.email;
+        const employee = await Employee.findOne({ email: email });
+        if (!employee) {
+            return res.status(404).json({
+                success: false,
+                message: "No employee found with this email",
+            });
+        }
+        const employeeId = employee._id.toString();
+        console.log("Password reset email sent to:", employee.email, "with ID:", employeeId);
+        const token = createToken(employeeId);
+        const url = `${process.env.SERVER_URL}/api/employee/set-new-password?token=${token}`;
+        const mailer = new Mail();
+        await mailer.sendPasswordResetEmail(employee, url);
+        logger.logInfo('Password reset email sent', {
+            email: employee.email,
+            name: employee.name,
+            endpoint: req.originalUrl,
+            requestId: req.requestId,
+        })
+
+        return res.status(200).json({
+            success: true,
+            message: "Password reset email sent successfully",
+        });
+
+    } catch (error) {
+        console.error("Password reset error:", error);
+        logger.logError('Password reset error', {
+            error: error.message,
+            endpoint: req.originalUrl,
+            requestId: req.requestId,
+            file: __filename,
+            line: error.stack.split('\n')[0],
+        })
+        return res.status(500).json({
+            success: false,
+            message: "An error occurred during password reset",
+        });
+    }
+}
+
+
+
+
+function isStrongPassword(password) {
+    const checks = [
+        password.length >= 8,
+        /[A-Z]/.test(password),
+        /[a-z]/.test(password),
+        /\d/.test(password),
+        /[^A-Za-z0-9]/.test(password),
+    ];
+    // Require at least 3 checks (matching frontend)
+    return checks.filter(Boolean).length >= 3;
+}
+ 
+
+const updatePassword = async (req, res) => {
+  
+    try {
+        const { newPassword, confirmPassword } = req.body;
+
+        // 1. Validate presence
+        if (!newPassword || !confirmPassword) {
+            return res.status(400).json({
+                success: false,
+                message: "Both password fields are required",
+            });
+        }
+
+        // 2. Check match
+        if (newPassword !== confirmPassword) {
+            return res.status(400).json({
+                success: false,
+                message: "Passwords do not match",
+            });
+        }
+
+        // 3. enforce password strength
+        if (!isStrongPassword(newPassword)) { 
+            return res.status(400).json({
+                success: false,
+                message: "Password is not strong enough",
+            });
+         }
+
+        // 4. Find employee (req.userId is set by your auth middleware)
+        const employee = await Employee.findById(req.userId);
+        if (!employee) {
+            return res.status(404).json({
+                success: false,
+                message: "Employee not found",
+            });
+        }
+
+        // 5. Hash and save
+        const hashedPassword = await hashPassword(newPassword);
+        employee.password = hashedPassword;
+        await employee.save();
+
+        return res.status(200).json({
+            success: true,
+            message: "Password updated successfully",
+        });
+
+    } catch (error) {
+         logger.logError(error, {
+             error: error.message,
+             endpoint: req.originalUrl,
+             requestId: req.requestId,
+             file: __filename,
+             line: error.stack.split('\n')[0],
+         })
+        
+        console.log("Password reset error:", error);
+        return res.status(500).json({
+            success: false,
+            message: "An error occurred during password reset",
+        });
+     }
  }
 
 
@@ -461,5 +632,8 @@ module.exports = {
     getEmployee, getEmployeeById,
     updateEmployee,
     getManagerTeam,
-    loginEmpoloyee
+    loginEmpoloyee,
+    sendPasswordResetMail,
+    updatePassword,
+    forgotPassword
 };

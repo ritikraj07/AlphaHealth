@@ -94,14 +94,14 @@ class EmailTemplates {
 <body>
     <div class="email-container">
         <div class="email-header">
-            <h1>AlphaHealth</h1>
+            <h1>PharmaPrime</h1>
             <p>Employee Management System</p>
         </div>
         <div class="email-body">
             ${content}
         </div>
         <div class="email-footer">
-            <p>&copy; ${new Date().getFullYear()} AlphaHealth. All rights reserved.</p>
+            <p>&copy; ${new Date().getFullYear()} PharmaPrime. All rights reserved.</p>
             <p>This is an automated message, please do not reply to this email.</p>
         </div>
     </div>
@@ -112,7 +112,7 @@ class EmailTemplates {
     // Admin Account Creation Template
     getAdminCreationTemplate(adminData) {
         const content = `
-            <h2>Welcome to AlphaHealth! 🎉</h2>
+            <h2>Welcome to PharmaPrime! 🎉</h2>
             <p>Dear <strong>${adminData.name}</strong>,</p>
             
             <p>Your administrator account has been successfully created for the <strong>Employee Management System</strong>.</p>
@@ -148,10 +148,10 @@ class EmailTemplates {
                 </a>
             </div>
 
-            <p>Best regards,<br><strong>AlphaHealth Team</strong></p>
+            <p>Best regards,<br><strong>PharmaPrime Team</strong></p>
         `;
 
-        return this.getBaseTemplate(content, 'Admin Account Created - AlphaHealth');
+        return this.getBaseTemplate(content, 'Admin Account Created - PharmaPrime');
     }
 
     // Leave Request Approval Template
@@ -186,10 +186,10 @@ class EmailTemplates {
                 </a>
             </div>
 
-            <p>Best regards,<br><strong>AlphaHealth Admin Team</strong></p>
+            <p>Best regards,<br><strong>PharmaPrime Admin Team</strong></p>
         `;
 
-        return this.getBaseTemplate(content, 'Leave Request Approved - AlphaHealth');
+        return this.getBaseTemplate(content, 'Leave Request Approved - PharmaPrime');
     }
 
     // Leave Request Rejection Template
@@ -221,19 +221,19 @@ class EmailTemplates {
                 </a>
             </div>
 
-            <p>Best regards,<br><strong>AlphaHealth Admin Team</strong></p>
+            <p>Best regards,<br><strong>PharmaPrime Admin Team</strong></p>
         `;
 
-        return this.getBaseTemplate(content, 'Leave Request Update - AlphaHealth');
+        return this.getBaseTemplate(content, 'Leave Request Update - PharmaPrime');
     }
 
     // Employee Account Creation Template
     getEmployeeCreationTemplate(employeeData, tempPassword = null) {
         const content = `
-            <h2>Welcome to AlphaHealth! 👋</h2>
+            <h2>Welcome to PharmaPrime! 👋</h2>
             <p>Dear <strong>${employeeData.name}</strong>,</p>
             
-            <p>Your employee account has been created for the <strong>AlphaHealth Employee Management System</strong>.</p>
+            <p>Your employee account has been created for the <strong>PharmaPrime Employee Management System</strong>.</p>
             
             <div class="credentials">
                 <h3>Your Login Details:</h3>
@@ -254,10 +254,10 @@ class EmailTemplates {
                 </a>
             </div>
 
-            <p>Best regards,<br><strong>AlphaHealth HR Team</strong></p>
+            <p>Best regards,<br><strong>PharmaPrime HR Team</strong></p>
         `;
 
-        return this.getBaseTemplate(content, 'Employee Account Created - AlphaHealth');
+        return this.getBaseTemplate(content, 'Employee Account Created - PharmaPrime');
     }
 
     // Password Reset Template
@@ -266,7 +266,7 @@ class EmailTemplates {
             <h2>Password Reset Request</h2>
             <p>Dear <strong>${userData.name}</strong>,</p>
             
-            <p>We received a request to reset your password for your AlphaHealth account.</p>
+            <p>We received a request to reset your password for your PharmaPrime account.</p>
             
             <div class="info-card">
                 <p>Click the button below to reset your password:</p>
@@ -284,10 +284,10 @@ class EmailTemplates {
                 <p>If you didn't request this reset, please ignore this email.</p>
             </div>
 
-            <p>Best regards,<br><strong>AlphaHealth Security Team</strong></p>
+            <p>Best regards,<br><strong>PharmaPrime Security Team</strong></p>
         `;
 
-        return this.getBaseTemplate(content, 'Password Reset - AlphaHealth');
+        return this.getBaseTemplate(content, 'Password Reset - PharmaPrime');
     }
 }
 
