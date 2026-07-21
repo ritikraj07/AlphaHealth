@@ -4,7 +4,7 @@ const { verifyToken } = require('../validators/auth.validator');
 const router = Router();
 
 
-router.post("/", registerDevice);
+router.post("/",verifyToken, registerDevice);
 
 
 
