@@ -1,5 +1,6 @@
-export const API_BASE_URL = 'https://alphahealth.onrender.com/api';
-
+export const API_BASE_URL = "https://alphahealth.onrender.com/api";
+// http://ipconfig ipv4 :3000/api
+//https://alphahealth.onrender.com/api
 
 console.log('🔗 API Base URL:', API_BASE_URL);
 console.log('🔗 Full Admin Login URL:', `${API_BASE_URL}/admin/login`);

@@ -1,3 +1,4 @@
+import { API_BASE_URL } from "@/app/src/config/constants";
 import { useEffect, useRef, useState } from "react";
 
 type ServerStatus = "checking" | "online" | "offline";
@@ -6,7 +7,7 @@ export const useServerStatus = () => {
   const [status, setStatus] = useState<ServerStatus>("checking");
   const lastStatus = useRef<ServerStatus>("checking");
 
-  const SERVER_URL = "https://alphahealth.onrender.com/";
+  const SERVER_URL = `${API_BASE_URL}/health`;
 
   const checkServer = async () => {
     try {

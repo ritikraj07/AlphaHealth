@@ -42,11 +42,12 @@ export default function DrawerNavigator() {
    * 2. Get Expo Push Token.
    * 3. Send everything to backend.
    */
+
   async function registerDevice() {
     try {
       const deviceInfo = await getDeviceInfo();
-      console.log("📡 Device Info:", deviceInfo, userId);
-      const response = await fetch("http://10.109.221.180:3000/api/devices", {
+      // console.log("📡 Device Info:", deviceInfo, userId);
+      const response = await fetch(`${API_BASE_URL}/devices`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -61,7 +62,7 @@ export default function DrawerNavigator() {
 
       const result = await response.json();
 
-      console.log("✅ Device Registered:", result);
+      // console.log("✅ Device Registered:", result);
     } catch (error) {
       console.log("❌ Device Registration Failed:", error);
     }

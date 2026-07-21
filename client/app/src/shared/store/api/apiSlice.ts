@@ -1,9 +1,11 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { API_BASE_URL } from '@/app/src/config/constants';
+console.log('🔗 API Base URL:', API_BASE_URL);
 
+// http://10.109.221.180:3000/api
 const baseQuery = fetchBaseQuery({
-  baseUrl: "http://10.109.221.180:3000/api",
+  baseUrl: `${API_BASE_URL}`,
   // "https://alphahealth.onrender.com/api"
   /**
    * Prepare headers for API requests.

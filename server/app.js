@@ -85,6 +85,21 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(apiDocument));
 // Visit this in browser 👉 http://localhost:5000/api-docs
 
 
+// ===================================================
+// 🔥 HEALTH CHECK ROUTE
+// ===================================================
+
+
+app.get("/api/health", (req, res) => {
+  res.status(200).json({
+    success: true,
+    status: "online",
+    timestamp: new Date(),
+    uptime: process.uptime(),
+    message: "PharmaPrime API is running",
+  });
+});
+
 
 // ===================================================
 // 🔥 DEFAULT HOME ROUTE

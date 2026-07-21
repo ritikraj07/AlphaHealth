@@ -52,6 +52,10 @@ const deviceSchema = new mongoose.Schema(
             type: Date,
             default: Date.now,
         },
+        isActive: {
+            type: Boolean,
+            default: true,
+        },
 
     },
     {
@@ -62,7 +66,7 @@ const deviceSchema = new mongoose.Schema(
 // A user can register multiple devices,
 // but the same device should exist only once per user.
 deviceSchema.index(
-    { user: 1, userModel: 1, deviceId: 1 },
+    { user: 1, model: 1, deviceId: 1 },
     { unique: true }
 );
 

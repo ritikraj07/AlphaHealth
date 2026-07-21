@@ -8,9 +8,10 @@ const Device = require("../models/device.model");
  * Otherwise create a new device.
  */
 const registerDevice = async (req, res) => {
+    const userId = req.userId;
     try {
         const {
-            user,
+            
             model,
             deviceId,
             platform,
@@ -21,7 +22,7 @@ const registerDevice = async (req, res) => {
 
         const device = await Device.findOneAndUpdate(
             {
-                user,
+                user: userId,
                 model,
                 deviceId,
             },
@@ -177,7 +178,7 @@ const deactivateDevice = async (req, res) => {
  * Return active Expo Push Tokens.
  * This function will be used by the notification service.
  */
-const getUserPushTokens = async (user, userModel) => {
+const getUserPushTokens = async (user, model) => {
     const devices = await Device.find({
         user,
         model,

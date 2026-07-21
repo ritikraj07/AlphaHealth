@@ -37,7 +37,7 @@ export default function Index() {
   const [bootStep, setBootStep] = useState("Initializing...");
 
   useEffect(() => {
-    let timeout: NodeJS.Timeout;
+    let timeout: ReturnType<typeof setTimeout>;
 
     async function prepareApp() {
       try {
