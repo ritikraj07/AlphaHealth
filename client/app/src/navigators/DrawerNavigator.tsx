@@ -45,6 +45,7 @@ export default function DrawerNavigator() {
 
   async function registerDevice() {
     try {
+      console.log()
       const deviceInfo = await getDeviceInfo();
       // console.log("📡 Device Info:", deviceInfo, userId);
       const response = await fetch(`${API_BASE_URL}/devices`, {

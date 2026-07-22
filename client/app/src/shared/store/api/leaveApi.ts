@@ -60,7 +60,13 @@ export type Leaves = {
 export type LeaveResponse = {
   success: boolean;
   message: string;
-  data: any; // you can replace with Leave type later
+  data: [Leave];
+  pagination: {
+    limit: number;
+    page: number;
+    total: number;
+    pages: string;
+  }
 };
 
 

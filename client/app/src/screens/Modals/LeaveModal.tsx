@@ -9,39 +9,103 @@ import {
   TouchableWithoutFeedback,
   Keyboard,
   Platform,
+  Alert,
   ToastAndroid,
-  Switch
+  Switch,
+  ActivityIndicator,
 } from "react-native";
-import React, { useState } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import { Ionicons, Feather } from "@expo/vector-icons";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { useApplyLeaveMutation } from "../../shared/store/api/leaveApi";
 
-
-// Define the props interface
+// ========== TYPES ==========
 interface LeaveModalProps {
   visible: boolean;
   onClose: () => void;
 }
 
+type LeaveType =
+  | "sick"
+  | "casual"
+  | "earned"
+  | "public"
+  | "maternity"
+  | "paternity";
+type HalfType = "first" | "second" | "";
 type DateField = "start" | "end";
 
+// ========== PLATFORM HELPER ==========
+const showToast = (message: string, duration: number = ToastAndroid.SHORT) => {
+  if (Platform.OS === "android") {
+    ToastAndroid.show(message, duration);
+  } else {
+    Alert.alert("", message);
+  }
+};
+
+const showError = (title: string, message: string) => {
+  if (Platform.OS === "android") {
+    ToastAndroid.show(message, ToastAndroid.LONG);
+  } else {
+    Alert.alert(title, message);
+  }
+};
+
+// ========== LEAVE TYPE BUTTON ==========
+interface LeaveTypeButtonProps {
+  type: { id: LeaveType; label: string };
+  selected: LeaveType;
+  onSelect: (id: LeaveType) => void;
+  disabled: boolean;
+}
+
+const LeaveTypeButton = ({
+  type,
+  selected,
+  onSelect,
+  disabled,
+}: LeaveTypeButtonProps) => {
+  const isSelected = selected === type.id;
+  return (
+    <TouchableOpacity
+      style={[
+        styles.leaveTypeButton,
+        isSelected && styles.leaveTypeButtonSelected,
+        disabled && styles.leaveTypeButtonDisabled,
+      ]}
+      onPress={() => onSelect(type.id)}
+      disabled={disabled}
+    >
+      <Text
+        style={[
+          styles.leaveTypeText,
+          isSelected && styles.leaveTypeTextSelected,
+        ]}
+      >
+        {type.label}
+      </Text>
+    </TouchableOpacity>
+  );
+};
+
+// ========== MAIN COMPONENT ==========
 export default function LeaveModal({ visible, onClose }: LeaveModalProps) {
- 
-  const [leaveType, setLeaveType] = useState<string>("earned");
+  // --- State ---
+  const [leaveType, setLeaveType] = useState<LeaveType>("earned");
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
-  const [reason, setReason] = useState<string>("");
-  const [showDatePicker, setShowDatePicker] = useState<boolean>(false);
+  const [reason, setReason] = useState("");
+  const [isHalfDay, setIsHalfDay] = useState(false);
+  const [halfType, setHalfType] = useState<HalfType>("");
+  const [showDatePicker, setShowDatePicker] = useState(false);
   const [currentDateField, setCurrentDateField] = useState<DateField>("start");
-  const [tempDate, setTempDate] = useState<Date>(new Date());
-  const [isHalfDay, setIsHalfDay] = useState<boolean>(false);
-  const [halfType, setHalfType] = useState<string>("");
-  const [applyLeave] = useApplyLeaveMutation();
-  
- 
+  const [tempDate, setTempDate] = useState(new Date());
 
-  const leaveTypes = [
+  const [applyLeave, { isLoading }] = useApplyLeaveMutation();
+
+  // --- Constants ---
+  const leaveTypes: { id: LeaveType; label: string }[] = [
     { id: "casual", label: "Casual" },
     { id: "sick", label: "Sick" },
     { id: "earned", label: "Earned" },
@@ -49,7 +113,7 @@ export default function LeaveModal({ visible, onClose }: LeaveModalProps) {
     { id: "paternity", label: "Paternity" },
   ];
 
-  // Format date to dd-mm-yyyy
+  // --- Helpers ---
   const formatDate = (date: Date | null): string => {
     if (!date) return "";
     const day = date.getDate().toString().padStart(2, "0");
@@ -58,212 +122,149 @@ export default function LeaveModal({ visible, onClose }: LeaveModalProps) {
     return `${day}-${month}-${year}`;
   };
 
-  // Get minimum date for end date (start date or today)
-  const getMinEndDate = (): Date => {
-    if (startDate) {
-      return new Date(startDate);
-    }
-    return new Date();
+  const toISO = (date: Date | null): string => {
+    if (!date) return "";
+    return date.toISOString();
   };
 
-  // Open date picker
-  const openDatePicker = (field: DateField) => {
-    setCurrentDateField(field);
-
-    // Set initial date for picker
-    if (field === "start") {
-      setTempDate(startDate || new Date());
-    } else {
-     
-      setTempDate(endDate || getMinEndDate());
-    }
-
-    
-
-    setShowDatePicker(true);
+  const isToday = (date: Date): boolean => {
+    const today = new Date();
+    return (
+      date.getDate() === today.getDate() &&
+      date.getMonth() === today.getMonth() &&
+      date.getFullYear() === today.getFullYear()
+    );
   };
 
-  // Handle date change
-  const onDateChange = (event: any, selectedDate?: Date) => {
+  // --- Validation ---
+  const validate = useCallback((): string | null => {
+    if (!leaveType) {
+      return "Please select a leave type.";
+    }
+    if (!startDate) {
+      return "Please select a start date.";
+    }
+    if (!isHalfDay && !endDate) {
+      return "Please select an end date.";
+    }
+    if (reason.trim().length === 0) {
+      return "Please enter a reason for leave.";
+    }
+    if (isHalfDay && !halfType) {
+      return "Please select a half-day slot.";
+    }
+
+    // --- Date rules ---
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const start = new Date(startDate);
+    start.setHours(0, 0, 0, 0);
+
+    // 1. Cannot apply for past dates
+    if (start < today) {
+      return "Start date cannot be in the past.";
+    }
+
+    // 2. Casual leave cannot be on the same day
+    if (leaveType === "casual" && isToday(startDate)) {
+      return "Casual leave cannot be taken on the same day. Please select a future date.";
+    }
+
+    // 3. End date must be >= start date
+    if (endDate) {
+      const end = new Date(endDate);
+      end.setHours(0, 0, 0, 0);
+      if (end < start) {
+        return "End date cannot be before start date.";
+      }
+    }
+
+    return null;
+  }, [leaveType, startDate, endDate, isHalfDay, halfType, reason]);
+
+  // --- Handlers ---
+  const handleDateChange = (event: any, selectedDate?: Date) => {
     setShowDatePicker(false);
-
     if (selectedDate) {
       if (currentDateField === "start") {
         setStartDate(selectedDate);
-        // If end date is before new start date, reset end date
+        // If end date is before new start, reset end
         if (endDate && selectedDate > endDate) {
           setEndDate(null);
         }
       } else {
         setEndDate(selectedDate);
       }
-      
     }
   };
 
-  // Validate dates
-  const validateDates = (): boolean => {
-    if (!startDate) {
-      alert("Please select a start date");
-      return false;
-    }
-
-    if (!endDate && !isHalfDay) {
-      alert("Please select an end date");
-      return false;
-    }
-
-    if ( endDate && endDate < startDate) {
-      alert("End date cannot be before start date");
-      return false;
-    }
-
-    // Check if start date is not before today
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const start = new Date(startDate);
-    start.setHours(0, 0, 0, 0);
-
-    if (start < today) {
-      alert("Start date cannot be before today");
-      return false;
-    }
-
-    return true;
+  const openDatePicker = (field: DateField) => {
+    setCurrentDateField(field);
+    const initialDate =
+      field === "start"
+        ? startDate || new Date()
+        : endDate || startDate || new Date();
+    setTempDate(initialDate);
+    setShowDatePicker(true);
   };
 
-  // Clear form
-  const clearForm = () => {
-    setLeaveType("");
+  const resetForm = useCallback(() => {
+    setLeaveType("earned");
     setStartDate(null);
     setEndDate(null);
     setReason("");
+    setIsHalfDay(false);
+    setHalfType("");
+  }, []);
+
+  // Reset when modal closes
+  useEffect(() => {
+    if (!visible) resetForm();
+  }, [visible, resetForm]);
+
+  // --- Submit ---
+  const handleSubmit = async () => {
+    const error = validate();
+    if (error) {
+      showError("Validation Error", error);
+      return;
+    }
+
+    try {
+      await applyLeave({
+        type: leaveType,
+        startDate: toISO(startDate),
+        endDate: isHalfDay ? toISO(startDate) : toISO(endDate),
+        isHalfDay,
+        halfType: halfType as "first" | "second",
+        reason: reason.trim(),
+      }).unwrap();
+
+      showToast("Leave application submitted successfully.");
+      resetForm();
+      onClose();
+    } catch (err: any) {
+      console.error("Leave submission error:", err);
+      const message =
+        err?.data?.error ||
+        err?.data?.message ||
+        "Failed to apply leave. Please try again.";
+      showError("Error", message);
+    }
   };
 
-  const handleSubmit = async () => {
-    const formatForBackend = (date: Date | null): string => {
-       if (!date) return "";
-       return date.toISOString();
-       
-     };
-   if (!validateDates()) {
-     return;
-    }
-    if (!leaveType) {
-      ToastAndroid.show("Please select a leave type", ToastAndroid.SHORT);
-      return;
-    }
+  // --- Disable Casual if startDate is today ---
+  const isCasualDisabled = (): boolean => {
+    if (!startDate) return false;
+    return leaveType === "casual" && isToday(startDate);
+  };
 
-    if (!reason.trim()) {
-     ToastAndroid.show("Please enter a reason for leave", ToastAndroid.SHORT);
-     
-     return;
-   }
-    
-
-    if (isHalfDay && !halfType) {
-      alert("Please select a half-day type");
-      return;
-      
-    }
-
-   try {
-     // Format dates for backend - MUST be ISO string or YYYY-MM-DD
-    
-
-     // Ensure leaveType matches backend enum
-     const validLeaveType = leaveType as
-       | "sick"
-       | "casual"
-       | "earned"
-       | "public"
-       | "maternity"
-       | "paternity";
-
-    //  console.log("Sending leave application:", {
-    //    type: validLeaveType,
-    //    startDate: formatForBackend(startDate),
-    //    endDate: formatForBackend(endDate),
-    //    isHalfDay,
-    //    halfType,
-    //    reason,
-    //   });
-     
-
-     
-
-     const response = await applyLeave({
-       type: validLeaveType,
-       startDate: formatForBackend(startDate),
-       endDate: isHalfDay ? formatForBackend(startDate) : formatForBackend(endDate),
-       isHalfDay,
-       halfType,
-       reason,
-     }).unwrap();
-
-     clearForm();
-
-     ToastAndroid.show(response.message, ToastAndroid.SHORT);
-   } catch (error: any) {
-     console.error("Error applying leave:", error);
-
-     // Parse backend error
-     let errorMessage = "Failed to apply leave";
-
-     if (error?.data) {
-       if (error.data.error) {
-         errorMessage = error.data.error;
-       } else if (error.data.message) {
-         errorMessage = error.data.message;
-       }
-     }
-
-     ToastAndroid.show(errorMessage, ToastAndroid.LONG);
-   }
- };
-
- const LeaveType = (type: { id: string; label: string }) => {
-   const now = new Date();
-   const cutoff = new Date();
-   cutoff.setHours(9, 0, 0, 0);
-
-   const disable = now > cutoff && (type.id === "sick" || type.id === "casual");
-   function onPressLeaveTpype() {
-     if ((type.id === "casual" || type.id === "sick") && now > cutoff) {
-       ToastAndroid.show(`${type.id == "casual" ? "Casual" : "Sick"} leave are not available after 9 am`,ToastAndroid.SHORT);
-       return;
-      }
-      setLeaveType(type.id);
-   }
-
-   return (
-     <TouchableOpacity
-       key={type.id}
-       style={[
-         styles.leaveTypeButton,
-         leaveType === type.id && styles.leaveTypeButtonSelected,
-         disable && { opacity: 0.4 },
-       ]}
-       onPress={onPressLeaveTpype}
-       disabled={disable}
-     >
-       <Text
-         style={[
-           styles.leaveTypeText,
-           leaveType === type.id && styles.leaveTypeTextSelected,
-         ]}
-       >
-         {type.label}
-       </Text>
-     </TouchableOpacity>
-   );
- };
-
+  // --- Render ---
   return (
     <Modal
       visible={visible}
       animationType="slide"
-      transparent={true}
+      transparent
       onRequestClose={onClose}
     >
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
@@ -276,7 +277,6 @@ export default function LeaveModal({ visible, onClose }: LeaveModalProps) {
                 <Ionicons name="close" size={24} color="#000" />
               </TouchableOpacity>
             </View>
-
             <Text style={styles.subtitle}>
               Fill in the details for your leave application
             </Text>
@@ -289,7 +289,18 @@ export default function LeaveModal({ visible, onClose }: LeaveModalProps) {
               <View style={styles.section}>
                 <Text style={styles.sectionTitle}>Type</Text>
                 <View style={styles.leaveTypeContainer}>
-                  {leaveTypes.map((type) => LeaveType(type))}
+                  {leaveTypes.map((type) => (
+                    <LeaveTypeButton
+                      key={type.id}
+                      type={type}
+                      selected={leaveType}
+                      onSelect={setLeaveType}
+                      disabled={
+                        isLoading ||
+                        (type.id === "casual" && isCasualDisabled())
+                      }
+                    />
+                  ))}
                 </View>
               </View>
 
@@ -297,35 +308,40 @@ export default function LeaveModal({ visible, onClose }: LeaveModalProps) {
               <View style={styles.section}>
                 <View style={styles.row}>
                   <Text style={styles.sectionTitle}>Half Day</Text>
-                  <Switch value={isHalfDay} onValueChange={setIsHalfDay} />
+                  <Switch
+                    value={isHalfDay}
+                    onValueChange={(val) => {
+                      setIsHalfDay(val);
+                      if (val) setEndDate(null);
+                    }}
+                    disabled={isLoading}
+                  />
                 </View>
 
                 {isHalfDay && (
                   <View style={styles.halfInfo}>
                     <Text style={styles.halfDesc}>Select time slot:</Text>
-
                     <View style={styles.halfRow}>
-                      <TouchableOpacity
-                        style={[
-                          styles.halfOption,
-                          halfType === "first" && styles.halfSelected,
-                        ]}
-                        onPress={() => setHalfType("first")}
-                      >
-                        <Text>First Half</Text>
-                        <Text style={styles.halfTime}>09:00 - 13:00</Text>
-                      </TouchableOpacity>
-
-                      <TouchableOpacity
-                        style={[
-                          styles.halfOption,
-                          halfType === "second" && styles.halfSelected,
-                        ]}
-                        onPress={() => setHalfType("second")}
-                      >
-                        <Text>Second Half</Text>
-                        <Text style={styles.halfTime}>13:00 - 17:00</Text>
-                      </TouchableOpacity>
+                      {["first", "second"].map((slot) => (
+                        <TouchableOpacity
+                          key={slot}
+                          style={[
+                            styles.halfOption,
+                            halfType === slot && styles.halfSelected,
+                          ]}
+                          onPress={() => setHalfType(slot as HalfType)}
+                          disabled={isLoading}
+                        >
+                          <Text>
+                            {slot === "first" ? "First Half" : "Second Half"}
+                          </Text>
+                          <Text style={styles.halfTime}>
+                            {slot === "first"
+                              ? "09:00 - 13:00"
+                              : "13:00 - 17:00"}
+                          </Text>
+                        </TouchableOpacity>
+                      ))}
                     </View>
                   </View>
                 )}
@@ -337,6 +353,7 @@ export default function LeaveModal({ visible, onClose }: LeaveModalProps) {
                 <TouchableOpacity
                   style={styles.dateInput}
                   onPress={() => openDatePicker("start")}
+                  disabled={isLoading}
                 >
                   <Text
                     style={startDate ? styles.dateText : styles.placeholderText}
@@ -349,34 +366,39 @@ export default function LeaveModal({ visible, onClose }: LeaveModalProps) {
               </View>
 
               {/* End Date */}
-             { !isHalfDay  && <View style={styles.section}>
-                <Text style={styles.sectionTitle}>End Date</Text>
-                <TouchableOpacity
-                  style={[styles.dateInput, !startDate && styles.disabledInput]}
-                  onPress={() => startDate && openDatePicker("end")}
-                  disabled={!startDate}
-                >
-                  <Text
+              {!isHalfDay && (
+                <View style={styles.section}>
+                  <Text style={styles.sectionTitle}>End Date</Text>
+                  <TouchableOpacity
                     style={[
-                      endDate ? styles.dateText : styles.placeholderText,
-                      !startDate && styles.disabledText,
+                      styles.dateInput,
+                      !startDate && styles.disabledInput,
                     ]}
+                    onPress={() => startDate && openDatePicker("end")}
+                    disabled={!startDate || isLoading}
                   >
-                    {endDate ? formatDate(endDate) : "dd-mm-yyyy"}
+                    <Text
+                      style={[
+                        endDate ? styles.dateText : styles.placeholderText,
+                        !startDate && styles.disabledText,
+                      ]}
+                    >
+                      {endDate ? formatDate(endDate) : "dd-mm-yyyy"}
+                    </Text>
+                    <Feather
+                      name="calendar"
+                      size={20}
+                      color={!startDate ? "#ccc" : "#666"}
+                    />
+                  </TouchableOpacity>
+                  <Text style={styles.dateHint}>
+                    {startDate
+                      ? `Must be on or after ${formatDate(startDate)}`
+                      : "Select start date first"}
                   </Text>
-                  <Feather
-                    name="calendar"
-                    size={20}
-                    color={!startDate ? "#ccc" : "#666"}
-                  />
-                </TouchableOpacity>
-                <Text style={styles.dateHint}>
-                  {startDate
-                    ? `Must be on or after ${formatDate(startDate)}`
-                    : "Select start date first"}
-                </Text>
-              </View>
-}
+                </View>
+              )}
+
               {/* Reason */}
               <View style={styles.section}>
                 <Text style={styles.sectionTitle}>Reason</Text>
@@ -389,37 +411,49 @@ export default function LeaveModal({ visible, onClose }: LeaveModalProps) {
                   textAlignVertical="top"
                   value={reason}
                   onChangeText={setReason}
+                  editable={!isLoading}
                 />
               </View>
 
-              {/* Submit Button */}
+              {/* Submit */}
               <TouchableOpacity
                 style={styles.submitButton}
                 onPress={handleSubmit}
+                disabled={isLoading}
               >
-                <Text style={styles.submitButtonText}>Submit Application</Text>
+                {isLoading ? (
+                  <ActivityIndicator size="small" color="#fff" />
+                ) : (
+                  <Text style={styles.submitButtonText}>
+                    Submit Application
+                  </Text>
+                )}
               </TouchableOpacity>
 
-              {/* Cancel Button */}
-              <TouchableOpacity style={styles.cancelButton} onPress={onClose}>
+              <TouchableOpacity
+                style={styles.cancelButton}
+                onPress={onClose}
+                disabled={isLoading}
+              >
                 <Text style={styles.cancelButtonText}>Cancel</Text>
               </TouchableOpacity>
 
-              {/* Helper Text */}
               <Text style={styles.helperText}>
                 Click "Submit Application" to submit your leave application.
               </Text>
             </ScrollView>
 
-            {/* Date Picker Modal */}
+            {/* Date Picker */}
             {showDatePicker && (
               <DateTimePicker
                 value={tempDate}
                 mode="date"
                 display={Platform.OS === "ios" ? "spinner" : "default"}
-                onChange={onDateChange}
+                onChange={handleDateChange}
                 minimumDate={
-                  currentDateField === "start" ? new Date() : getMinEndDate()
+                  currentDateField === "start"
+                    ? new Date()
+                    : startDate || new Date()
                 }
               />
             )}
@@ -430,6 +464,7 @@ export default function LeaveModal({ visible, onClose }: LeaveModalProps) {
   );
 }
 
+// ========== STYLES ==========
 const styles = StyleSheet.create({
   modalContainer: {
     flex: 1,
@@ -443,10 +478,7 @@ const styles = StyleSheet.create({
     padding: 20,
     maxHeight: "90%",
     shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
     elevation: 5,
@@ -470,7 +502,6 @@ const styles = StyleSheet.create({
     color: "#666",
     marginBottom: 20,
   },
-
   scrollContent: {
     flexGrow: 1,
   },
@@ -499,6 +530,9 @@ const styles = StyleSheet.create({
   leaveTypeButtonSelected: {
     backgroundColor: "#007AFF",
     borderColor: "#007AFF",
+  },
+  leaveTypeButtonDisabled: {
+    opacity: 0.4,
   },
   leaveTypeText: {
     fontSize: 14,
@@ -581,22 +615,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontStyle: "italic",
   },
-  halfDayContainer: {
-    flexDirection: "row",
-    marginTop: 8,
-    gap: 10,
-  },
-  halfDayOption: {
-    flex: 1,
-    paddingVertical: 10,
-    borderWidth: 1,
-    borderRadius: 6,
-    alignItems: "center",
-  },
-  halfDaySelected: {
-    backgroundColor: "#4B7BEC22",
-    borderColor: "#4B7BEC",
-  },
   row: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -607,18 +625,15 @@ const styles = StyleSheet.create({
     marginTop: 10,
     paddingLeft: 2,
   },
-
   halfDesc: {
     fontSize: 13,
     color: "#666",
     marginBottom: 6,
   },
-
   halfRow: {
     flexDirection: "row",
     gap: 10,
   },
-
   halfOption: {
     flex: 1,
     borderWidth: 1,
@@ -628,12 +643,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 6,
     alignItems: "center",
   },
-
   halfSelected: {
     backgroundColor: "#4B7BEC22",
     borderColor: "#4B7BEC",
   },
-
   halfTime: {
     fontSize: 11,
     color: "#666",

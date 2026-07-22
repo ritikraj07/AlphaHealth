@@ -28,7 +28,7 @@ export default function LeaveManagement() {
   const { isLoading, data: leavesData , refetch : leavesRefetch ,  isFetching: isLeavesFetching} = useGetMyLeavesQuery({ employeeId: auth?.userId });
 
   const leaves = data?.data?.leavesTaken;
-  console.log(leaves);
+  // console.log(leaves);
 
   if (isLoading || isFetching || isLeavesFetching) {
     return <LeaveManagementSkeleton />;
