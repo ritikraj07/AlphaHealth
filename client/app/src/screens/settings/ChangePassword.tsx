@@ -5,6 +5,7 @@ import {
   StyleSheet,
   TouchableOpacity,
   ToastAndroid,
+  ScrollView
 } from "react-native";
 
 import { MaterialIcons } from "@expo/vector-icons";
@@ -35,64 +36,67 @@ export default function ChangePasswordScreen() {
         <Text style={styles.subtitle}>Secure your PharmaPrime account</Text>
       </View>
 
-      {/* Card */}
-      <View style={styles.card}>
-        <View style={styles.iconContainer}>
-          <View style={styles.iconCircle}>
-            <MaterialIcons name="lock-reset" size={52} color="#e91e62" />
+      <ScrollView>
+        {/* Card */}
+        <View style={styles.card}>
+          <View style={styles.iconContainer}>
+            <View style={styles.iconCircle}>
+              <MaterialIcons name="lock-reset" size={52} color="#e91e62" />
+            </View>
           </View>
+
+          <Text style={styles.heading}>Forgot your password?</Text>
+
+          <Text style={styles.description}>
+            For your security, password changes are completed through your
+            registered email address.
+          </Text>
+
+          <Text style={styles.description}>
+            We'll send you a secure password reset link. Simply open the email
+            and create a new password.
+          </Text>
+
+          {/* Security Points */}
+
+          <View style={styles.securityBox}>
+            <View style={styles.point}>
+              <MaterialIcons name="verified-user" size={20} color="#22c55e" />
+
+              <Text style={styles.pointText}>Secure email verification</Text>
+            </View>
+
+            <View style={styles.point}>
+              <MaterialIcons name="schedule" size={20} color="#22c55e" />
+
+              <Text style={styles.pointText}>
+                Reset link expires automatically
+              </Text>
+            </View>
+
+            <View style={styles.point}>
+              <MaterialIcons name="shield" size={20} color="#22c55e" />
+
+              <Text style={styles.pointText}>
+                Your password is never stored in the app
+              </Text>
+            </View>
+          </View>
+
+          {/* Button */}
+
+          <TouchableOpacity onPress={handleResetPassword} style={styles.button}>
+            <MaterialIcons name="mail-outline" color="#fff" size={22} />
+
+            <Text style={styles.buttonText}>Send Reset Link</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity onPress={() => navigation.goBack()}>
+            <Text style={styles.cancel}>Cancel</Text>
+          </TouchableOpacity>
         </View>
-
-        <Text style={styles.heading}>Forgot your password?</Text>
-
-        <Text style={styles.description}>
-          For your security, password changes are completed through your
-          registered email address.
-        </Text>
-
-        <Text style={styles.description}>
-          We'll send you a secure password reset link. Simply open the email and
-          create a new password.
-        </Text>
-
-        {/* Security Points */}
-
-        <View style={styles.securityBox}>
-          <View style={styles.point}>
-            <MaterialIcons name="verified-user" size={20} color="#22c55e" />
-
-            <Text style={styles.pointText}>Secure email verification</Text>
-          </View>
-
-          <View style={styles.point}>
-            <MaterialIcons name="schedule" size={20} color="#22c55e" />
-
-            <Text style={styles.pointText}>
-              Reset link expires automatically
-            </Text>
-          </View>
-
-          <View style={styles.point}>
-            <MaterialIcons name="shield" size={20} color="#22c55e" />
-
-            <Text style={styles.pointText}>
-              Your password is never stored in the app
-            </Text>
-          </View>
-        </View>
-
-        {/* Button */}
-
-        <TouchableOpacity onPress={handleResetPassword} style={styles.button}>
-          <MaterialIcons name="mail-outline" color="#fff" size={22} />
-
-          <Text style={styles.buttonText}>Send Reset Link</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity onPress={() => navigation.goBack()} >
-          <Text style={styles.cancel}>Cancel</Text>
-        </TouchableOpacity>
-      </View>
+        <View style={{ height: 60 }} />
+      </ScrollView>
     </View>
   );
 }

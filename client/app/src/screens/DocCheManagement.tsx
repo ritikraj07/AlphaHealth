@@ -150,10 +150,10 @@ export default function DocCheManagement() {
         {/* Plan Cards */}
         <PlanCards />
       </ScrollView>
-      <View style={styles.animatedBox}>
+      {/* <View style={styles.animatedBox}>
         <VisitButton />
         <AddPlanButton />
-      </View>
+      </View> */}
     </View>
   );
 }

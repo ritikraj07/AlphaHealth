@@ -15,7 +15,7 @@ import ProductDetailScreen from "../screens/ProductDetailScreen";
 import AddProductScreen from "../screens/Products/AddProductScreen";
 import EditProductScreen from "../screens/Products/EditProductScreen";
 import CreatePlanScreen from "../screens/Plans/CreatePlanScreen";
-import CreateVisitScreen from "../screens/Visit/CreateVisitScreen";
+import CreateVisitScreen from "../screens/Visit/DayPlanScreen";
 import PlanDetailsScreen from "../screens/Plans/PlanDetailsScreen";
 import CreatePOBScreen from "../screens/POB/CreatePOBScreen";
 import AnalyticsDashboard from "../screens/Analytics/AnalyticsDashboard";

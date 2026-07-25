@@ -151,8 +151,11 @@ const CreatePOBScreen = () => {
       style={{ flex: 1,  }}
       behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
-      <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+      <View style={styles.headerContainer}>
         <Text style={styles.header}>Create POB</Text>
+
+      </View>
+      <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
 
         {/* Doctor */}
         <View style={styles.card}>
@@ -307,10 +310,18 @@ const styles = StyleSheet.create({
     backgroundColor: "#f1f5f9",
     padding: 16,
   },
+  headerContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 10,
+    backgroundColor: "#e91e62",
+    padding: 16,
+  },
   header: {
     fontSize: 24,
     fontWeight: "700",
-    marginBottom: 20,
+    color: "#fff",
   },
   card: {
     backgroundColor: "#fff",
@@ -379,7 +390,7 @@ const styles = StyleSheet.create({
     padding: 16,
     borderRadius: 14,
     alignItems: "center",
-    
+
     marginBottom: 330,
   },
   submitText: {

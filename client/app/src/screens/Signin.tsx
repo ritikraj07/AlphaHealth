@@ -401,7 +401,7 @@ const styles = StyleSheet.create({
   eyeIcon: {
     position: "absolute",
     right: 12,
-    top: "50%",
+    top: "40%",
     transform: [{ translateY: -10 }],
   },
   forgotPassword: {

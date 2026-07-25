@@ -477,9 +477,10 @@ const styles = StyleSheet.create({
   statItem: {
     flex: 1,
     padding: 16,
-    borderWidth: 0.5,
+    borderWidth: 0.2,
     marginVertical: 8,
     borderRadius: 8,
+    
   },
   statDivider: {
     width: 1,

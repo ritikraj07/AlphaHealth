@@ -52,7 +52,7 @@ const SettingsScreen = (props: any) => {
   };
 
   const openPrivacy = () => {
-    Linking.openURL("https://yourwebsite.com/privacy");
+    Linking.openURL("https://commingsoon.com/privacy");
   };
 
   const rateApp = () => {
@@ -65,7 +65,7 @@ const SettingsScreen = (props: any) => {
   const contactAdmin = () => {
     Alert.alert(
       "Contact Admin",
-      "Email: admin@pharmaprime.com\nPhone: +91 XXXXX XXXXX",
+      "Email: imritikraj0@gmail.com\nPhone: +91 9693452199",
     );
   };
 
@@ -180,7 +180,7 @@ export default SettingsScreen;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f8fafc",
+    // backgroundColor: "#f8fafc",
   },
 
   header: {
