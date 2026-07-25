@@ -249,7 +249,7 @@ class EmailTemplates {
             </div>
 
             <div style="text-align: center;">
-                <a href="${process.env.APP_URL || 'http://localhost:3000'}/login" class="btn">
+                <a href="${process.env.APP_URL}://login" class="btn">
                     Login to Your Account
                 </a>
             </div>
