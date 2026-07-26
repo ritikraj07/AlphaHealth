@@ -78,24 +78,29 @@ const createEmployee = async (req, res) => {
 
          // Convert to object and remove sensitive data
         const employeeResponse = employee.toObject();
-        // delete employeeResponse.password;
+        delete employeeResponse.password;
 
         console.log("Employee created successfully:", employeeResponse);
 
-        const mailer = new Mail();
-
-        try { 
-            await mailer.sendEmployeeCreationEmail(employeeResponse, password);
-            console.log("Email sent successfully");
-        } catch (error) {
-            console.error("Email sending error:", error);
-        }
-
-        return res.status(201).send({ 
+        res.status(201).send({ 
             success: true,
             message: "Employee created successfully",
             data: employeeResponse
         });
+
+        // Send email
+
+        setImmediate(async () => {
+            const mailer = new Mail();
+
+            try {
+                await mailer.sendEmployeeCreationEmail(employeeResponse, password);
+                console.log("Email sent successfully");
+            } catch (error) {
+                console.error("Email sending error:", error);
+            }
+        });
+
         
     } catch (error) {
         console.error("Create employee error:", error);
