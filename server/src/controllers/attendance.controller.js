@@ -1,7 +1,73 @@
 const mongoose = require("mongoose");
 const Attendance = require("../models/attendance.model");
-const User = require("../models/employee.model");
+const Employee = require("../models/employee.model");
 const calculateWorkingTime = require("../utils/calculateWorkingHours");
+
+const buildAttendanceQuery = async ({    user,    employeeId,    status,    startDate,    endDate,    hq,    role,}) => {
+
+    const attendanceQuery = {};
+    const employeeFilter = {};
+
+    // ==========================
+    // ACCESS
+    // ==========================
+
+    if (user.role === "admin") {
+        // No restriction
+    }
+
+    else if (user.role === "manager") {
+        employeeFilter.manager = user._id;
+        employeeFilter.managerModel = "Employee";
+    }
+
+    else {
+        employeeFilter._id = user._id;
+    }
+
+    // ==========================
+    // FILTERS
+    // ==========================
+
+    if (employeeId) {
+        employeeFilter._id = employeeId;
+    }
+
+    if (hq) {
+        employeeFilter.hq = hq;
+    }
+
+    if (role) {
+        employeeFilter.role = role;
+    }
+
+    if (Object.keys(employeeFilter).length) {
+
+        const employees = await Employee.find(employeeFilter)
+            .select("_id");
+
+        attendanceQuery.employee = {
+            $in: employees.map(e => e._id)
+        };
+    }
+
+    if (status) {
+        attendanceQuery.status = status;
+    }
+
+    if (startDate || endDate) {
+
+        attendanceQuery.date = {};
+
+        if (startDate)
+            attendanceQuery.date.$gte = new Date(startDate);
+
+        if (endDate)
+            attendanceQuery.date.$lte = new Date(endDate);
+    }
+
+    return attendanceQuery;
+}
 
 /**
  * Marks attendance for a user.
@@ -33,7 +99,7 @@ const MarkAttendance = async (req, res) => {
             await session.abortTransaction();
             return res.status(400).json({
                 success: false,
-                message: "User ID and type (check-in/check-out) are required"
+                message: "Employee ID and type (check-in/check-out) are required"
             });
         }
 
@@ -55,12 +121,12 @@ const MarkAttendance = async (req, res) => {
         
 
         // 2. Validate user exists
-        const user = await User.findById(userId).session(session);
+        const user = await Employee.findById(userId).session(session);
         if (!user) {
             await session.abortTransaction();
             return res.status(404).json({
                 success: false,
-                message: "User not found"
+                message: "Employee not found"
             });
         }
 
@@ -288,60 +354,78 @@ const GetTodayAttendance = async (req, res) => {
     }
 };
 
+const GetMyAttendanceHistory = async (req, res) => {
 
-// Function to get attendance history
+    const query = await buildAttendanceQuery({
+        user: req.user,
+        ...req.query
+    });
+
+    const attendance = await Attendance.find(query)
+        .populate("employee");
+
+    return res.json({
+        success: true,
+        data: attendance
+    });
+}
+
+const GetMyEmployeeAttendanceHistory = async (req, res) => {
+
+    const query = await buildAttendanceQuery({
+        user: req.user,
+        ...req.query
+    });
+
+    const attendance = await Attendance.find(query)
+        .populate("employee");
+
+    return res.json({
+        success: true,
+        data: attendance
+    });
+}
+
 const GetAttendanceHistory = async (req, res) => {
-    try {
-        const { userId } = req.params;
-        const { startDate, endDate, page = 1, limit = 30 } = req.query;
 
-        if (!userId) {
-            return res.status(400).json({
-                success: false,
-                message: "User ID is required"
-            });
+    const {
+        page = 1,
+        limit = 10
+    } = req.query;
+
+    const query = await buildAttendanceQuery({
+        user: req.user,
+        ...req.query
+    });
+
+    const skip = (page - 1) * limit;
+
+    const [attendance, total] = await Promise.all([
+        Attendance.find(query)
+            .sort({ date: -1 })
+            .skip(skip)
+            .limit(limit)
+            .populate("employee"),
+        Attendance.countDocuments(query)
+    ]);
+
+    return res.json({
+        success: true,
+        data: attendance,
+        pagination: {
+            page,
+            limit,
+            total,
+            totalPages: Math.ceil(total / limit)
         }
+    });
+}
 
-        const query = { user: userId };
-        
-        // Date range filter
-        if (startDate && endDate) {
-            query.date = {
-                $gte: new Date(startDate),
-                $lte: new Date(endDate)
-            };
-        }
-
-        const options = {
-            page: parseInt(page),
-            limit: parseInt(limit),
-            sort: { date: -1 },
-            populate: [
-                { path: 'user', select: 'name email' },
-                { path: 'plan', select: 'name type' }
-            ]
-        };
-
-        const attendance = await Attendance.paginate(query, options);
-
-        return res.status(200).json({
-            success: true,
-            data: attendance,
-            message: "Attendance history retrieved successfully"
-        });
-
-    } catch (error) {
-        console.error("Error fetching attendance history:", error);
-        return res.status(500).json({
-            success: false,
-            message: "Internal server error",
-            error: process.env.NODE_ENV === 'development' ? error.message : undefined
-        });
-    }
-};
 
 module.exports = {
     MarkAttendance,
     GetTodayAttendance,
-    GetAttendanceHistory
+    GetAttendanceHistory,
+    GetMyAttendanceHistory,
+    GetMyEmployeeAttendanceHistory
 };

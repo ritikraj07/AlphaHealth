@@ -25,6 +25,10 @@ const app = express();
 const routers = require("./src/routes/index");
 
 
+// ================================
+// Mark attendance
+// ================================
+require("./src/services/attendace/schedule");
 
 // ===================================================
 // 🔐 1. SECURITY MIDDLEWARES (SHOULD ALWAYS BE FIRST)
