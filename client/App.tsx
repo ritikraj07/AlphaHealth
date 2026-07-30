@@ -24,8 +24,11 @@ import { navigationRef } from "./app/src/navigators/navigationRef";
 import { setupNotificationChannels } from "./app/src/shared/services/notification/notificationChannels";
 import { initializeNotificationListeners } from "./app/src/shared/services/notification/notificationListeners";
 import { setupNotificationHandler } from "./app/src/shared/services/notification/notificationHandler";
+import linking from "./app/src/navigators/linking";
 
+import * as Linking from "expo-linking";
 
+// console.log(Linking.createURL("login"));  //pharmacy-management-app://login
 
 
 
@@ -136,7 +139,7 @@ useEffect(() => {
             ) : !isServerOnline ? (
               <ServerConnectingOverlay visible={!isServerOnline} />
             ) : (
-              <NavigationContainer ref={navigationRef} >
+              <NavigationContainer ref={navigationRef} linking={linking}>
                 <Navigation />
               </NavigationContainer>
             )}

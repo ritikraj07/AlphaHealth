@@ -2,7 +2,13 @@ import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { DrawerContentScrollView } from "@react-navigation/drawer";
 import { useDispatch } from "react-redux";
 import { performLogout } from "../utils/logout";
-import { Ionicons, FontAwesome6, AntDesign, Feather } from "@expo/vector-icons";
+import {
+  Ionicons,
+  FontAwesome6,
+  AntDesign,
+  Feather,
+  MaterialIcons,
+} from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { NavProp } from "../../navigators";
 
@@ -67,6 +73,13 @@ const AdminDrawer = (props: any) => {
           icon={<AntDesign name="product" size={24} color="#e91e62" />}
           label="Products"
           onPress={() => navigation.navigate("ProductScreen")}
+        />
+        <MenuItem
+          icon={<MaterialIcons name="co-present" size={24} color="#e91e62" />}
+          label="Attendance History"
+          onPress={() =>
+            navigation.navigate("AttendanceHistory", { mode: "admin" })
+          }
         />
       </View>
 

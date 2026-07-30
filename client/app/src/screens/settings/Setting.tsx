@@ -52,7 +52,8 @@ const SettingsScreen = (props: any) => {
   };
 
   const openPrivacy = () => {
-    Linking.openURL("https://commingsoon.com/privacy");
+    // Linking.openURL("https://commingsoon.com/privacy");
+    navigation.navigate("PrivacyPolicyScreen");
   };
 
   const rateApp = () => {
@@ -126,11 +127,11 @@ const SettingsScreen = (props: any) => {
           onPress={openPrivacy}
         />
 
-        <SettingItem
+        {/* <SettingItem
           icon="star-circle"
           title="Rate PharmaPrime"
           onPress={rateApp}
-        />
+        /> */}
 
         {/* About */}
 

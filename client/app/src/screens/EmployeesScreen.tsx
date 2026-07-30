@@ -69,6 +69,7 @@ export default function EmployeesScreen() {
         placeholder="Search by name or email..."
         value={search}
         onChangeText={setSearch}
+        placeholderTextColor={"grey"}
       />
 
       <View style={styles.filterRow}>

@@ -23,6 +23,9 @@ import NotificationPermission from "../screens/NotificationPermission";
 import SettingsScreen from "../screens/settings/Setting";
 import ChangePasswordScreen from "../screens/settings/ChangePassword";
 import ForgotPasswordScreen from "../screens/ForgotPassword";
+import AttendanceHistory from "../screens/Attendance/AttendanceHistory";
+import PrivacyPolicyScreen from "../screens/PrivacyPolicy";
+
 
 export type RootStackParamList = {
   navigate(arg0: string): void;
@@ -46,6 +49,8 @@ export type RootStackParamList = {
   SettingsScreen: undefined | { item: any };
   ChangePasswordScreen: undefined | { item: any };
   ForgotPasswordScreen: undefined | { item: any };
+  AttendanceHistory: { mode: any };
+  PrivacyPolicyScreen: undefined;
 };
 
 // export type NavProp = RootStackParamList;
@@ -104,19 +109,30 @@ export default function Navigation() {
             name="AnalyticsDashboard"
             component={AnalyticsDashboard}
           />
-          <Stack.Screen
-            name="NotificationPermission"
-            component={NotificationPermission}
-          />
           <Stack.Screen name="SettingsScreen" component={SettingsScreen} />
-          <Stack.Screen name="ChangePasswordScreen" component={ChangePasswordScreen} />
+          <Stack.Screen
+            name="ChangePasswordScreen"
+            component={ChangePasswordScreen}
+          />
+          <Stack.Screen
+            name="AttendanceHistory"
+            component={AttendanceHistory}
+          />
         </Stack.Group>
       ) : (
         <Stack.Group>
-            <Stack.Screen name="SignIn" component={SignIn} />
-          <Stack.Screen name="ForgotPasswordScreen" component={ForgotPasswordScreen} />
+          <Stack.Screen name="SignIn" component={SignIn} />
+          <Stack.Screen
+            name="ForgotPasswordScreen"
+            component={ForgotPasswordScreen}
+          />
         </Stack.Group>
       )}
+      <Stack.Screen
+        name="NotificationPermission"
+        component={NotificationPermission}
+      />
+      <Stack.Screen name="PrivacyPolicyScreen" component={PrivacyPolicyScreen} />
     </Stack.Navigator>
   );
 }

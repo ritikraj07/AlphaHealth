@@ -1,13 +1,19 @@
 import { createDrawerNavigator } from "@react-navigation/drawer";
-import { ActivityIndicator, Dimensions, View } from "react-native";
+import {
+  ActivityIndicator,
+  Dimensions,
+  View,
+  Text,
+  Button,
+  StyleSheet,
+} from "react-native";
 import { useEffect, useState } from "react";
 import * as Notifications from "expo-notifications";
-
+import * as Location from "expo-location";
 
 import BottomTabs from "./BottomTab";
 import EmployeeDrawer from "../shared/componets/EmployeeDrawer";
 import AdminDrawer from "../shared/componets/AdminDrawer";
-import NotificationPermission from "../screens/NotificationPermission";
 
 import { useAppSelector } from "../shared/store/hooks";
 import { getDeviceInfo } from "../shared/services/notification";
@@ -19,36 +25,74 @@ export type DrawerParamList = {
 
 const Drawer = createDrawerNavigator();
 
+// Helper to request notification permission (prompts the user)
+async function requestNotificationPermission() {
+  const { status } = await Notifications.requestPermissionsAsync();
+  return status === "granted";
+}
+
+// Helper to request location permission (prompts the user)
+async function requestLocationPermission() {
+  const { status } = await Location.requestForegroundPermissionsAsync();
+  return status === "granted";
+}
+
 export default function DrawerNavigator() {
   const screenWidth = Dimensions.get("window").width;
-
   const { role, userId, token } = useAppSelector((state) => state.auth);
 
-  const [hasPermission, setHasPermission] = useState<boolean | null>(null);
+  const [permissions, setPermissions] = useState({
+    notification: false,
+    location: false,
+  });
+  const [loading, setLoading] = useState(true);
+  const [showPermissionScreen, setShowPermissionScreen] = useState(false);
 
-  /**
-   * Check current notification permission
-   */
-  async function checkPermission() {
-    const { status } = await Notifications.getPermissionsAsync();
-    setHasPermission(status === "granted");
+  // ── Check & request permissions ──
+  async function checkPermissions() {
+    setLoading(true);
+
+    // Check current statuses (without prompting)
+    const { status: notifStatus } = await Notifications.getPermissionsAsync();
+    const { status: locStatus } =
+      await Location.getForegroundPermissionsAsync();
+
+    const notifGranted = notifStatus === "granted";
+    const locGranted = locStatus === "granted";
+
+    setPermissions({ notification: notifGranted, location: locGranted });
+    setLoading(false);
+
+    // If any permission is missing, show the permission screen
+    if (!notifGranted || !locGranted) {
+      setShowPermissionScreen(true);
+    } else {
+      setShowPermissionScreen(false);
+    }
   }
 
-  /**
-   * Register this device on backend.
-   *
-   * This will:
-   * 1. Collect device information.
-   * 2. Get Expo Push Token.
-   * 3. Send everything to backend.
-   */
+  // ── Called when user clicks "Grant" on the permission screen ──
+  async function requestAllPermissions() {
+    setLoading(true);
+    const notifGranted = await requestNotificationPermission();
+    const locGranted = await requestLocationPermission();
 
+    setPermissions({ notification: notifGranted, location: locGranted });
+    setLoading(false);
+
+    if (notifGranted && locGranted) {
+      setShowPermissionScreen(false);
+    } else {
+      // Still not granted – keep showing the screen
+      setShowPermissionScreen(true);
+    }
+  }
+
+  // ── Register device (only when both permissions are granted) ──
   async function registerDevice() {
     try {
-      console.log()
       const deviceInfo = await getDeviceInfo();
-      // console.log("📡 Device Info:", deviceInfo, userId);
-      const response = await fetch(`${API_BASE_URL}/devices`, {
+      await fetch(`${API_BASE_URL}/devices`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -56,63 +100,67 @@ export default function DrawerNavigator() {
         },
         body: JSON.stringify({
           user: userId,
-          model: role,
+          model: role, // Might want to use device model instead of role
           ...deviceInfo,
         }),
       });
-
-      const result = await response.json();
-
-      // console.log("✅ Device Registered:", result);
+      // console.log("✅ Device Registered");
     } catch (error) {
       console.log("❌ Device Registration Failed:", error);
     }
   }
 
-  /**
-   * Check notification permission
-   * when Drawer loads.
-   */
+  // ── Effects ──
   useEffect(() => {
-    checkPermission();
+    checkPermissions();
   }, []);
 
-  /**
-   * Register device only when:
-   * - User is logged in
-   * - Notification permission granted
-   */
+  // Register when permissions are granted and user is logged in
   useEffect(() => {
     if (!token) return;
-    if (!hasPermission) return;
+    if (permissions.notification && permissions.location) {
+      registerDevice();
+    }
+  }, [token, permissions]);
 
-    registerDevice();
-  }, [token, hasPermission]);
-
-  /**
-   * Still checking permission...
-   */
-  if (hasPermission === null) {
+  // ── Loading state ──
+  if (loading) {
     return (
-      <View
-        style={{
-          flex: 1,
-          justifyContent: "center",
-          alignItems: "center",
-        }}
-      >
-        <ActivityIndicator size="large" />
+      <View style={styles.centered}>
+        <ActivityIndicator size="large" color="#2563EB" />
       </View>
     );
   }
 
-  /**
-   * User denied notification permission.
-   */
-  if (!hasPermission) {
-    return <NotificationPermission onPermissionGranted={checkPermission} />;
+  // ── Permission screen (shown when at least one permission is missing) ──
+  if (showPermissionScreen) {
+    return (
+      <View style={styles.permissionContainer}>
+        <Text style={styles.permissionTitle}>Permissions Required</Text>
+        <Text style={styles.permissionText}>
+          We need your location to mark attendance and notification permission
+          to send you alerts.
+        </Text>
+        <View style={styles.permissionStatus}>
+          <Text>
+            🔔 Notification:{" "}
+            {permissions.notification ? "✅ Granted" : "❌ Denied"}
+          </Text>
+          <Text>
+            📍 Location: {permissions.location ? "✅ Granted" : "❌ Denied"}
+          </Text>
+        </View>
+        <Button title="Grant Permissions" onPress={requestAllPermissions} />
+        {!permissions.notification && (
+          <Text style={styles.hint}>
+            You can also enable them manually in Settings.
+          </Text>
+        )}
+      </View>
+    );
   }
 
+  // ── Drawer (permissions granted) ──
   return (
     <Drawer.Navigator
       screenOptions={{
@@ -136,3 +184,41 @@ export default function DrawerNavigator() {
     </Drawer.Navigator>
   );
 }
+
+const styles = StyleSheet.create({
+  centered: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  permissionContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 30,
+    backgroundColor: "#fff",
+  },
+  permissionTitle: {
+    fontSize: 24,
+    fontWeight: "700",
+    marginBottom: 10,
+  },
+  permissionText: {
+    fontSize: 16,
+    textAlign: "center",
+    marginBottom: 20,
+    color: "#555",
+  },
+  permissionStatus: {
+    marginBottom: 20,
+    alignItems: "flex-start",
+    width: "100%",
+    paddingHorizontal: 20,
+  },
+  hint: {
+    marginTop: 12,
+    fontSize: 12,
+    color: "#888",
+    textAlign: "center",
+  },
+});
