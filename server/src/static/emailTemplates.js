@@ -143,7 +143,7 @@ class EmailTemplates {
             <p>You can access the system immediately using the provided credentials.</p>
             
             <div style="text-align: center;">
-                <a href="${process.env.APP_URL || 'http://localhost:3000'}" class="btn">
+                <a href="${process.env.APP_URL }" class="btn">
                     Access Admin Dashboard
                 </a>
             </div>
@@ -181,7 +181,7 @@ class EmailTemplates {
             <p>Please ensure a proper handover before proceeding on leave.</p>
 
             <div style="text-align: center;">
-                <a href="${process.env.APP_URL || 'http://localhost:3000'}/leaves" class="btn">
+                <a href="${process.env.APP_URL}leaves" class="btn">
                     View Leave Details
                 </a>
             </div>
@@ -216,7 +216,7 @@ class EmailTemplates {
             <p>You can submit a new leave request with adjustments based on the feedback above.</p>
 
             <div style="text-align: center;">
-                <a href="${process.env.APP_URL || 'http://localhost:3000'}/leaves" class="btn">
+                <a href="${process.env.APP_URL}leaves" class="btn">
                     Submit New Leave Request
                 </a>
             </div>
@@ -249,7 +249,7 @@ class EmailTemplates {
             </div>
 
             <div style="text-align: center;">
-                <a href="${process.env.APP_URL}://login" class="btn">
+                <a href="${process.env.APP_URL}login" class="btn">
                     Login to Your Account
                 </a>
             </div>
